@@ -38,6 +38,8 @@ $(function() {
 
     var populateDocumentsDropdown = function () {
 
+        $list.empty();
+
         _.each(docs, function (doc) {
 
             var template = _.template('<li data-id="<%=id%>"><%= title %></li>');
@@ -47,6 +49,17 @@ $(function() {
             });
 
             $list.append(html);
+        });
+
+        $('li').on('click', function (event) {
+            var selectedId = $(event.target).attr('data-id');
+            doc = _.find(docs, function (doc) {
+                return doc.id == selectedId;
+            });
+
+            prepareDoc();
+
+            populateDocumentsDropdown();
         });
     };
 
