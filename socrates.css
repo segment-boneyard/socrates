@@ -698,6 +698,13 @@ body {
 .document-textarea {
   width: 100%;
   height: 100%; }
+  .document-textarea::-webkit-scrollbar {
+    width: 7px; }
+  .document-textarea::-webkit-scrollbar-track {
+    margin: 3rem; }
+  .document-textarea::-webkit-scrollbar-thumb {
+    border-radius: 14px;
+    background: #edebe2; }
 
 .document-menu {
   list-style: none;

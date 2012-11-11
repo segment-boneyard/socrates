@@ -1,4 +1,9 @@
-/*global Socrates Backbone */
+/*global Socrates Backbone marked */
+
+marked.setOptions({
+    gfm      : true,
+    sanitize : true
+});
 
 window.Socrates = {
     firebaseUrl : 'https://socrates.firebaseIO.com/'
