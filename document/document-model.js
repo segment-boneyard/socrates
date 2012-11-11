@@ -1,13 +1,49 @@
-/*global Socrates Backbone Firebase */
+/*global Socrates Backbone Firebase _ marked */
+
+var days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+];
+
+var months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+];
+
+var nths = {
+    1  : 'st',
+    2  : 'nd',
+    21 : 'st',
+    22 : 'nd',
+    31 : 'st'
+};
 
 Socrates.DocumentModel = Backbone.Model.extend({
 
-    defaults : {
-        title : 'Untitled',
-        body  : ''
+    defaults : function () {
+        return {
+            created : new Date(),
+            title   : 'Untitled',
+            body    : ''
+        };
     },
 
-    urlRoot : Socrates.firebase.base + 'documents/',
+    urlRoot : Socrates.firebaseUrl + 'documents/',
 
     initialize : function (attributes, options) {
         _.bindAll(this);
@@ -19,11 +55,16 @@ Socrates.DocumentModel = Backbone.Model.extend({
     },
 
     generateTitle: function () {
-        var body = this.get('body');
-        var title = 'Untitled - ' + this.id;
+        // Start with a default.
+        var created = this.has('created') ? new Date(this.get('created')) : new Date();
+        var day     = days[created.getDay()];
+        var month   = months[created.getMonth()];
+        var date    = created.getDate();
+        var nth     = nths[date] || 'th';
+        var year    = created.getFullYear();
+        var title   = 'Untitled - '+day+', '+month+' '+date+nth+', '+year;
 
-        var markdown = marked(body);
-        var headings = $(markdown).filter('h1');
+        var headings = $(marked(this.get('body'))).filter('h1');
         if (headings.length > 0) title = $(headings[0]).text();
 
         this.set('title', title);
