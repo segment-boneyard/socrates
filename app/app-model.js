@@ -28,8 +28,8 @@ Socrates.Model = Backbone.Model.extend({
                ':id' : 'document'
             }
         })
-            .on('route:home', this.onRouterHome)
-            .on('route:document', this.onRouterDocument);
+            .on('route:home', this.onHomeRoute)
+            .on('route:document', this.onDocumentRoute);
     },
 
     initializeDocuments : function () {
@@ -72,11 +72,11 @@ Socrates.Model = Backbone.Model.extend({
     // Route Handlers
     // --------------
 
-    onRouterHome : function () {
+    onHomeRoute : function () {
         this.set('document', this.newDocument());
     },
 
-    onRouterDocument : function (id) {
+    onDocumentRoute : function (id) {
         var document = this.get('documents').find(function (document) {
             return id === document.id;
         });

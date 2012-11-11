@@ -1,5 +1,8 @@
 /*global Socrates Backbone marked _ Rainbow */
 
+var $window = $(window);
+var MININUM_WIDTH = 1000;
+
 Socrates.View = Backbone.View.extend({
 
     youtubeEmbedTemplate : _.template('<iframe width="560" height="315" src="http://www.youtube.com/embed/<%= id %>" frameborder="0" allowfullscreen></iframe>'),
@@ -40,6 +43,9 @@ Socrates.View = Backbone.View.extend({
 
         // Debounce applying the youtube filter since it's kinda intensive.
         this.renderYoutubeFilter = _.debounce(this.renderYoutubeFilter, 1000);
+
+        // Add a window resize handler to re-try state.
+        $window.on('resize', this.onWindowResize);
     },
 
     applyDocumentEventHandlers : function (document, unbind) {
@@ -124,9 +130,30 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
+    state : function (state) {
+        var readonly  = state === 'read-only';
+        var writeonly = state === 'write-only';
+
+        if ($window.width() < MININUM_WIDTH && !readonly && !writeonly) writeonly = true;
+
+        this.$readOnlyButton.state('pressed', readonly);
+        this.$writeOnlyButton.state('pressed', writeonly);
+
+        this.$el.state('write-only', writeonly);
+        this.$el.state('read-only', readonly);
+
+        // Cache current state.
+        this._state = state;
+    },
+
 
     // Event Handlers
     // --------------
+
+    // When the window resizes too small, let the state update itself.
+    onWindowResize : function (event) {
+        this.state(this._state);
+    },
 
     onTextareaKeyup : function (event) {
         var document = this.model.get('document');
@@ -135,17 +162,13 @@ Socrates.View = Backbone.View.extend({
     },
 
     onReadOnlyButtonClick : function (event) {
-        this.$readOnlyButton.toggleState('pressed');
-        this.$writeOnlyButton.state('pressed', false);
-        this.$el.state('write-only', false);
-        this.$el.state('read-only', this.$readOnlyButton.state('pressed'));
+        var state = this.$readOnlyButton.state('pressed') ? null : 'read-only';
+        this.state(state);
     },
 
     onWriteOnlyButtonClick : function (event) {
-        this.$writeOnlyButton.toggleState('pressed');
-        this.$readOnlyButton.state('pressed', false);
-        this.$el.state('read-only', false);
-        this.$el.state('write-only', this.$writeOnlyButton.state('pressed'));
+        var state = this.$writeOnlyButton.state('pressed') ? null : 'write-only';
+        this.state(state);
     },
 
     onAddButtonClick : function (event) {
