@@ -7,6 +7,9 @@ window.Socrates = {
     }
 };
 
+// Apply the Backbone GetSet mixin to all views.
+window.Backbone.mixin.getset.apply(window.Backbone.View);
+
 $(function () {
     var view = new Socrates.View({
         model: new Socrates.Model()
