@@ -73,12 +73,12 @@ $(function() {
 
     var attachToListButtons = function () {
 
-        $('.choose-add-button').on('click', function () {
+        $('.write-add-button').on('click', function () {
             doc = new Document();
             openDoc();
         });
 
-        $('.choose-menu-button').on('click', function () {
+        $('.write-menu-button').on('click', function () {
             var hidden = $list.state('hidden');
             $list.state('hidden', !hidden);
         });
