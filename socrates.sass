@@ -19,9 +19,13 @@
     flex: $flex
 
 
+// Constants
+// ---------
+
 $aqua: #49b27d
+$sand: #fafaf7
+$text: #35332e
 $button-padding: .5rem
-$text-color: #222
 
 
 // Base
@@ -30,7 +34,7 @@ $text-color: #222
 html
     font-size: 18px
     line-height: 1.4
-    color: $text-color
+    color: $text
 
 button
     -webkit-appearance: none
@@ -39,7 +43,7 @@ button
     border: none
 
     font-size: 12px
-    color: $text-color
+    color: $text
     padding: $button-padding
     cursor: pointer
 
@@ -140,6 +144,9 @@ body
 .write
     width: 650px
 
+.read
+    +flex(1)
+
 
 // Read & Write
 // ------------
@@ -158,9 +165,10 @@ body
 // ----
 
 .read
-    border-left: 1px solid #eee
-
     font-family: "kepler-std", serif
+
+    border-left: 1px solid darken($sand, 6%)
+    box-shadow: 0 -1px 10px darken($sand, 6%)
 
 .read-article
     max-width: 32rem
@@ -174,8 +182,7 @@ body
 // -----
 
 .write
-    background: #fafafa
-    border-right: 3px solid #f4f4f4
+    background: $sand
 
 .write-textarea
     width: 100%

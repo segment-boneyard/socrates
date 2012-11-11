@@ -524,7 +524,7 @@
 html {
   font-size: 18px;
   line-height: 1.4;
-  color: #222222; }
+  color: #35332e; }
 
 button {
   -webkit-appearance: none;
@@ -532,7 +532,7 @@ button {
   background: transparent;
   border: none;
   font-size: 12px;
-  color: #222222;
+  color: #35332e;
   padding: 0.5rem;
   cursor: pointer;
   opacity: 0.2; }
@@ -619,6 +619,15 @@ body {
 .write {
   width: 650px; }
 
+.read {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -webkit-flex: 1;
+  -moz-flex: 1;
+  -ms-flex: 1;
+  flex: 1; }
+
 .write-textarea,
 .read-article {
   padding: 3rem; }
@@ -629,8 +638,9 @@ body {
   top: 0; }
 
 .read {
-  border-left: 1px solid #eeeeee;
-  font-family: "kepler-std", serif; }
+  font-family: "kepler-std", serif;
+  border-left: 1px solid #eeeee4;
+  box-shadow: 0 -1px 10px #eeeee4; }
 
 .read-article {
   max-width: 32rem;
@@ -640,8 +650,7 @@ body {
   left: 0; }
 
 .write {
-  background: #fafafa;
-  border-right: 3px solid #f4f4f4; }
+  background: #fafaf7; }
 
 .write-textarea {
   width: 100%;
