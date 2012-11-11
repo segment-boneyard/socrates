@@ -5,16 +5,22 @@ Socrates.DocumentMenuView = Backbone.View.extend({
     tagName : 'ul',
 
     events : {
-        'click li' : 'onClickLi'
+        'click li' : 'onClickLi',
+        'click .document-menu-item-delete-button': 'onDeleteButtonClick'
     },
 
     initialize : function () {
+        _.bindAll(this);
+
         this.itemTemplate = _.template($('#document-menu-item-template').html());
 
-        this.collection.on('add remove reset', this.render);
+        this.collection.on('add remove reset change', this.render, this);
     },
 
     render : function (document) {
+
+        this.$el.empty();
+
         var items = '';
         this.collection.each(function (document) {
             items += this.renderItem(document);
@@ -37,10 +43,21 @@ Socrates.DocumentMenuView = Backbone.View.extend({
         var id = $li.attr('data-id');
 
         var document = this.collection.find(function (document) {
-            return id = document.id;
+            return id === document.id;
         });
 
         if (document) this.trigger('select', this, document);
+    },
+
+    onDeleteButtonClick: function (event) {
+        var $li = $(event.currentTarget).closest('li');
+        var id = $li.attr('data-id');
+
+        var document = this.collection.find(function (document) {
+            return id === document.id;
+        });
+
+        this.collection.remove(document);
     }
 
 });

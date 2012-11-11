@@ -10,8 +10,12 @@ Socrates.Model = Backbone.Model.extend({
     bookmarkKey : 'socrates.bookmarks',
 
     initialize : function (attributes, options) {
+        _.bindAll(this);
+
         this.initializeRouter();
         this.initializeDocuments();
+
+        this.on('change:document', this.onDocumentChange, this);
     },
 
     initializeRouter : function () {
@@ -21,17 +25,29 @@ Socrates.Model = Backbone.Model.extend({
                ':id' : 'document'
             }
         })
-            .on('home', this.onRouterHome)
-            .on('doc', this.onRouterDocument);
+            .on('route:home', this.onRouterHome, this)
+            .on('route:document', this.onRouterDocument, this);
     },
 
     initializeDocuments : function () {
         var documents = new Socrates.DocumentCollection();
+        this.set({ documents : documents });
+
         var bookmarks = this.readBookmarks();
 
         _.each(bookmarks, this.addDocument);
 
-        this.set({ documents : documents });
+        documents.on('add remove', this.writeBookmarks, this);
+        documents.on('remove', this.onDocumentRemove, this);
+    },
+
+    goToNewDocument: function () {
+        var id = this.generateRandomDocumentId(7);
+        this.goToDocument(id);
+    },
+
+    goToDocument: function (id) {
+        this.router.navigate(id, {trigger: true});
     },
 
     addDocument : function (id) {
@@ -49,12 +65,20 @@ Socrates.Model = Backbone.Model.extend({
         }
     },
 
+    writeBookmarks : function () {
+        var ids = this.get('documents').map(function (document) {
+            return document.id;
+        });
+
+        localStorage.setItem(this.bookmarkKey, ids.join(','));
+    },
+
 
     // Route Handlers
     // --------------
 
     onRouterHome : function () {
-        this.router.navigate(this.generateRandomDocId(7), {trigger: true});
+        this.goToNewDocument();
     },
 
     onRouterDocument : function (id) {
@@ -67,11 +91,29 @@ Socrates.Model = Backbone.Model.extend({
         this.set('document', document || this.addDocument(id));
     },
 
+    // Event Handlers
+
+    onDocumentChange : function (model, document) {
+
+        this.router.navigate(document.id);
+    },
+
+    onDocumentRemove : function (removed) {
+
+        var selected = this.get('document');
+        if (selected.id === removed.id) {
+            // the current document got removed, go somewhere else
+            var otherDocument = this.get('documents').last();
+            if (otherDocument) this.goToDocument(otherDocument.id);
+            else this.goToNewDocument();
+        }
+    },
+
 
     // Helpers
     // -------
 
-    generateRandomDocId : function (length) {
+    generateRandomDocumentId : function (length) {
         var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         var id = '';
         var x;

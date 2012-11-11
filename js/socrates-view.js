@@ -3,18 +3,23 @@
 Socrates.View = Backbone.View.extend({
 
     events : {
-        'keyup .write-textarea' : 'onWriteTextareaKeyup'
+        'keyup .write-textarea'    : 'onWriteTextareaKeyup',
+        'click .read-only-button'  : 'onReadOnlyButtonClick',
+        'click .write-only-button' : 'onWriteOnlyButtonClick',
+        'click .write-add-button'  : 'onAddDocumentButtonClick',
+        'click .write-menu-button' : 'onMenuButtonClick'
     },
 
     initialize : function (options) {
-        this.model.on('change:document', this.onDocumentChange);
-        var document = this.model.get('document');
-        if (document) document.on('change:body', this.onDocumentBodyChange);
+        _.bindAll(this);
 
         // Cache some jQuery selectors.
         this.$menu     = this.$('.write-menu');
         this.$textarea = this.$('.write-textarea');
         this.$article  = this.$('.read-article');
+
+        this.$readonly = this.$('.read-only-button');
+        this.$writeonly = this.$('.write-only-button');
 
         // Allow tabs in the textarea using a jQuery plugin.
         this.$el.tabby({tabString:'    '});
@@ -25,6 +30,17 @@ Socrates.View = Backbone.View.extend({
             el         : this.$menu
         })
             .on('select', this.onDocumentMenuSelect, this);
+
+
+        this.model.on('change:document', this.onAppDocumentChange, this);
+
+        var document = this.model.get('document');
+        if (document) {
+            document
+                .on('change:body', this.onDocumentBodyChange, this)
+                .on('load', this.onDocumentLoad, this);
+        }
+
     },
 
 
@@ -43,9 +59,11 @@ Socrates.View = Backbone.View.extend({
     },
 
     renderTextarea : function () {
-        if (!this.model.has('document')) return this;
+        var document = this.model.get('document');
 
-        this.$textarea.html(this.model.get('document').get('body'));
+        if (!document) return this;
+
+        this.$textarea.html(document.get('body'));
         return this;
     },
 
@@ -53,8 +71,10 @@ Socrates.View = Backbone.View.extend({
         if (!this.model.has('document')) return this;
 
         // Convert the model's markdown body into html.
-        var markdown = marked(this.model.get('document').get('body'));
-        this.$article.html(markdown);
+        var body = this.model.get('document').get('body');
+        var markdown = marked(body);
+        var patched = monkey(markdown);
+        this.$article.html(patched);
 
         // Apply code highlighting. We have to convert the highlighting classes
         // that marked.js gives us into ones that Rainbow.js can read first.
@@ -75,25 +95,62 @@ Socrates.View = Backbone.View.extend({
     // --------------
 
     onWriteTextareaKeyup : function (event) {
-        this.model.set('body', this.$('.write-textarea').val());
-        this.model.save();
+
+        var document = this.model.get('document');
+
+        document.set('body', this.$textarea.val());
+        document.save();
     },
 
-    onDocumentChange : function (model, document) {
+    onAppDocumentChange : function (model, document) {
         var previousDocument = this.model.previous('document');
         if (previousDocument) previousDocument.off('change:body', this.onDocumentBodyChange);
-        document.on('change:body', this.onDocumentBodyChange);
+        document.on('change:body', this.onDocumentBodyChange, this);
+        document.on('load', this.onDocumentLoad, this);
 
         this.renderTextarea()
             .renderArticle();
     },
 
+
+    onDocumentLoad: function () {
+
+        this.renderTextarea();
+    },
+
     onDocumentBodyChange : function (document) {
+
         this.renderArticle();
     },
 
     onDocumentMenuSelect : function (menu, document) {
         this.model.set('document', document);
+    },
+
+
+
+
+
+    onReadOnlyButtonClick : function (event) {
+        this.$readonly.toggleState('pressed');
+        this.$writeonly.state('pressed', false);
+        this.$el.state('write-only', false);
+        this.$el.state('read-only', this.$readonly.state('pressed'));
+    },
+
+    onWriteOnlyButtonClick : function (event) {
+        this.$writeonly.toggleState('pressed');
+        this.$readonly.state('pressed', false);
+        this.$el.state('read-only', false);
+        this.$el.state('write-only', this.$writeonly.state('pressed'));
+    },
+
+    onAddDocumentButtonClick : function (event) {
+        this.model.goToNewDocument();
+    },
+
+    onMenuButtonClick: function (event) {
+        this.$menu.slideToggle();
     }
 
 });

@@ -15,7 +15,8 @@ window.Socrates = {
 
 $(function () {
     var view = new Socrates.View({
-        model : new Socrates.Model()
+        model : new Socrates.Model(),
+        el    : $('body')
     }).render();
 
     Backbone.history.start();
