@@ -132,7 +132,7 @@ Socrates.View = Backbone.View.extend({
         this.$article.find('a[href*="youtube.com/watch?v="]').each(function (i, el) {
             var youtubeId = el.href.match(/\?v=([\w-]+)/)[1];
             var embed     = self.youtubeEmbedTemplate({ id : youtubeId });
-            $(embed).insertBefore(el);
+            $(el).replaceWith(embed);
         });
     },
 
