@@ -1,6 +1,5 @@
 
-
-var DocumentModel = Backbone.Model.extend({
+window.Socrates.Document.Modal = window.Backbone.Model.extend({
 
     defaults: {
         title: 'Untitled',

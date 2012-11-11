@@ -1,6 +1,5 @@
 
-
-var SocratesView = Backbone.View.extend({
+window.Socrates.View = window.Backbone.View.extend({
 
     initialize: function (options) {
 

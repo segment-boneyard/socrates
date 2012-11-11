@@ -1,6 +1,5 @@
 
-
-var SocratesRouter = Backbone.Router.extend({
+window.Socrates.Router = window.Backbone.Router.extend({
 
     routes: {
        '':    'home',
