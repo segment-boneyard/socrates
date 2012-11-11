@@ -24,6 +24,7 @@
 
 $aqua: #49b27d
 $sand: #fcfcfa
+$dark-sand: #f0efe9
 $text: #35332e
 
 $button-padding: .5rem
@@ -36,6 +37,8 @@ html
     font-size: 18px
     line-height: 1.4
     color: $text
+    overflow-y: scroll
+    overflow-x: hidden
 
 button
     -webkit-appearance: none
@@ -49,7 +52,9 @@ button
     cursor: pointer
 
     opacity: .2
-    &:hover
+    &:hover,
+    &:active,
+    &.pressed
         opacity: 1
 
 article
@@ -124,7 +129,7 @@ textarea
         outline: none
 
     font-family: "inconsolata", mono
-    font-size: 13px
+    font-size: 14px
     line-height: 1.2
 
 
@@ -149,7 +154,7 @@ body
     +flex(1)
 
 
-// Read & Write
+// Write & Read
 // ------------
 
 .write-textarea,
@@ -158,10 +163,9 @@ body
     max-width: 32rem
     margin: 0 auto
 
-.write-only-button,
-.read-only-button
-    position: absolute
-    top: 0
+.write-buttons,
+.read-buttons
+    overflow: hidden
 
 
 // Read
@@ -176,13 +180,7 @@ body
 .read-article
 
 .read-only-button
-    left: 0
-
-// ### Write-only
-.write-only
-    .read
-        +flex(0)
-        width: 3rem
+    float: left
 
 
 // Write
@@ -195,38 +193,44 @@ body
     width: 100%
     height: 100%
 
-.write-only-button
-    right: 0
-
-.choose
-    display: block
-    position: relative
-
-.choose-menu
+.write-menu
     list-style: none
 
-    height: 0
     overflow: hidden
 
-.choose-buttons
-    position: absolute
-    top: 100%
-    left: 0
+    background-color: $dark-sand
+    border-color: darken($dark-sand, 5%)
+    border-top-width: 1px
+    border-bottom-width: 1px
+
+    &.hidden
+        display: none
+
+.write-menu-item
+    padding: .5em
+
+.write-menu-button,
+.write-add-button
+    float: left
+.write-only-button
+    float: right
 
 // Reduce the padding between the two buttons by half.
-.choose-add-button
+.write-add-button
     padding-left: $button-padding / 2
-.choose-menu-button
+.write-menu-button
     padding-right: $button-padding / 2
 
 
-// ### Write-only
-.write-only
-    .write
-        +flex(1)
+// Write & Read Only
+// -----------------
 
-// ### Read-only
-.read-only
-    .write
-        +flex(0)
-        width: 3rem
+.write-only .read,
+.read-only .write
+    +flex(0)
+    width: 37rem
+    margin-right: -30rem
+
+.write-only .write,
+.read-only .read
+    +flex(1)

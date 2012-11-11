@@ -25,28 +25,26 @@
 
     <body>
         <section class="write">
-            <nav class="choose">
-                <ul class="choose-menu"></ul>
-                <div class="choose-buttons">
-                    <button class="choose-menu-button ss-rows"></button>
-                    <button class="choose-add-button ss-plus"></button>
-                </div>
-            </nav>
-
-
+            <div class="write-buttons">
+                <button class="write-menu-button ss-rows"></button>
+                <button class="write-add-button ss-plus"></button>
+                <button class="write-only-button ss-write"></button>
+            </div>
+            <ul class="write-menu"></ul>
             <textarea class="write-textarea"></textarea>
-            <button class="write-only-button ss-write"></button>
         </section>
 
         <section class="read">
+            <div class="read-buttons">
+                <button class="read-only-button ss-view"></button>
+            </div>
             <article class="read-article"></article>
-            <button class="read-only-button ss-view"></button>
         </section>
 
-        <script type="text/template" id="choose-menu-item-template">
-            <li class="menu-item">
+        <script type="text/template" id="write-menu-item-template">
+            <li class="write-menu-item">
                 <a>{{ title }}</a>
-                <button class="choose-menu-item-delete-button ss-delete"></button>
+                <button class="write-menu-item-delete-button ss-delete"></button>
             </li>
         </script>
     </body>
