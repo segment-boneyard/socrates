@@ -617,7 +617,7 @@ body {
   position: relative; }
 
 .write {
-  width: 650px; }
+  width: 33rem; }
 
 .read {
   -webkit-box-flex: 1;
@@ -639,8 +639,8 @@ body {
 
 .read {
   font-family: "kepler-std", serif;
-  border-left: 1px solid #eeeee4;
-  box-shadow: 0 -1px 10px #eeeee4; }
+  border-left: 1px solid #f1f1e7;
+  box-shadow: 0 -1px 10px #f1f1e7; }
 
 .read-article {
   max-width: 32rem;
@@ -650,7 +650,7 @@ body {
   left: 0; }
 
 .write {
-  background: #fafaf7; }
+  background: #fcfcfa; }
 
 .write-textarea {
   width: 100%;
