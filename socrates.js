@@ -27,7 +27,7 @@ $(function() {
         }
     };
 
-    var prepareDoc = function () {
+    var openDoc = function () {
         $textarea.val(doc.text);
         onTextAreaChange();
     };
@@ -40,7 +40,11 @@ $(function() {
 
         $list.empty();
 
-        _.each(docs, function (doc) {
+        var otherDocs = _.filter(docs, function (d) {
+            return d.id !== doc.id;
+        });
+
+        _.each(otherDocs, function (doc) {
 
             var template = _.template('<li data-id="<%=id%>"><%= title %></li>');
             var html = template({
@@ -57,14 +61,16 @@ $(function() {
                 return doc.id == selectedId;
             });
 
-            prepareDoc();
+            openDoc(doc);
 
+            // re-populate drop down so that the current
+            // one is not included
             populateDocumentsDropdown();
         });
     };
 
 
-    prepareDoc();
+    openDoc(doc);
     bindTextArea();
     populateDocumentsDropdown();
 
