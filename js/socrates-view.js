@@ -63,7 +63,7 @@ Socrates.View = Backbone.View.extend({
 
         if (!document) return this;
 
-        this.$textarea.html(document.get('body'));
+        this.$textarea.val(document.get('body'));
         return this;
     },
 
@@ -98,7 +98,7 @@ Socrates.View = Backbone.View.extend({
 
         var document = this.model.get('document');
 
-        document.set('body', this.$textarea.val());
+        document.set('body', this.$textarea.val(), {silent: true});
         document.save();
     },
 
@@ -120,7 +120,8 @@ Socrates.View = Backbone.View.extend({
 
     onDocumentBodyChange : function (document) {
 
-        this.renderArticle();
+        this.renderTextarea()
+            .renderArticle();
     },
 
     onDocumentMenuSelect : function (menu, document) {
