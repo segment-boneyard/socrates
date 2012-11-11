@@ -5,6 +5,23 @@ var pointerKey = function (id, dataKey) {
     return 'socrates.document.' + id + '.' + dataKey;
 };
 
+var deleteDocument = function (id) {
+
+    var ids = loadDocumentIds();
+    ids = _.without(ids, id);
+
+    localStorage.setItem(pointersKey, ids.join(','));
+
+    var textKey = pointerKey(id, 'text');
+    localStorage.removeItem(textKey);
+
+    var updatedKey = pointerKey(id, 'updated');
+    localStorage.removeItem(updatedKey);
+
+    var titleKey = pointerKey(id, 'title');
+    localStorage.removeItem(titleKey);
+};
+
 var loadDocument = function (id) {
 
     var textKey = pointerKey(id, 'text');
@@ -16,11 +33,13 @@ var loadDocument = function (id) {
     var titleKey = pointerKey(id, 'title');
     var titleStr = localStorage.getItem(titleKey);
 
-    if (textStr) {
+    if (textStr && updatedStr && titleStr) {
         var doc = new Document();
+
+        doc.id = id;
         doc.text = textStr;
-        if (updatedStr) doc.updated = new Date(updatedStr);
-        if (titleStr) doc.title = titleStr;
+        doc.updated = new Date(updatedStr);
+        doc.title = titleStr;
 
         return doc;
 
@@ -30,7 +49,7 @@ var loadDocument = function (id) {
     }
 };
 
-var getDocumentIds = function () {
+var loadDocumentIds = function () {
     var ids = localStorage.getItem(pointersKey);
     if (ids) {
         return ids.split(',');
@@ -39,25 +58,38 @@ var getDocumentIds = function () {
     }
 };
 
-var getDocuments = function () {
+var loadDocuments = function () {
 
-    var ids = getDocumentIds();
+    var ids = loadDocumentIds();
 
     var docs = [];
 
     _.each(ids, function (id) {
         var doc = loadDocument(id);
         if (doc) docs.push(doc);
+        else deleteDocument(id);
     });
 
-    return docs;
+    return _.sortBy(docs, function (doc) {
+        return doc.updated.getTime();
+    });
+};
+
+
+var deleteAllDocuments = function () {
+
+    var ids = loadDocumentIds();
+
+    _.each(ids, function (id) {
+        deleteDocument(id);
+    });
 };
 
 
 var Document = function () {
     this.id = guid();
     this.updated = new Date();
-    this.title = 'Untitled';
+    this.title = this.generateTitle();
 };
 
 Document.prototype.save = function (text, markdown) {
@@ -66,22 +98,30 @@ Document.prototype.save = function (text, markdown) {
     if (!markdown) markdown = '';
 
     this.text = text;
-
-    var h1 = $(markdown).find('h1');
-    if (h1.length > 0) {
-        this.title = h1.value();
-    } else {
-
-    }
+    this.title = this.generateTitle(markdown);
 
     this.updated = new Date();
 
     this._persist();
 };
 
+
+Document.prototype.generateTitle = function (markdown) {
+
+    if (markdown) {
+        var start = markdown.indexOf('<h1>');
+        var end = markdown.indexOf('</h1>');
+        if (start !== -1 && end !== -1)  {
+            return markdown.substring(start + 4, end);
+        }
+    }
+
+    return 'Untitled - ' + timeSince(this.updated) + " ago";
+};
+
 Document.prototype._persist = function () {
 
-    var ids = getDocumentIds();
+    var ids = loadDocumentIds();
     ids.push(this.id);
     ids = _.uniq(ids);
 
@@ -98,19 +138,6 @@ Document.prototype._persist = function () {
 };
 
 Document.prototype.remove = function () {
-
-    var ids = getDocumentIds();
-    ids = _.without(ids, this.id);
-
-    localStorage.setItem(pointersKey, ids.join(','));
-
-    var textKey = pointerKey(this.id, 'text');
-    localStorage.removeItem(textKey);
-
-    var updatedKey = pointerKey(this.id, 'updated');
-    localStorage.removeItem(updatedKey);
-
-    var titleKey = pointerKey(this.id, 'title');
-    localStorage.removeItem(titleKey);
+    deleteDocument(this.id);
 };
 

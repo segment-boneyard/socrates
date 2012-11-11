@@ -1,15 +1,23 @@
 
-
-
 $(function() {
 
     var $textarea = $('textarea');
     var $article = $('article');
 
-    var hasStorage = supports_html5_storage();
-    var doc = new Document();
+    var $list = $('ul');
 
-    $textarea.on('keyup', function () {
+    var hasStorage = supports_html5_storage();
+
+    var docs = loadDocuments();
+    var doc = null;
+
+    if (_.size(docs) > 0) {
+        doc = _.last(docs);
+    } else {
+        doc = new Document();
+    }
+
+    var onTextAreaChange = function () {
         var text = $textarea.val();
         var markdown = marked(text);
         $article.html(markdown);
@@ -17,6 +25,47 @@ $(function() {
         if (hasStorage) {
             doc.save(text, markdown);
         }
-    });
+    };
+
+    var prepareDoc = function () {
+        $textarea.val(doc.text);
+        onTextAreaChange();
+    };
+
+    var bindTextArea = function () {
+        $textarea.on('keyup', onTextAreaChange);
+    };
+
+    var populateDocumentsDropdown = function () {
+
+        $list.empty();
+
+        _.each(docs, function (doc) {
+
+            var template = _.template('<li data-id="<%=id%>"><%= title %></li>');
+            var html = template({
+                id: doc.id,
+                title: doc.title
+            });
+
+            $list.append(html);
+        });
+
+        $('li').on('click', function (event) {
+            var selectedId = $(event.target).attr('data-id');
+            doc = _.find(docs, function (doc) {
+                return doc.id == selectedId;
+            });
+
+            prepareDoc();
+
+            populateDocumentsDropdown();
+        });
+    };
+
+
+    prepareDoc();
+    bindTextArea();
+    populateDocumentsDropdown();
 
 });
