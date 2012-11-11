@@ -6,7 +6,7 @@ window.Socrates.View = window.Backbone.View.extend({
     },
 
     render: function () {
-        console.log('Rendering Socrates ..');
+
     }
 
 });

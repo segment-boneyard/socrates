@@ -1,5 +1,5 @@
 
-var pointersKey = 'socrates.documents';
+var pointersKey = ;
 
 var pointerKey = function (id, dataKey) {
     return 'socrates.document.' + id + '.' + dataKey;

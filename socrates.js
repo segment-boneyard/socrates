@@ -16,7 +16,8 @@ $(function() {
     highlightAny = function () {
 
         $article.find('code').each(function (index, el) {
-            // jquery cant help you get class list http://stackoverflow.com/questions/1227286/get-class-list-for-element-with-jquery
+            // jquery cant help you get class list
+            // http://stackoverflow.com/questions/1227286/get-class-list-for-element-with-jquery
             var classList = el.className.split(/\s+/);
             for (var i = 0; i < classList.length; i++) {
                 var className = classList[i];
