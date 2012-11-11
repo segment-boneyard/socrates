@@ -1,7 +1,13 @@
 /*global Socrates Backbone */
 
 window.Socrates = {
-    Document   : { Menu : { Item : {} } },
+    Document   : {
+        Read  : {},
+        Write : {},
+        Menu  : {
+            Item : {}
+        }
+    },
     firebase   : {
         base: 'https://socrates.firebaseIO.com/'
     }

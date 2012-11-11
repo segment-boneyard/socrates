@@ -7,15 +7,15 @@ Socrates.View = Backbone.View.extend({
     },
 
     initialize : function (options) {
-        this.initializeDocumentListView();
+        this.initializeDocumentMenuView();
         this.initializeDocumentReadView();
         this.initializeDocumentWriteView();
 
         this.model.on('change:document', this.onModelDocumentChange);
     },
 
-    initializeDocumentListView : function () {
-        this.documentList = new Socrates.Document.List.View({
+    initializeDocumentMenuView : function () {
+        this.documentMenu = new Socrates.Document.Menu.View({
             collection : this.model.get('documents')
         });
     },
@@ -33,7 +33,7 @@ Socrates.View = Backbone.View.extend({
     },
 
     render : function () {
-        this.documentList.setElement(this.$('.write-menu')).render();
+        this.documentMenu.setElement(this.$('.write-menu')).render();
         this.documentWrite.setElement(this.$('.read-article')).render();
         this.documentRead.setElement(this.$('.write-textarea')).render();
     },
