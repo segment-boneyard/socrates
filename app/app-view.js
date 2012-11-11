@@ -114,10 +114,10 @@ Socrates.View = Backbone.View.extend({
     renderState : function () {
         var state = this.model.get('state');
 
-        var readonly  = state === 'read-only';
-        var writeonly = state === 'write-only';
+        var readonly  = state === 'read';
+        var writeonly = state === 'write';
 
-        if ($window.width() < MININUM_WIDTH && !state) return this.model.set('state', 'write-only');
+        if ($window.width() < MININUM_WIDTH && !state) return this.model.set('state', 'write');
 
         this.$readOnlyButton.state('pressed', readonly);
         this.$writeOnlyButton.state('pressed', writeonly);
@@ -181,7 +181,7 @@ Socrates.View = Backbone.View.extend({
     onWindowResize : function (event) {
         if (this.model.has('state')) return;
 
-        if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write-only');
+        if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write');
     },
 
     onTextareaKeyup : function (event) {
@@ -190,14 +190,14 @@ Socrates.View = Backbone.View.extend({
     },
 
     onReadOnlyButtonClick : function (event) {
-        var state = this.$readOnlyButton.state('pressed') ? null : 'read-only';
+        var state = this.$readOnlyButton.state('pressed') ? null : 'read';
         this.model.set('state', state);
 
         window.analytics.track('Press Read-only Button');
     },
 
     onWriteOnlyButtonClick : function (event) {
-        var state = this.$writeOnlyButton.state('pressed') ? null : 'write-only';
+        var state = this.$writeOnlyButton.state('pressed') ? null : 'write';
         this.model.set('state', state);
 
         window.analytics.track('Press Write-only Button');

@@ -94,7 +94,7 @@ Socrates.Model = Backbone.Model.extend({
         document || (document = this.addDocument(id));
 
         this.set('document', document);
-        if (state === 'read-only' || state ==='write-only') this.set('state', state);
+        if (state === 'read' || state ==='write') this.set('state', state);
 
         window.analytics.track('Visit Document Page', {
             id    : id,
