@@ -18,9 +18,36 @@
         <script src="rainbow-custom.min.js"></script>
 
         <script src="js/utils.js"></script>
-        <script src="js/router.js"></script>
-        <script src="js/document.model.js"></script>
-        <script src="js/app.js"></script>
+
+        <script src="js/socrates-view.js"></script>
+        <script src="js/socrates-router.js"></script>
+
+        <script src="js/document-model.js"></script>
+
+        <script type="text/javascript">
+
+            $(function () {
+
+                var firebase = new Firebase('https://socrates.firebaseIO.com');
+
+                var router = new SocratesRouter();
+
+                router.on('open', function (id) {
+
+                    var doc = new DocumentModel({id : id});
+
+                    var view = new SocratesView({
+                        model: doc
+                    });
+
+                    view.render();
+                });
+
+                Backbone.history.start();
+            });
+
+
+        </script>
 
         <script type="text/javascript" src="http://use.typekit.net/gmy5jor.js"></script>
         <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
