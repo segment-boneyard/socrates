@@ -19,9 +19,14 @@
     flex: $flex
 
 
+// Constants
+// ---------
+
 $aqua: #49b27d
+$sand: #fcfcfa
+$text: #35332e
+
 $button-padding: .5rem
-$text-color: #222
 
 
 // Base
@@ -30,7 +35,7 @@ $text-color: #222
 html
     font-size: 18px
     line-height: 1.4
-    color: $text-color
+    color: $text
 
 button
     -webkit-appearance: none
@@ -39,7 +44,7 @@ button
     border: none
 
     font-size: 12px
-    color: $text-color
+    color: $text
     padding: $button-padding
     cursor: pointer
 
@@ -138,7 +143,10 @@ body
     position: relative
 
 .write
-    width: 650px
+    +flex(0)
+    width: 33rem
+.read
+    +flex(1)
 
 
 // Read & Write
@@ -147,9 +155,11 @@ body
 .write-textarea,
 .read-article
     padding: 3rem
+    max-width: 32rem
+    margin: 0 auto
 
-.write-button,
-.read-button
+.write-only-button,
+.read-only-button
     position: absolute
     top: 0
 
@@ -158,30 +168,34 @@ body
 // ----
 
 .read
-    border-left: 1px solid #eee
-
     font-family: "kepler-std", serif
 
-.read-article
-    max-width: 32rem
-    margin: 0 auto
+    border-left: 1px solid darken($sand, 6%)
+    box-shadow: 0 -1px 10px darken($sand, 6%)
 
-.read-button
+.read-article
+
+.read-only-button
     left: 0
+
+// ### Write-only
+.write-only
+    .read
+        +flex(0)
+        width: 3rem
 
 
 // Write
 // -----
 
 .write
-    background: #fafafa
-    border-right: 3px solid #f4f4f4
+    background: $sand
 
 .write-textarea
     width: 100%
     height: 100%
 
-.write-button
+.write-only-button
     right: 0
 
 .choose
@@ -204,3 +218,15 @@ body
     padding-left: $button-padding / 2
 .choose-menu-button
     padding-right: $button-padding / 2
+
+
+// ### Write-only
+.write-only
+    .write
+        +flex(1)
+
+// ### Read-only
+.read-only
+    .write
+        +flex(0)
+        width: 3rem
