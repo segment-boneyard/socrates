@@ -143,8 +143,8 @@ body
     position: relative
 
 .write
+    +flex(0)
     width: 33rem
-
 .read
     +flex(1)
 
@@ -155,6 +155,8 @@ body
 .write-textarea,
 .read-article
     padding: 3rem
+    max-width: 32rem
+    margin: 0 auto
 
 .write-button,
 .read-button
@@ -172,11 +174,17 @@ body
     box-shadow: 0 -1px 10px darken($sand, 6%)
 
 .read-article
-    max-width: 32rem
-    margin: 0 auto
 
 .read-button
     left: 0
+
+// ### Write-only
+.write-only
+    .read
+        +flex(0)
+        width: 3rem
+        > *
+            display: none
 
 
 // Write
@@ -212,3 +220,17 @@ body
     padding-left: $button-padding / 2
 .choose-menu-button
     padding-right: $button-padding / 2
+
+
+// ### Write-only
+.write-only
+    .write
+        +flex(1)
+
+// ### Read-only
+.read-only
+    .write
+        +flex(0)
+        width: 3rem
+        > *
+            display: none
