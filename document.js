@@ -36,6 +36,7 @@ var loadDocument = function (id) {
     if (textStr && updatedStr && titleStr) {
         var doc = new Document();
 
+        doc.id = id;
         doc.text = textStr;
         doc.updated = new Date(updatedStr);
         doc.title = titleStr;
@@ -88,7 +89,7 @@ var deleteAllDocuments = function () {
 var Document = function () {
     this.id = guid();
     this.updated = new Date();
-    this.title = 'Untitled';
+    this.title = this.generateTitle();
 };
 
 Document.prototype.save = function (text, markdown) {
@@ -97,17 +98,25 @@ Document.prototype.save = function (text, markdown) {
     if (!markdown) markdown = '';
 
     this.text = text;
-
-    var h1 = $(markdown).find('h1');
-    if (h1.length > 0) {
-        this.title = h1.value();
-    } else {
-
-    }
+    this.title = this.generateTitle(markdown);
 
     this.updated = new Date();
 
     this._persist();
+};
+
+
+Document.prototype.generateTitle = function (markdown) {
+
+    if (markdown) {
+        var start = markdown.indexOf('<h1>');
+        var end = markdown.indexOf('</h1>');
+        if (start !== -1 && end !== -1)  {
+            return markdown.substring(start + 4, end);
+        }
+    }
+
+    return 'Untitled - ' + timeSince(this.updated) + " ago";
 };
 
 Document.prototype._persist = function () {
