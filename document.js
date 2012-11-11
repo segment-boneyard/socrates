@@ -86,10 +86,12 @@ var deleteAllDocuments = function () {
 };
 
 
-var Document = function () {
-    this.id = guid();
-    this.updated = new Date();
-    this.title = this.generateTitle();
+var Document = function () {};
+
+Document.prototype.applyDefaults = function () {
+    if (!this.id) this.id = guid();
+    if (!this.updated) this.updated = new Date();
+    if (!this.title) this.title = this.generateTitle();
 };
 
 Document.prototype.save = function (text, markdown) {
@@ -101,6 +103,8 @@ Document.prototype.save = function (text, markdown) {
     this.title = this.generateTitle(markdown);
 
     this.updated = new Date();
+
+    this.applyDefaults();
 
     this._persist();
 };

@@ -11,15 +11,10 @@ $(function() {
     var docs = loadDocuments();
     var doc = null;
 
-    if (_.size(docs) > 0) {
-        doc = _.last(docs);
-    } else {
-        doc = new Document();
-    }
 
     var onTextAreaChange = function () {
         var text = $textarea.val();
-        var markdown = marked(text);
+        var markdown = monkey(marked(text));
         $article.html(markdown);
 
         if (hasStorage) {
@@ -32,6 +27,16 @@ $(function() {
         onTextAreaChange();
     };
 
+    var chooseFirstDoc = function () {
+        if (_.size(docs) > 0) {
+            doc = _.last(docs);
+        } else {
+            doc = new Document();
+        }
+
+        openDoc();
+    };
+
     var bindTextArea = function () {
         $textarea.on('keyup', onTextAreaChange);
     };
@@ -40,13 +45,10 @@ $(function() {
 
         $list.empty();
 
-        var otherDocs = _.filter(docs, function (d) {
-            return d.id !== doc.id;
-        });
-
-        _.each(otherDocs, function (doc) {
+        _.each(docs, function (doc) {
 
             var template = _.template('<li data-id="<%=id%>"><%= title %></li>');
+
             var html = template({
                 id: doc.id,
                 title: doc.title
@@ -69,9 +71,22 @@ $(function() {
         });
     };
 
+    var attachToListButtons = function () {
 
-    openDoc(doc);
+        $('.add-button').on('click', function () {
+            doc = new Document();
+            openDoc();
+        });
+
+        $('.menu-button').on('click', function () {
+            var hidden = $list.state('hidden');
+            $list.state('hidden', !hidden);
+        });
+    };
+
+    chooseFirstDoc();
     bindTextArea();
     populateDocumentsDropdown();
+    attachToListButtons();
 
 });
