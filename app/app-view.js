@@ -149,7 +149,7 @@ Socrates.View = Backbone.View.extend({
     },
 
     onAddButtonClick : function (event) {
-        this.model.goToNewDocument();
+        this.model.set('document', this.model.newDocument());
     },
 
     onMenuButtonClick: function (event) {

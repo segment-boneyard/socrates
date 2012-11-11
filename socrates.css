@@ -522,11 +522,23 @@
   content: ''; }
 
 html {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.4;
   color: #35332e;
   overflow-y: scroll;
   overflow-x: hidden; }
+  @media (min-width: 1200px) {
+    html {
+      font-size: 17px; } }
+  @media (min-width: 1300px) {
+    html {
+      font-size: 18px; } }
+  @media (min-width: 1600px) {
+    html {
+      font-size: 20px; } }
+  @media (min-width: 1800px) {
+    html {
+      font-size: 22px; } }
 
 button {
   -webkit-appearance: none;
@@ -676,8 +688,12 @@ body {
 .write,
 .document-textarea {
   font-family: "inconsolata", mono;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.2; }
+  @media (min-width: 1200px) {
+    .write,
+    .document-textarea {
+      font-size: 14px; } }
 
 .document-textarea {
   width: 100%;

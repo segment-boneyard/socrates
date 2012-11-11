@@ -8,7 +8,8 @@ $(function () {
     var view = new Socrates.View({
         model : new Socrates.Model(),
         el    : $('html')
-    }).render();
+    })
+        .render();
 
     Backbone.history.start();
 });

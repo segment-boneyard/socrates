@@ -14,11 +14,10 @@ Socrates.DocumentMenuView = Backbone.View.extend({
 
         this.itemTemplate = _.template($('#document-menu-item-template').html());
 
-        this.collection.on('add remove reset change', this.render, this);
+        this.collection.on('add remove reset change', this.render);
     },
 
     render : function (document) {
-
         this.$el.empty();
 
         var items = '';
@@ -39,9 +38,7 @@ Socrates.DocumentMenuView = Backbone.View.extend({
     // --------------
 
     onClickLi : function (event) {
-        var $li = $(event.currentTarget);
-        var id = $li.attr('data-id');
-
+        var id = $(event.currentTarget).attr('data-id');
         var document = this.collection.find(function (document) {
             return id === document.id;
         });
@@ -49,10 +46,8 @@ Socrates.DocumentMenuView = Backbone.View.extend({
         if (document) this.trigger('select', this, document);
     },
 
-    onDeleteButtonClick: function (event) {
-        var $li = $(event.currentTarget).closest('li');
-        var id = $li.attr('data-id');
-
+    onDeleteButtonClick : function (event) {
+        var id = $(event.currentTarget).closest('li').attr('data-id');
         var document = this.collection.find(function (document) {
             return id === document.id;
         });

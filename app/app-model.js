@@ -1,5 +1,8 @@
 /*global Backbone Socrates _ */
 
+var ID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+var ID_LENGTH     = 7;
+
 Socrates.Model = Backbone.Model.extend({
 
     defaults : {
@@ -15,7 +18,7 @@ Socrates.Model = Backbone.Model.extend({
         this.initializeRouter();
         this.initializeDocuments();
 
-        this.on('change:document', this.onDocumentChange, this);
+        this.on('change:document', this.onDocumentChange);
     },
 
     initializeRouter : function () {
@@ -25,51 +28,43 @@ Socrates.Model = Backbone.Model.extend({
                ':id' : 'document'
             }
         })
-            .on('route:home', this.onRouterHome, this)
-            .on('route:document', this.onRouterDocument, this);
+            .on('route:home', this.onRouterHome)
+            .on('route:document', this.onRouterDocument);
     },
 
     initializeDocuments : function () {
-        var documents = new Socrates.DocumentCollection();
-        this.set({ documents : documents });
+        var documents = new Socrates.DocumentCollection()
+            .on('add remove', this.writeBookmarks)
+            .on('remove', this.onDocumentRemove);
 
-        var bookmarks = this.readBookmarks();
+        this.set('documents', documents, {silent:true});
 
-        _.each(bookmarks, this.addDocument);
-
-        documents.on('add remove', this.writeBookmarks, this);
-        documents.on('remove', this.onDocumentRemove, this);
+        _.each(this.readBookmarks(), this.addDocument);
     },
 
-    goToNewDocument: function () {
-        var id = this.generateRandomDocumentId(7);
-        this.goToDocument(id);
-    },
 
-    goToDocument: function (id) {
-        this.router.navigate(id, {trigger: true});
-    },
+    // Actions
+    // -------
 
     addDocument : function (id) {
-        var document = new Socrates.DocumentModel({id: id});
+        var document = new Socrates.DocumentModel({ id : id });
         this.get('documents').add(document);
         return document;
     },
 
+    newDocument : function () {
+        return this.addDocument(this.generateDocumentId());
+    },
+
     readBookmarks : function () {
-        var bookmarkStr = localStorage.getItem(this.bookmarkKey);
-        if (bookmarkStr) {
-            return bookmarkStr.split(',');
-        } else {
-            return [];
-        }
+        var bookmarkString = localStorage.getItem(this.bookmarkKey);
+        return bookmarkString ? bookmarkString.split(',') : [];
     },
 
     writeBookmarks : function () {
         var ids = this.get('documents').map(function (document) {
             return document.id;
         });
-
         localStorage.setItem(this.bookmarkKey, ids.join(','));
     },
 
@@ -78,50 +73,47 @@ Socrates.Model = Backbone.Model.extend({
     // --------------
 
     onRouterHome : function () {
-        this.goToNewDocument();
+        this.set('document', this.newDocument());
     },
 
     onRouterDocument : function (id) {
-        var documents = this.get('documents');
-
-        var document = documents.find(function (document) {
+        var document = this.get('documents').find(function (document) {
             return id === document.id;
         });
 
-        this.set('document', document || this.addDocument(id));
+        document || (document = this.addDocument(id));
+
+        this.set('document', document);
     },
 
     // Event Handlers
+    // --------------
 
     onDocumentChange : function (model, document) {
-
         this.router.navigate(document.id);
     },
 
-    onDocumentRemove : function (removed) {
+    onDocumentRemove : function (removedDocument) {
+        var openDocument = this.get('document');
 
-        var selected = this.get('document');
-        if (selected.id === removed.id) {
-            // the current document got removed, go somewhere else
-            var otherDocument = this.get('documents').last();
-            if (otherDocument) this.goToDocument(otherDocument.id);
-            else this.goToNewDocument();
-        }
+        // If the open document wasn't removed, don't do anything fancy.
+        if (openDocument.id !== removedDocument.id) return;
+
+        // Otherwise, we need to promote another document. Try to take the last
+        // of the documents, otherwise make a fresh one.
+        var document = this.get('documents').last() || this.newDocument();
+        this.set('document', document);
     },
 
 
     // Helpers
     // -------
 
-    generateRandomDocumentId : function (length) {
-        var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    // Generates a random new document id.
+    generateDocumentId : function () {
         var id = '';
-        var x;
-        var i;
-
-        for (x = 0; x < length; x += 1) {
-            i = Math.floor(Math.random() * 62);
-            id += chars.charAt(i);
+        for (var x = 0; x < ID_LENGTH; x++) {
+            id += ID_CHARACTERS.charAt(Math.floor(Math.random() * 62));
         }
 
         return id;
