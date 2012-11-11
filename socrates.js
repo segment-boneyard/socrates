@@ -5,6 +5,7 @@ $(function() {
     var $article = $('article');
 
     var $list = $('ul');
+    var listTemplate = _.template($('#write-menu-item-template').html());
 
     var hasStorage = supports_html5_storage();
 
@@ -69,9 +70,7 @@ $(function() {
 
         _.each(docs, function (doc) {
 
-            var template = _.template('<li data-id="<%=id%>"><%= title %></li>');
-
-            var html = template({
+            var html = listTemplate({
                 id: doc.id,
                 title: doc.title
             });
