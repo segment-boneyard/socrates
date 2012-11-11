@@ -1,11 +1,6 @@
 <html lang="en">
     <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <title>Socrates</title>
-        <meta name="description" content="">
-        <meta name="viewport" content ="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <link rel="shortcut icon" href="favicon.ico"/>
         <link rel="stylesheet" type="text/css" href="socrates.css">
         <script src="https://static.firebase.com/v0/firebase.js"></script>
         <script src="http://use.typekit.net/gmy5jor.js"></script>
@@ -14,20 +9,20 @@
 
     <body>
         <section class="write">
-            <ul class="document-menu"></ul>
             <div class="write-buttons">
-                <button class="menu-button ss-rows"></button>
-                <button class="add-button ss-plus"></button>
+                <button class="write-menu-button ss-rows"></button>
+                <button class="write-add-button ss-plus"></button>
                 <button class="write-only-button ss-write"></button>
             </div>
-            <textarea class="document-textarea"></textarea>
+            <ul class="write-menu"></ul>
+            <textarea class="write-textarea"></textarea>
         </section>
 
         <section class="read">
             <div class="read-buttons">
                 <button class="read-only-button ss-view"></button>
             </div>
-            <article class="document-article"></article>
+            <article class="read-article"></article>
         </section>
 
         <script type="text/template" id="document-menu-item-template">
@@ -39,12 +34,12 @@
             </li>
         </script>
 
-        <script src="libs.js"></script>
-        <script src="socrates.js"></script>
-        <script src="app/app-view.js"></script>
-        <script src="app/app-model.js"></script>
-        <script src="document/document-model.js"></script>
-        <script src="document/document-collection.js"></script>
-        <script src="document/document-menu-view.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/libs.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/socrates.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/app/app-view.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/app/app-model.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/document/document-model.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/document/document-collection.js"></script>
+        <script src="https://raw.github.com/segmentio/socrates/master/document/document-menu-view.js"></script>
     </body>
 </html>

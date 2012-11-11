@@ -1,4 +1,4 @@
-@import ss-standard
+@import symbolset/ss-standard
 
 @mixin flexbox()
     display: -webkit-box
@@ -22,10 +22,16 @@
 // Constants
 // ---------
 
-$aqua: #49b27d
+$red    : #f57e5d
+$yellow : #f5d371
+$aqua   : #49b27d
+$blue   : #4b8b8d
+$purple : #957a96
+$sand   : #fcfcfa
+
 $dark-aqua: darken($aqua, 7%)
-$sand: #fcfcfa
 $dark-sand: #f7f6f2
+
 $text: #35332e
 
 $button-padding: .5rem
@@ -35,11 +41,20 @@ $button-padding: .5rem
 // ----
 
 html
-    font-size: 18px
+    font-size: 16px
     line-height: 1.4
     color: $text
     overflow-y: scroll
     overflow-x: hidden
+
+    @media (min-width: 1200px)
+        font-size: 17px
+    @media (min-width: 1300px)
+        font-size: 18px
+    @media (min-width: 1600px)
+        font-size: 20px
+    @media (min-width: 1800px)
+        font-size: 22px
 
 button
     -webkit-appearance: none
@@ -105,7 +120,8 @@ article
         hyphens: auto
 
     blockquote
-        margin: 1.5rem auto
+        margin-top: 1.5rem
+        margin-bottom: 1.5rem
         font-style: italic
 
     a
@@ -116,6 +132,24 @@ article
             color: $dark-aqua
         &:active
             top: 1px
+
+    ul,
+    ol
+        margin-left: 2em
+        font-size: .9em
+
+        > li:not(:last-child)
+            margin-bottom: .5em
+
+    pre,
+    code
+        font-family: "inconsolata", mono
+        margin-top: 1.5rem
+        margin-bottom: 1.5rem
+    pre
+        font-size: .8em
+    code
+        font-size: .95em
 
 textarea
     -webkit-appearance: none
@@ -143,6 +177,7 @@ body
 .write,
 .read
     position: relative
+    overflow: hidden
 
 .write
     +flex(0)
@@ -154,8 +189,8 @@ body
 // Write & Read
 // ------------
 
-.write-textarea,
-.read-article
+.document-textarea,
+.document-article
     padding: 3rem
     max-width: 32rem
     margin: 0 auto
@@ -174,7 +209,7 @@ body
     border-left: 1px solid darken($sand, 6%)
     box-shadow: 0 -1px 10px darken($sand, 6%)
 
-.read-article
+.document-article
 
 .read-only-button
     float: left
@@ -187,16 +222,28 @@ body
     background: $sand
 
 .write,
-.write-textarea
+.document-textarea
     font-family: "inconsolata", mono
-    font-size: 14px
+    font-size: 12px
     line-height: 1.2
 
-.write-textarea
+    @media (min-width: 1200px)
+        font-size: 14px
+
+.document-textarea
     width: 100%
     height: 100%
 
-.write-menu
+    &::-webkit-scrollbar
+        width: 7px
+    &::-webkit-scrollbar-track
+        margin: 3rem
+    &::-webkit-scrollbar-thumb
+        border-radius: 14px
+        background: darken($dark-sand, 5%)
+
+
+.document-menu
     list-style: none
 
     position: relative
@@ -217,19 +264,19 @@ body
     // Initial display state.
     display: none
 
-.write-menu-item
+.document-menu-item
     overflow: hidden
 
     cursor: pointer
     &:hover,
     &:focus
-        background: darken($dark-sand, 1%)
+        background: rgba($text, .01)
         outline: none
         color: $aqua
     &:active
         color: $dark-aqua
 
-.write-menu-item-wrap
+.document-menu-item-wrap
     // Match textarea width.
     max-width: 26rem
     margin: 0 auto
@@ -240,21 +287,21 @@ body
     // Clearfix.
     overflow: hidden
 
-.write-menu-item-bookmark-button
+.document-menu-item-delete-button
     float: right
     opacity: .1
     padding: 0
 
-.write-menu-button,
-.write-add-button
+.menu-button,
+.add-button
     float: left
 .write-only-button
     float: right
 
 // Reduce the padding between the two buttons.
-.write-add-button
+.add-button
     padding-left: $button-padding / 1.5
-.write-menu-button
+.menu-button
     padding-right: $button-padding / 1.5
 
 
@@ -265,8 +312,29 @@ body
 .read-only .write
     +flex(0)
     width: 37rem
+.write-only .read
     margin-right: -30rem
+.read-only .write
+    margin-left: -30rem
 
 .write-only .write,
 .read-only .read
     +flex(1)
+
+
+// Code Highlighting
+// -----------------
+
+// Everything's purple or light gray.
+pre
+    .comment
+        color: lighten($text, 45%)
+    .constant,
+    .storage,
+    .tag,
+    .keyword:not(.operator),
+    .selector,
+    .string:not(.value),
+    .regexp,
+    .function
+        color: $purple
