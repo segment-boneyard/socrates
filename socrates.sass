@@ -36,6 +36,8 @@ html
     font-size: 18px
     line-height: 1.4
     color: $text
+    overflow-y: scroll
+    overflow-x: hidden
 
 button
     -webkit-appearance: none
@@ -49,7 +51,9 @@ button
     cursor: pointer
 
     opacity: .2
-    &:hover
+    &:hover,
+    &:active,
+    &.pressed
         opacity: 1
 
 article
@@ -182,7 +186,8 @@ body
 .write-only
     .read
         +flex(0)
-        width: 3rem
+        width: 37rem
+        margin-right: -30rem
 
 
 // Write
@@ -229,4 +234,5 @@ body
 .read-only
     .write
         +flex(0)
-        width: 3rem
+        width: 37rem
+        margin-left: -30rem

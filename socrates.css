@@ -524,7 +524,9 @@
 html {
   font-size: 18px;
   line-height: 1.4;
-  color: #35332e; }
+  color: #35332e;
+  overflow-y: scroll;
+  overflow-x: hidden; }
 
 button {
   -webkit-appearance: none;
@@ -536,7 +538,7 @@ button {
   padding: 0.5rem;
   cursor: pointer;
   opacity: 0.2; }
-  button:hover {
+  button:hover, button:active, button.pressed {
     opacity: 1; }
 
 article > :first-child {
@@ -662,7 +664,8 @@ body {
   -moz-flex: 0;
   -ms-flex: 0;
   flex: 0;
-  width: 3rem; }
+  width: 37rem;
+  margin-right: -30rem; }
 
 .write {
   background: #fcfcfa; }
@@ -711,4 +714,5 @@ body {
   -moz-flex: 0;
   -ms-flex: 0;
   flex: 0;
-  width: 3rem; }
+  width: 37rem;
+  margin-left: -30rem; }

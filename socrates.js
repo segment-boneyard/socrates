@@ -88,17 +88,18 @@ $(function() {
     var attachToOnlyButtons = function () {
 
         var $writeonly = $('.write-only-button');
+        var $readonly = $('.read-only-button');
 
         $writeonly.on('click', function () {
             $writeonly.toggleState('pressed');
+            $readonly.state('pressed', false);
             $('body').state('read-only', false);
             $('body').state('write-only', $writeonly.state('pressed'));
         });
 
-        var $readonly = $('.read-only-button');
-
         $readonly.on('click', function () {
             $readonly.toggleState('pressed');
+            $writeonly.state('pressed', false);
             $('body').state('write-only', false);
             $('body').state('read-only', $readonly.state('pressed'));
         });
