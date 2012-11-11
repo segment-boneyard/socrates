@@ -1,6 +1,6 @@
 /*global Socrates Backbone _ marked Rainbow */
 
-Socrates.View = Backbone.View.extend({
+Socrates.Document.Read.View = Backbone.View.extend({
 
     initialize : function () {
         this.model.on('change', this.render);

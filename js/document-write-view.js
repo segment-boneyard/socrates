@@ -1,6 +1,6 @@
 /*global Socrates Backbone */
 
-Socrates.View = Backbone.View.extend({
+Socrates.Document.Write.View = Backbone.View.extend({
 
     events : {
         'keyup' : 'onKeyup'
