@@ -68,7 +68,11 @@ Document.prototype.save = function (text, markdown) {
     this.text = text;
 
     var h1 = $(markdown).find('h1');
-    if (h1.length > 0) this.title = h1.value();
+    if (h1.length > 0) {
+        this.title = h1.value();
+    } else {
+
+    }
 
     this.updated = new Date();
 
