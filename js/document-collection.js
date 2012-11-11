@@ -1,6 +1,7 @@
+/*global Socrates Backbone */
 
-window.Socrates.Document.Collection = window.Backbone.Collection.extend({
+Socrates.DocumentCollection = Backbone.Collection.extend({
 
-    model : window.Socrates.Document.Model
+    model : Socrates.DocumentModel
 
 });

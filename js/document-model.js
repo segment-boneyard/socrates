@@ -1,14 +1,15 @@
+/*global Socrates Backbone Firebase */
 
-window.Socrates.Document.Model = window.Backbone.Model.extend({
+Socrates.DocumentModel = Backbone.Model.extend({
 
-    defaults: {
-        title: 'Untitled',
-        body: ''
+    defaults : {
+        title : 'Untitled',
+        body  : ''
     },
 
-    urlRoot : window.Socrates.firebase.base + '/documents/',
+    urlRoot : Socrates.firebase.base + '/documents/',
 
-    initialize: function (attributes, options) {
+    initialize : function (attributes, options) {
         this.firebase = new Firebase(this.urlRoot + this.id);
 
         this.firebase.on('value', function (snapshot) {
@@ -17,7 +18,7 @@ window.Socrates.Document.Model = window.Backbone.Model.extend({
         });
     },
 
-    save: function () {
+    save : function () {
         this.firebase.set(this.toJSON());
     }
 

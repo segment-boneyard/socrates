@@ -1,78 +1,46 @@
 /*global Socrates Backbone _ marked Rainbow */
 
-Socrates.Document.Menu.View = Backbone.View.extend({
+Socrates.DocumentMenuView = Backbone.View.extend({
 
     tagName : 'ul',
-    itemConstructor : Socrates.Document.Menu.Item.View,
+
+    events : {
+        'click li' : 'onClickLi'
+    },
 
     initialize : function () {
-        this.initializeItems(this.collection);
+        this.itemTemplate = _.template($('#document-menu-item-template').html());
 
-        this.collection
-            .on('add', this.onCollectionAdd)
-            .on('remove', this.onCollectionRemove)
-            .on('reset', this.onCollectionReset);
+        this.collection.on('add remove reset', this.render);
     },
 
-    initializeItems : function (collection) {
-        this.items = [];
-        collection.each(function (model) {
-            this.items.push(this.initializeItem(model));
+    render : function (document) {
+        var items = '';
+        this.collection.each(function (document) {
+            items += this.renderItem(document);
         }, this);
-    },
 
-    initializeItem : function (model) {
-        return new this.itemConstructor({
-            model : model
-        });
-    },
-
-    render : function () {
-        this.renderItems();
-        return this.trigger('render', this);
-    },
-
-    renderItems : function () {
-        var itemEls = [];
-        _.each(this.items, function (itemView) {
-            itemEls.push(itemView.render().$el);
-        }, this);
-        this.$el.append.apply(this.$el, itemEls);
+        this.$el.append(items);
         return this;
     },
 
-    renderItem : function (itemView) {
-        this.append(itemView.render());
-        return this;
+    renderItem : function (document) {
+        return this.itemTemplate({ document : document });
     },
 
 
     // Event Handlers
     // --------------
 
-    onCollectionAdd : function (model) {
-        var itemView = this.initializeItem(model);
-        this.renderItem(itemView);
-    },
+    onClickLi : function (event) {
+        var $li = $(event.currentTarget);
+        var id = $li.attr('data-id');
 
-    onCollectionRemove : function (model) {
-        var item = _.find(this.items, function (item) {
-            return (item.model.cid === model.cid);
+        var document = this.collection.find(function (document) {
+            return id = document.id;
         });
-        if (!item) return;
 
-        this.items = _.filter(this.items, function (item) {
-            return (item.model.cid !== model.cid);
-        });
-        item.dispose();
-    },
-
-    onCollectionReset : function (collection) {
-        _.each(this.items, function (item) {
-            item.dispose();
-        }, this);
-        this.initializeItems(collection);
-        this.render();
+        if (document) this.trigger('select', this, document);
     }
 
 });

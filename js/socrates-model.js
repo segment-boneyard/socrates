@@ -1,6 +1,6 @@
 /*global Backbone Socrates _ */
 
-window.Socrates.Model = window.Backbone.Model.extend({
+Socrates.Model = Backbone.Model.extend({
 
     defaults : {
         document  : null,
@@ -26,7 +26,7 @@ window.Socrates.Model = window.Backbone.Model.extend({
     },
 
     initializeDocuments : function () {
-        var documents = new window.Socrates.Document.Collection();
+        var documents = new Socrates.DocumentCollection();
         var bookmarks = this.readBookmarks();
 
         _.each(bookmarks, this.addDocument);
@@ -35,7 +35,7 @@ window.Socrates.Model = window.Backbone.Model.extend({
     },
 
     addDocument : function (id) {
-        var document = new window.Socrates.Document.Model({id: id});
+        var document = new Socrates.DocumentModel({id: id});
         this.get('documents').add(document);
         return document;
     },
