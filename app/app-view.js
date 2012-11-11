@@ -133,6 +133,10 @@ Socrates.View = Backbone.View.extend({
             var youtubeId = el.href.match(/\?v=([\w-]+)/)[1];
             var embed     = self.youtubeEmbedTemplate({ id : youtubeId });
             $(el).replaceWith(embed);
+
+            window.analytics.track('Render Youtube Video', {
+                video : youtubeId
+            });
         });
     },
 
@@ -145,6 +149,10 @@ Socrates.View = Backbone.View.extend({
                 if (className.indexOf('lang-') !== -1) {
                     var language = className.substring('lang-'.length);
                     $(el).attr('data-language', language);
+
+                    window.analytics.track('Render Code Highlighting', {
+                        language : language
+                    });
                 }
             });
         });
@@ -184,11 +192,15 @@ Socrates.View = Backbone.View.extend({
     onReadOnlyButtonClick : function (event) {
         var state = this.$readOnlyButton.state('pressed') ? null : 'read-only';
         this.model.set('state', state);
+
+        window.analytics.track('Press Read-only Button');
     },
 
     onWriteOnlyButtonClick : function (event) {
         var state = this.$writeOnlyButton.state('pressed') ? null : 'write-only';
         this.model.set('state', state);
+
+        window.analytics.track('Press Write-only Button');
     },
 
     onAppDocumentChange : function (model, document) {
@@ -207,6 +219,10 @@ Socrates.View = Backbone.View.extend({
 
     onDocumentMenuSelect : function (menu, document) {
         this.model.set('document', document);
+
+        window.analytics.track('Select a Document', {
+            id : document.id
+        });
     }
 
 });

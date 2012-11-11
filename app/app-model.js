@@ -51,10 +51,17 @@ Socrates.Model = Backbone.Model.extend({
     addDocument : function (id) {
         var document = new Socrates.DocumentModel({ id : id });
         this.get('documents').add(document);
+
+        window.analytics.track('Add Document', {
+            id : id
+        });
+
         return document;
     },
 
     newDocument : function () {
+        window.analytics.track('Create New Document');
+
         return this.addDocument(this.generateDocumentId());
     },
 
@@ -76,6 +83,8 @@ Socrates.Model = Backbone.Model.extend({
 
     onHomeRoute : function () {
         this.set('document', this.newDocument());
+
+        window.analytics.track('Visit Home Page');
     },
 
     onDocumentRoute : function (id, state) {
@@ -86,6 +95,11 @@ Socrates.Model = Backbone.Model.extend({
 
         this.set('document', document);
         if (state === 'read-only' || state ==='write-only') this.set('state', state);
+
+        window.analytics.track('Visit Document Page', {
+            id    : id,
+            state : state
+        });
     },
 
     // Event Handlers

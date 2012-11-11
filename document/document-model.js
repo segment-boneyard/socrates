@@ -83,6 +83,10 @@ Socrates.DocumentModel = Backbone.Model.extend({
 
     save : function () {
         this.firebase.set(this.toJSON());
+
+        window.analytics.track('Save a Document', {
+            id : this.id
+        });
     }
 
 });
