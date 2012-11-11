@@ -1,11 +1,10 @@
+@import ss-standard
+
+$aqua: #49b27d
 
 *
     margin: 0
     padding: 0
-
-
-// Typography
-// ----------
 
 
 // Layout
@@ -20,14 +19,14 @@ body
     display: -ms-flex
     display: flex
 
-form,
-article
+.write,
+.read
     position: relative
 
-form
+.write
     width: 650px
 
-article
+.read
     -webkit-box-flex: 1
     -moz-box-flex: 1
     -ms-box-flex: 1
@@ -40,7 +39,7 @@ article
 // Form
 // ----
 
-form
+.write
     background: #fafafa
     border-right: 3px solid #f4f4f4
 
@@ -63,16 +62,105 @@ textarea
     &:focus
         outline: none
 
+    font-family: "inconsolata", mono
+    font-size: 13px
+    line-height: 1.2
+
 
 // Article
 // -------
 
-article
+.read
     border-left: 1px solid #eee
 
-
+    font-family: "kepler-std", serif
 
 
 textarea,
 article
     padding: 4em
+
+
+html
+    font-size: 18px
+    line-height: 1.4
+    color: #222
+
+
+button
+    -webkit-appearance: none
+    -moz-appearance: none
+    background: transparent
+    border: none
+
+    font-size: 13px
+    color: #222
+    padding: .5rem
+    cursor: pointer
+
+    opacity: .4
+
+    &:hover
+        opacity: 1
+
+
+article
+
+    > :first-child
+        margin-top: 0
+
+    > *
+        max-width: 32rem
+        margin: 1rem auto
+
+    h1
+        font-size: 1.5rem
+        margin-top: 4rem
+        margin-bottom: 2.5rem
+
+        position: relative
+        text-align: center
+
+        &::after
+            content: ''
+            width: 100px
+            left: 50%
+            margin-left: -50px
+            border-bottom: 1px solid #eee
+            top: 100%
+            position: absolute
+            margin-top: 1rem
+
+    h2
+        font-size: 1.25rem
+        margin-top: 2rem
+
+    h3,
+    h4,
+    h5,
+    h6,
+        font-size: 1rem
+        margin-top: 2rem
+
+    p
+        text-align: justify
+
+        -webkit-hyphens: auto
+        -moz-hyphens: auto
+        -ms-hyphens: auto
+        -o-hyphens: auto
+        hyphens: auto
+
+    blockquote
+        margin: 1.5rem auto
+        font-style: italic
+
+    a
+        position: relative
+        color: $aqua
+        &:hover,
+        &:focus
+            color: darken($aqua, 7%)
+        &:active
+            top: 1px
+
