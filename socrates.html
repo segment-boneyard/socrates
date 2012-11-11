@@ -46,8 +46,10 @@
 
         <script type="text/template" id="write-menu-item-template">
             <li data-id="<%= id %>" class="write-menu-item">
-                <a><%= title %></a>
-                <button class="write-menu-item-delete-button ss-delete"></button>
+                <div class="write-menu-item-wrap">
+                    <%= title %>
+                    <button class="write-menu-item-bookmark-button ss-bookmark"></button>
+                </div>
             </li>
         </script>
     </body>

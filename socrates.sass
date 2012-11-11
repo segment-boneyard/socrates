@@ -23,8 +23,9 @@
 // ---------
 
 $aqua: #49b27d
+$dark-aqua: darken($aqua, 7%)
 $sand: #fcfcfa
-$dark-sand: #f0efe9
+$dark-sand: #f7f6f2
 $text: #35332e
 
 $button-padding: .5rem
@@ -48,7 +49,7 @@ button
 
     font-size: 12px
     color: $text
-    padding: $button-padding
+    padding: $button-padding $button-padding*1.2 $button-padding*.9
     cursor: pointer
 
     opacity: .2
@@ -112,7 +113,7 @@ article
         color: $aqua
         &:hover,
         &:focus
-            color: darken($aqua, 7%)
+            color: $dark-aqua
         &:active
             top: 1px
 
@@ -127,10 +128,6 @@ textarea
 
     &:focus
         outline: none
-
-    font-family: "inconsolata", mono
-    font-size: 14px
-    line-height: 1.2
 
 
 // Layout
@@ -189,6 +186,12 @@ body
 .write
     background: $sand
 
+.write,
+.write-textarea
+    font-family: "inconsolata", mono
+    font-size: 14px
+    line-height: 1.2
+
 .write-textarea
     width: 100%
     height: 100%
@@ -196,18 +199,51 @@ body
 .write-menu
     list-style: none
 
-    overflow: hidden
+    position: relative
 
     background-color: $dark-sand
-    border-color: darken($dark-sand, 5%)
-    border-top-width: 1px
-    border-bottom-width: 1px
+    border-top: 1px darken($dark-sand, 5%) solid
+    border-bottom: 1px darken($dark-sand, 5%) solid
 
-    &.hidden
-        display: none
+    box-shadow: inset 2px 0 6px darken($dark-sand, 6%)
+    &::after
+        content: ''
+        position: absolute
+        top: 100%
+        left: 0
+        right: 0
+        border-bottom: 1px solid white
+
+    // Initial display state.
+    display: none
 
 .write-menu-item
-    padding: .5em
+    overflow: hidden
+
+    cursor: pointer
+    &:hover,
+    &:focus
+        background: darken($dark-sand, 1%)
+        outline: none
+        color: $aqua
+    &:active
+        color: $dark-aqua
+
+.write-menu-item-wrap
+    // Match textarea width.
+    max-width: 26rem
+    margin: 0 auto
+
+    // Match button padding.
+    padding: $button-padding $button-padding*1.2 $button-padding*.9
+
+    // Clearfix.
+    overflow: hidden
+
+.write-menu-item-bookmark-button
+    float: right
+    opacity: .1
+    padding: 0
 
 .write-menu-button,
 .write-add-button
@@ -215,11 +251,11 @@ body
 .write-only-button
     float: right
 
-// Reduce the padding between the two buttons by half.
+// Reduce the padding between the two buttons.
 .write-add-button
-    padding-left: $button-padding / 2
+    padding-left: $button-padding / 1.5
 .write-menu-button
-    padding-right: $button-padding / 2
+    padding-right: $button-padding / 1.5
 
 
 // Write & Read Only
