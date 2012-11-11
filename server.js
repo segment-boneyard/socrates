@@ -1,8 +1,8 @@
-  var express = require("express");
-  var app = express();
+var express = require("express");
+var app = express();
 
 app.configure(function() {
     app.use(express.static(__dirname));
 });
 
-app.listen(3000);
+app.listen(2000);
