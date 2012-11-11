@@ -114,10 +114,10 @@ Socrates.View = Backbone.View.extend({
     renderState : function () {
         var state = this.model.get('state');
 
-        var readonly  = state === 'read-only';
-        var writeonly = state === 'write-only';
+        var readonly  = state === 'read';
+        var writeonly = state === 'write';
 
-        if ($window.width() < MININUM_WIDTH && !state) return this.model.set('state', 'write-only');
+        if ($window.width() < MININUM_WIDTH && !state) return this.model.set('state', 'write');
 
         this.$readOnlyButton.state('pressed', readonly);
         this.$writeOnlyButton.state('pressed', writeonly);
@@ -133,6 +133,10 @@ Socrates.View = Backbone.View.extend({
             var youtubeId = el.href.match(/\?v=([\w-]+)/)[1];
             var embed     = self.youtubeEmbedTemplate({ id : youtubeId });
             $(el).replaceWith(embed);
+
+            window.analytics.track('Render Youtube Video', {
+                video : youtubeId
+            });
         });
     },
 
@@ -145,6 +149,10 @@ Socrates.View = Backbone.View.extend({
                 if (className.indexOf('lang-') !== -1) {
                     var language = className.substring('lang-'.length);
                     $(el).attr('data-language', language);
+
+                    window.analytics.track('Render Code Highlighting', {
+                        language : language
+                    });
                 }
             });
         });
@@ -173,7 +181,7 @@ Socrates.View = Backbone.View.extend({
     onWindowResize : function (event) {
         if (this.model.has('state')) return;
 
-        if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write-only');
+        if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write');
     },
 
     onTextareaKeyup : function (event) {
@@ -182,13 +190,17 @@ Socrates.View = Backbone.View.extend({
     },
 
     onReadOnlyButtonClick : function (event) {
-        var state = this.$readOnlyButton.state('pressed') ? null : 'read-only';
+        var state = this.$readOnlyButton.state('pressed') ? null : 'read';
         this.model.set('state', state);
+
+        window.analytics.track('Press Read-only Button');
     },
 
     onWriteOnlyButtonClick : function (event) {
-        var state = this.$writeOnlyButton.state('pressed') ? null : 'write-only';
+        var state = this.$writeOnlyButton.state('pressed') ? null : 'write';
         this.model.set('state', state);
+
+        window.analytics.track('Press Write-only Button');
     },
 
     onAppDocumentChange : function (model, document) {
@@ -207,6 +219,10 @@ Socrates.View = Backbone.View.extend({
 
     onDocumentMenuSelect : function (menu, document) {
         this.model.set('document', document);
+
+        window.analytics.track('Select a Document', {
+            id : document.id
+        });
     }
 
 });

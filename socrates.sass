@@ -9,6 +9,15 @@
     display: -ms-flex
     display: flex
 
+@mixin vertical-flexbox()
+    -webkit-box-orient: vertical
+    -moz-box-orient: vertical
+    -ms-box-orient: vertical
+    -webkit-flex-direction: column
+    -moz-flex-direction: column
+    -ms-flex-direction: column
+    flex-direction: column
+
 @mixin flex($flex)
     -webkit-box-flex: $flex
     -moz-box-flex: $flex
@@ -178,7 +187,15 @@ textarea
     padding: 0
 
 body
-    +flexbox()
+    +flexbox
+
+// Fix weirdness with Firefox.
+html
+    height: 100%
+    width: 100%
+body
+    min-height: 100%
+    min-width: 100%
 
 .write,
 .read
@@ -187,9 +204,17 @@ body
 
 .write
     +flex(0)
+    +flexbox
+    +vertical-flexbox
     width: 33rem
+
+.write-form
+    position: relative
+    +flex(1)
+
 .read
     +flex(1)
+
 
 
 // Write & Read
@@ -203,7 +228,9 @@ body
 
 .write-buttons,
 .read-buttons
+    position: relative
     overflow: hidden
+    z-index: 1
 
 
 // Read
@@ -236,8 +263,11 @@ body
         font-size: 14px
 
 .document-textarea
-    width: 100%
-    height: 100%
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
 
     &::-webkit-scrollbar
         width: 7px
@@ -258,16 +288,16 @@ body
     border-bottom: 1px darken($dark-sand, 5%) solid
 
     box-shadow: inset 2px 0 6px darken($dark-sand, 6%)
-    &::after
-        content: ''
-        position: absolute
-        top: 100%
-        left: 0
-        right: 0
-        border-bottom: 1px solid white
 
     // Initial display state.
     display: none
+
+    // For safety, give a reasonable max-height and just don't show a scrollbar
+    // since I don't want to deal with styling it right now.
+    max-height: 500px
+    overflow-y: auto
+    &::-webkit-scrollbar
+        width: 0
 
 .document-menu-item
     overflow: hidden
