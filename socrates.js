@@ -73,14 +73,34 @@ $(function() {
 
     var attachToListButtons = function () {
 
-        $('.add-button').on('click', function () {
+        $('.choose-add-button').on('click', function () {
             doc = new Document();
             openDoc();
         });
 
-        $('.menu-button').on('click', function () {
+        $('.choose-menu-button').on('click', function () {
             var hidden = $list.state('hidden');
             $list.state('hidden', !hidden);
+        });
+    };
+
+
+    var attachToOnlyButtons = function () {
+
+        var $writeonly = $('.write-only-button');
+
+        $writeonly.on('click', function () {
+            $writeonly.toggleState('pressed');
+            $('body').state('read-only', false);
+            $('body').state('write-only', $writeonly.state('pressed'));
+        });
+
+        var $readonly = $('.read-only-button');
+
+        $readonly.on('click', function () {
+            $readonly.toggleState('pressed');
+            $('body').state('write-only', false);
+            $('body').state('read-only', $readonly.state('pressed'));
         });
     };
 
@@ -88,5 +108,5 @@ $(function() {
     bindTextArea();
     populateDocumentsDropdown();
     attachToListButtons();
-
+    attachToOnlyButtons();
 });
