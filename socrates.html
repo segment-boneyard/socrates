@@ -15,26 +15,30 @@
     </head>
 
     <body>
-        <section class="choose">
-            <ul></ul>
-            <button class="menu-button ss-rows"></button>
-            <button class="add-button ss-plus"></button>
-        </section>
 
         <section class="write">
-            <textarea></textarea>
+            <nav class="choose">
+                <ul class="choose-menu"></ul>
+                <div class="choose-buttons">
+                    <button class="choose-menu-button ss-rows"></button>
+                    <button class="choose-add-button ss-plus"></button>
+                </div>
+            </nav>
+
+
+            <textarea class="write-textarea"></textarea>
             <button class="write-button ss-right"></button>
         </section>
 
         <section class="read">
-            <article></article>
+            <article class="read-article"></article>
             <button class="read-button ss-left"></button>
         </section>
 
-        <script type="text/template" id="menu-item-template">
+        <script type="text/template" id="choose-menu-item-template">
             <li class="menu-item">
                 <a>{{ title }}</a>
-                <button class="menu-item-delete-button ss-delete"></button>
+                <button class="choose-menu-item-delete-button ss-delete"></button>
             </li>
         </script>
     </body>

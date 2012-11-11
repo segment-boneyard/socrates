@@ -1,16 +1,6 @@
 @import ss-standard
 
-$aqua: #49b27d
-
-*
-    margin: 0
-    padding: 0
-
-
-// Layout
-// ------
-
-body
+@mixin flexbox()
     display: -webkit-box
     display: -moz-box
     display: -ms-box
@@ -19,73 +9,28 @@ body
     display: -ms-flex
     display: flex
 
-.write,
-.read
-    position: relative
-
-.write
-    width: 650px
-
-.read
-    -webkit-box-flex: 1
-    -moz-box-flex: 1
-    -ms-box-flex: 1
-    -webkit-flex: 1
-    -moz-flex: 1
-    -ms-flex: 1
-    flex: 1
+@mixin flex($flex)
+    -webkit-box-flex: $flex
+    -moz-box-flex: $flex
+    -ms-box-flex: $flex
+    -webkit-flex: $flex
+    -moz-flex: $flex
+    -ms-flex: $flex
+    flex: $flex
 
 
-// Form
+$aqua: #49b27d
+$button-padding: .5rem
+$text-color: #222
+
+
+// Base
 // ----
-
-.write
-    background: #fafafa
-    border-right: 3px solid #f4f4f4
-
-
-// Textarea
-// --------
-
-textarea
-    -webkit-appearance: none
-    -moz-appearance: none
-    display: block
-
-    border: none
-    background: transparent
-    resize: none
-
-    width: 100%
-    height: 100%
-
-    &:focus
-        outline: none
-
-    font-family: "inconsolata", mono
-    font-size: 13px
-    line-height: 1.2
-
-
-// Article
-// -------
-
-.read
-    border-left: 1px solid #eee
-
-    font-family: "kepler-std", serif
-
-
-textarea,
-article
-    padding: 4em
-
 
 html
     font-size: 18px
     line-height: 1.4
-    color: #222
-
+    color: $text-color
 
 button
     -webkit-appearance: none
@@ -93,25 +38,22 @@ button
     background: transparent
     border: none
 
-    font-size: 13px
-    color: #222
-    padding: .5rem
+    font-size: 12px
+    color: $text-color
+    padding: $button-padding
     cursor: pointer
 
-    opacity: .4
-
+    opacity: .2
     &:hover
         opacity: 1
 
-
 article
-
     > :first-child
         margin-top: 0
 
     > *
-        max-width: 32rem
-        margin: 1rem auto
+        margin-top: 1rem
+        margin-bottom: 1rem
 
     h1
         font-size: 1.5rem
@@ -164,3 +106,101 @@ article
         &:active
             top: 1px
 
+textarea
+    -webkit-appearance: none
+    -moz-appearance: none
+    display: block
+
+    border: none
+    background: transparent
+    resize: none
+
+    &:focus
+        outline: none
+
+    font-family: "inconsolata", mono
+    font-size: 13px
+    line-height: 1.2
+
+
+// Layout
+// ------
+
+*
+    margin: 0
+    padding: 0
+
+body
+    +flexbox()
+
+.write,
+.read
+    position: relative
+
+.write
+    width: 650px
+
+
+// Read & Write
+// ------------
+
+.write-textarea,
+.read-article
+    padding: 3rem
+
+.write-button,
+.read-button
+    position: absolute
+    top: 0
+
+
+// Read
+// ----
+
+.read
+    border-left: 1px solid #eee
+
+    font-family: "kepler-std", serif
+
+.read-article
+    max-width: 32rem
+    margin: 0 auto
+
+.read-button
+    left: 0
+
+
+// Write
+// -----
+
+.write
+    background: #fafafa
+    border-right: 3px solid #f4f4f4
+
+.write-textarea
+    width: 100%
+    height: 100%
+
+.write-button
+    right: 0
+
+.choose
+    display: block
+    position: relative
+
+.choose-menu
+    list-style: none
+
+    height: 0
+    overflow: hidden
+
+.choose-buttons
+    position: absolute
+    top: 100%
+    left: 0
+
+// Reduce the padding between the two buttons by half.
+.choose-add-button
+    padding-left: $button-padding / 2
+.choose-menu-button
+    padding-right: $button-padding / 2
