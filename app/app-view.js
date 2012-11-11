@@ -44,8 +44,8 @@ Socrates.View = Backbone.View.extend({
         // Attach document event handlers.
         if (this.model.has('document')) this.applyDocumentEventHandlers(this.model.get('document'));
 
-        // Debounce saving to not hit firebase so much.
-        this.save = _.debounce(this.save, 1000);
+        // Throttle saving to not hit firebase so much.
+        this.save = _.debounce(this.save, 1000, true);
         // Debounce applying the youtube filter since it's kinda intensive.
         this.renderYoutubeFilter = _.debounce(this.renderYoutubeFilter, 1000);
 
@@ -132,7 +132,7 @@ Socrates.View = Backbone.View.extend({
         this.$article.find('a[href*="youtube.com/watch?v="]').each(function (i, el) {
             var youtubeId = el.href.match(/\?v=([\w-]+)/)[1];
             var embed     = self.youtubeEmbedTemplate({ id : youtubeId });
-            $(embed).insertBefore(el);
+            $(el).replaceWith(embed);
         });
     },
 

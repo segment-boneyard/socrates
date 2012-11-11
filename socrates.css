@@ -764,14 +764,14 @@ body {
   -webkit-flex: 0;
   -moz-flex: 0;
   -ms-flex: 0;
-  flex: 0;
-  width: 37rem; }
+  flex: 0; }
 
 .write-only .read {
+  width: 37rem;
   margin-right: -30rem; }
 
 .read-only .write {
-  margin-left: -30rem; }
+  margin-left: -26rem; }
 
 .write-only .write,
 .read-only .read {
@@ -782,6 +782,33 @@ body {
   -moz-flex: 1;
   -ms-flex: 1;
   flex: 1; }
+
+.attribution {
+  font-family: "kepler-std", serif;
+  padding: 1rem;
+  text-align: center;
+  color: rgba(53, 51, 46, 0.4); }
+  .attribution .segmentio-link,
+  .attribution .firebase-link {
+    vertical-align: middle;
+    display: inline-block;
+    text-indent: -9999px;
+    background-size: cover;
+    background-repeat: none;
+    background-position: center center;
+    margin-left: 0.3em;
+    opacity: 0.4; }
+    .attribution .segmentio-link:hover,
+    .attribution .firebase-link:hover {
+      opacity: 1; }
+  .attribution .segmentio-link {
+    background-image: url("images/segmentio.png");
+    width: 110px;
+    height: 20px; }
+  .attribution .firebase-link {
+    background-image: url("images/firebase.png");
+    width: 98px;
+    height: 19px; }
 
 pre .comment {
   color: #aba79e; }
