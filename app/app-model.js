@@ -19,7 +19,8 @@ Socrates.Model = Backbone.Model.extend({
         this.initializeRouter();
         this.initializeDocuments();
 
-        this.on('change:document', this.onDocumentChange);
+        this.on('change:document', this.onDocumentOrStateChange)
+            .on('change:state', this.onDocumentOrStateChange);
     },
 
     initializeRouter : function () {
@@ -77,20 +78,27 @@ Socrates.Model = Backbone.Model.extend({
         this.set('document', this.newDocument());
     },
 
-    onDocumentRoute : function (id) {
+    onDocumentRoute : function (id, state) {
         var document = this.get('documents').find(function (document) {
             return id === document.id;
         });
         document || (document = this.addDocument(id));
 
         this.set('document', document);
+        if (state === 'read-only' || state ==='write-only') this.set('state', state);
     },
 
     // Event Handlers
     // --------------
 
-    onDocumentChange : function (model, document) {
-        this.router.navigate(document.id);
+    onDocumentOrStateChange : function (model) {
+        var document = this.get('document');
+        var state = this.get('state');
+
+        var fragment = document.id;
+        if (state) fragment += '/'+state;
+
+        this.router.navigate(fragment);
     },
 
     onDocumentRemove : function (removedDocument) {

@@ -11,8 +11,8 @@ Socrates.View = Backbone.View.extend({
         'keyup .document-textarea' : 'onTextareaKeyup',
         'click .read-only-button'  : 'onReadOnlyButtonClick',
         'click .write-only-button' : 'onWriteOnlyButtonClick',
-        'click .add-button'        : 'onAddButtonClick',
-        'click .menu-button'       : 'onMenuButtonClick'
+        'click .add-button'        : 'new',
+        'click .menu-button'       : 'toggleMenu'
     },
 
     initialize : function (options) {
@@ -40,7 +40,7 @@ Socrates.View = Backbone.View.extend({
         // Attach app event handlers.
         this.model
             .on('change:document', this.onAppDocumentChange)
-            .on('change:state', this.onAppStateChange);
+            .on('change:state', this.renderState);
         // Attach document event handlers.
         if (this.model.has('document')) this.applyDocumentEventHandlers(this.model.get('document'));
 
@@ -57,7 +57,7 @@ Socrates.View = Backbone.View.extend({
         var method = unbind ? 'off' : 'on';
         document
             [method]('change:body', this.onDocumentBodyChange)
-            [method]('load', this.onDocumentLoad);
+            [method]('load', this.renderTextarea);
     },
 
 
@@ -68,7 +68,8 @@ Socrates.View = Backbone.View.extend({
         this.renderTitle()
             .renderMenu()
             .renderTextarea()
-            .renderArticle();
+            .renderArticle()
+            .renderState();
 
         // Keep rendering the title cursor.
         setInterval(this.renderTitle, 500);
@@ -110,6 +111,21 @@ Socrates.View = Backbone.View.extend({
         this.renderCodeHighlightingFilter();
     },
 
+    renderState : function () {
+        var state = this.model.get('state');
+
+        var readonly  = state === 'read-only';
+        var writeonly = state === 'write-only';
+
+        if ($window.width() < MININUM_WIDTH && !state) return this.model.set('state', 'write-only');
+
+        this.$readOnlyButton.state('pressed', readonly);
+        this.$writeOnlyButton.state('pressed', writeonly);
+
+        this.$el.state('write-only', writeonly);
+        this.$el.state('read-only', readonly);
+    },
+
     // Create embeds for any youtube links.
     renderYoutubeFilter : function () {
         var self = this;
@@ -135,8 +151,17 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
+    new : function () {
+        this.model.set('document', this.model.newDocument());
+    },
+
     save : function () {
         this.model.get('document').save();
+    },
+
+    toggleMenu : function () {
+        this.$menu.slideToggle();
+        this.$menuButton.toggleState('pressed');
     },
 
 
@@ -152,28 +177,18 @@ Socrates.View = Backbone.View.extend({
     },
 
     onTextareaKeyup : function (event) {
-        var document = this.model.get('document');
-        document.set('body', this.$textarea.val());
-        document.save();
+        this.model.get('document').set('body', this.$textarea.val());
+        this.save();
     },
 
     onReadOnlyButtonClick : function (event) {
         var state = this.$readOnlyButton.state('pressed') ? null : 'read-only';
-        this.model.set('set', state);
+        this.model.set('state', state);
     },
 
     onWriteOnlyButtonClick : function (event) {
         var state = this.$writeOnlyButton.state('pressed') ? null : 'write-only';
-        this.model.set('set', state);
-    },
-
-    onAddButtonClick : function (event) {
-        this.model.set('document', this.model.newDocument());
-    },
-
-    onMenuButtonClick: function (event) {
-        this.$menu.slideToggle();
-        this.$menuButton.toggleState('pressed');
+        this.model.set('state', state);
     },
 
     onAppDocumentChange : function (model, document) {
@@ -185,30 +200,9 @@ Socrates.View = Backbone.View.extend({
             .renderArticle();
     },
 
-    onAppStateChange : function (model, state) {
-        if ($window.width() < MININUM_WIDTH && !state) return model.set('state', 'write-only');
-
-        var readonly  = state === 'read-only';
-        var writeonly = state === 'write-only';
-
-        this.$readOnlyButton.state('pressed', readonly);
-        this.$writeOnlyButton.state('pressed', writeonly);
-
-        this.$el.state('write-only', writeonly);
-        this.$el.state('read-only', readonly);
-    },
-
-    onDocumentLoad : function (document) {
-        this.renderTextarea();
-    },
-
     onDocumentBodyChange : function (document) {
         this.renderTextarea()
             .renderArticle();
-    },
-
-    onDocumentTitleChange : function (document) {
-        this.renderTitle();
     },
 
     onDocumentMenuSelect : function (menu, document) {
