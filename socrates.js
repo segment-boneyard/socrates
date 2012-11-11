@@ -1,50 +1,10 @@
 
 $(function() {
 
-    var $textarea = $('textarea');
-    var $article = $('article');
-
     var $list = $('ul');
     var listTemplate = _.template($('#write-menu-item-template').html());
 
     var hasStorage = supports_html5_storage();
-
-    var docs = loadDocuments();
-    var doc = null;
-
-
-    highlightAny = function () {
-
-        $article.find('code').each(function (index, el) {
-            // jquery cant help you get class list
-            // http://stackoverflow.com/questions/1227286/get-class-list-for-element-with-jquery
-            var classList = el.className.split(/\s+/);
-            for (var i = 0; i < classList.length; i++) {
-                var className = classList[i];
-                if (className.indexOf('lang-') !== -1) {
-                    var language = className.substring('lang-'.length);
-                    $(el).attr('data-language', language);
-                }
-            }
-        });
-
-        try {
-            Rainbow.color();
-        } catch (e) {}
-
-    };
-
-    var onTextAreaChange = function () {
-        var text = $textarea.val();
-        var markdown = monkey(marked(text));
-        $article.html(markdown);
-
-        highlightAny();
-
-        if (hasStorage) {
-            doc.save(text, markdown);
-        }
-    };
 
     var openDoc = function () {
         $textarea.val(doc.text);
@@ -59,10 +19,6 @@ $(function() {
         }
 
         openDoc();
-    };
-
-    var bindTextArea = function () {
-        $textarea.on('keyup', onTextAreaChange);
     };
 
     var populateDocumentsDropdown = function () {
@@ -126,12 +82,6 @@ $(function() {
         });
     };
 
-    var allowTabsInTextarea = function () {
-
-        $textarea.tabby({tabString:'    '});
-    };
-
-    allowTabsInTextarea();
     chooseFirstDoc();
     bindTextArea();
     populateDocumentsDropdown();

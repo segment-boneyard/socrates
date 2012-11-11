@@ -1,31 +1,29 @@
 <html lang="en">
     <head>
         <link rel="stylesheet" type="text/css" href="socrates.css">
-
         <link rel="stylesheet" type="text/css" href="https://raw.github.com/ccampbell/rainbow/master/themes/solarized-light.css">
 
-        <script type='text/javascript' src='https://static.firebase.com/v0/firebase.js'></script>
-
+        <script src='https://static.firebase.com/v0/firebase.js'></script>
         <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
         <script src="https://raw.github.com/ianstormtaylor/jquery-state/master/jquery-state.min.js"></script>
         <script src="https://raw.github.com/alanhogan/Tabby/master/jquery.textarea.min.js"></script>
-
         <script src="http://underscorejs.org/underscore-min.js"></script>
-        <script type='text/javascript' src='http://backbonejs.org/backbone-min.js'></script>
-
+        <script src='http://backbonejs.org/backbone-min.js'></script>
         <script src="https://raw.github.com/chjj/marked/master/lib/marked.js"></script>
-
         <script src="rainbow-custom.min.js"></script>
 
-        <script src="js/utils.js"></script>
-
+        <script src="js/socrates.js"></script>
         <script src="js/socrates-view.js"></script>
-        <script src="js/socrates-router.js"></script>
-
+        <script src="js/socrates-model.js"></script>
         <script src="js/document-model.js"></script>
+        <script src="js/document-collection.js"></script>
+        <script src="js/document-read-view.js"></script>
+        <script src="js/document-write-view.js"></script>
+        <script src="js/document-menu-item-view.js"></script>
+        <script src="js/document-menu-view.js"></script>
 
-        <script type="text/javascript" src="http://use.typekit.net/gmy5jor.js"></script>
-        <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+        <script src="http://use.typekit.net/gmy5jor.js"></script>
+        <script>try{Typekit.load();}catch(e){}</script>
     </head>
 
     <body>
@@ -46,13 +44,14 @@
             <article class="read-article"></article>
         </section>
 
-        <script type="text/template" id="write-menu-item-template">
-            <li data-id="<%= id %>" class="write-menu-item">
-                <div class="write-menu-item-wrap">
-                    <%= title %>
-                    <button class="write-menu-item-bookmark-button ss-bookmark"></button>
-                </div>
-            </li>
+        <script type="text/template" id="socrates-template">
+        </script>
+
+        <script type="text/template" id="document-menu-item-template">
+            <div class="document-menu-item-wrap">
+                <%= document.get('title') %>
+                <button class="document-menu-item-bookmark-button ss-bookmark"></button>
+            </div>
         </script>
     </body>
 </html>
