@@ -18,6 +18,12 @@
     -ms-flex: $flex
     flex: $flex
 
+@mixin mono()
+    font-family: "inconsolata", mono
+
+@mixin serif()
+    font-family: "kepler-std", serif
+
 
 // Constants
 // ---------
@@ -143,7 +149,7 @@ article
 
     pre,
     code
-        font-family: "inconsolata", mono
+        +mono
         margin-top: 1.5rem
         margin-bottom: 1.5rem
     pre
@@ -204,8 +210,7 @@ body
 // ----
 
 .read
-    font-family: "kepler-std", serif
-
+    +serif
     border-left: 1px solid darken($sand, 6%)
     box-shadow: 0 -1px 10px darken($sand, 6%)
 
@@ -223,7 +228,7 @@ body
 
 .write,
 .document-textarea
-    font-family: "inconsolata", mono
+    +mono
     font-size: 12px
     line-height: 1.2
 
@@ -311,15 +316,50 @@ body
 .write-only .read,
 .read-only .write
     +flex(0)
-    width: 37rem
 .write-only .read
+    width: 37rem
     margin-right: -30rem
+
 .read-only .write
-    margin-left: -30rem
+    margin-left: -26rem
 
 .write-only .write,
 .read-only .read
     +flex(1)
+
+
+// Attribution
+// -----------
+
+.attribution
+    +serif
+    padding: 1rem
+    text-align: center
+    color: rgba($text, .4)
+
+    .segmentio-link,
+    .firebase-link
+        vertical-align: middle
+        display: inline-block
+        text-indent: -9999px
+        background-size: cover
+        background-repeat: none
+        background-position: center center
+        margin-left: .3em
+
+        opacity: .4
+        &:hover
+            opacity: 1
+
+    .segmentio-link
+        background-image: url('images/segmentio.png')
+        width: 110px
+        height: 20px
+
+    .firebase-link
+        background-image: url('images/firebase.png')
+        width: 98px
+        height: 19px
 
 
 // Code Highlighting
