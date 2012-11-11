@@ -2,6 +2,8 @@
 
 Socrates.View = Backbone.View.extend({
 
+    youtubeEmbedTemplate : _.template('<iframe width="560" height="315" src="http://www.youtube.com/embed/<%= id %>" frameborder="0" allowfullscreen></iframe>'),
+
     events : {
         'keyup .write-textarea'    : 'onWriteTextareaKeyup',
         'click .read-only-button'  : 'onReadOnlyButtonClick',
@@ -14,12 +16,11 @@ Socrates.View = Backbone.View.extend({
         _.bindAll(this);
 
         // Cache some jQuery selectors.
-        this.$menu     = this.$('.write-menu');
-        this.$textarea = this.$('.write-textarea');
-        this.$article  = this.$('.read-article');
-
-        this.$readonly = this.$('.read-only-button');
-        this.$writeonly = this.$('.write-only-button');
+        this.$menu            = this.$('.write-menu');
+        this.$textarea        = this.$('.write-textarea');
+        this.$article         = this.$('.read-article');
+        this.$readOnlyButton  = this.$('.read-only-button');
+        this.$writeOnlyButton = this.$('.write-only-button');
 
         // Allow tabs in the textarea using a jQuery plugin.
         this.$el.tabby({tabString:'    '});
@@ -32,8 +33,8 @@ Socrates.View = Backbone.View.extend({
             .on('select', this.onDocumentMenuSelect, this);
 
 
+        // Attach document event handlers.
         this.model.on('change:document', this.onAppDocumentChange, this);
-
         var document = this.model.get('document');
         if (document) {
             document
@@ -41,6 +42,8 @@ Socrates.View = Backbone.View.extend({
                 .on('load', this.onDocumentLoad, this);
         }
 
+        // Debounce applying the youtube filter since it's kinda intensive.
+        this.renderYoutubeFilter = _.debounce(this.renderYoutubeFilter, 1000);
     },
 
 
@@ -63,7 +66,7 @@ Socrates.View = Backbone.View.extend({
 
         if (!document) return this;
 
-        this.$textarea.html(document.get('body'));
+        this.$textarea.val(document.get('body'));
         return this;
     },
 
@@ -71,10 +74,10 @@ Socrates.View = Backbone.View.extend({
         if (!this.model.has('document')) return this;
 
         // Convert the model's markdown body into html.
-        var body = this.model.get('document').get('body');
-        var markdown = marked(body);
-        var patched = monkey(markdown);
-        this.$article.html(patched);
+        var markdown = marked(this.model.get('document').get('body'));
+        this.$article.html(markdown);
+
+        this.renderYoutubeFilter();
 
         // Apply code highlighting. We have to convert the highlighting classes
         // that marked.js gives us into ones that Rainbow.js can read first.
@@ -90,6 +93,17 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
+    renderYoutubeFilter : function () {
+        var self = this;
+
+        // Create embeds for any youtube links.
+        this.$article.find('a[href*="youtube.com/watch?v="]').each(function (i, el) {
+            var youtubeId = el.href.match(/\?v=([\w-]+)/)[1];
+            var embed     = self.youtubeEmbedTemplate({ id : youtubeId });
+            $(embed).insertBefore(el);
+        });
+    },
+
 
     // Event Handlers
     // --------------
@@ -100,6 +114,28 @@ Socrates.View = Backbone.View.extend({
 
         document.set('body', this.$textarea.val());
         document.save();
+    },
+
+    onReadOnlyButtonClick : function (event) {
+        this.$readOnlyButton.toggleState('pressed');
+        this.$writeOnlyButton.state('pressed', false);
+        this.$el.state('write-only', false);
+        this.$el.state('read-only', this.$readOnlyButton.state('pressed'));
+    },
+
+    onWriteOnlyButtonClick : function (event) {
+        this.$writeOnlyButton.toggleState('pressed');
+        this.$readOnlyButton.state('pressed', false);
+        this.$el.state('read-only', false);
+        this.$el.state('write-only', this.$writeOnlyButton.state('pressed'));
+    },
+
+    onAddDocumentButtonClick : function (event) {
+        this.model.goToNewDocument();
+    },
+
+    onMenuButtonClick: function (event) {
+        this.$menu.slideToggle();
     },
 
     onAppDocumentChange : function (model, document) {
@@ -113,44 +149,17 @@ Socrates.View = Backbone.View.extend({
     },
 
 
-    onDocumentLoad: function () {
-
+    onDocumentLoad : function (document) {
         this.renderTextarea();
     },
 
     onDocumentBodyChange : function (document) {
-
-        this.renderArticle();
+        this.renderTextarea()
+            .renderArticle();
     },
 
     onDocumentMenuSelect : function (menu, document) {
         this.model.set('document', document);
-    },
-
-
-
-
-
-    onReadOnlyButtonClick : function (event) {
-        this.$readonly.toggleState('pressed');
-        this.$writeonly.state('pressed', false);
-        this.$el.state('write-only', false);
-        this.$el.state('read-only', this.$readonly.state('pressed'));
-    },
-
-    onWriteOnlyButtonClick : function (event) {
-        this.$writeonly.toggleState('pressed');
-        this.$readonly.state('pressed', false);
-        this.$el.state('read-only', false);
-        this.$el.state('write-only', this.$writeonly.state('pressed'));
-    },
-
-    onAddDocumentButtonClick : function (event) {
-        this.model.goToNewDocument();
-    },
-
-    onMenuButtonClick: function (event) {
-        this.$menu.slideToggle();
     }
 
 });

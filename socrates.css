@@ -3,15 +3,15 @@
 * Symbolset
 * www.symbolset.com
 * Copyright © 2012 Oak Studios LLC
-* 
+*
 * Upload this file to your web server
 * and place this within your <head> tags.
 * <link href="webfonts/ss-standard.css" rel="stylesheet" />
 */
 @font-face {
   font-family: "SSStandard";
-  src: url("ss-standard.eot");
-  src: url("ss-standard.eot?#iefix") format("embedded-opentype"), url("ss-standard.woff") format("woff"), url("ss-standard.ttf") format("truetype"), url("ss-standard.svg#SSStandard") format("svg");
+  src: url("symbolset/ss-standard.eot");
+  src: url("symbolset/ss-standard.eot?#iefix") format("embedded-opentype"), url("symbolset/ss-standard.woff") format("woff"), url("symbolset/ss-standard.ttf") format("truetype"), url("symbolset/ss-standard.svg#SSStandard") format("svg");
   font-weight: normal;
   font-style: normal; }
 
