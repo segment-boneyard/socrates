@@ -7,7 +7,8 @@ Socrates.Model = Backbone.Model.extend({
 
     defaults : {
         document  : null,
-        documents : null
+        documents : null,
+        state     : null
     },
 
     bookmarkKey : 'socrates.bookmarks',
@@ -24,8 +25,8 @@ Socrates.Model = Backbone.Model.extend({
     initializeRouter : function () {
         this.router = new Backbone.Router({
             routes : {
-               ''    : 'home',
-               ':id' : 'document'
+               ''             : 'home',
+               ':id(/:state)' : 'document'
             }
         })
             .on('route:home', this.onHomeRoute)
@@ -80,7 +81,6 @@ Socrates.Model = Backbone.Model.extend({
         var document = this.get('documents').find(function (document) {
             return id === document.id;
         });
-
         document || (document = this.addDocument(id));
 
         this.set('document', document);

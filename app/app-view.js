@@ -37,10 +37,15 @@ Socrates.View = Backbone.View.extend({
         })
             .on('select', this.onDocumentMenuSelect);
 
+        // Attach app event handlers.
+        this.model
+            .on('change:document', this.onAppDocumentChange)
+            .on('change:state', this.onAppStateChange);
         // Attach document event handlers.
-        this.model.on('change:document', this.onAppDocumentChange);
         if (this.model.has('document')) this.applyDocumentEventHandlers(this.model.get('document'));
 
+        // Debounce saving to not hit firebase so much.
+        this.save = _.debounce(this.save, 1000);
         // Debounce applying the youtube filter since it's kinda intensive.
         this.renderYoutubeFilter = _.debounce(this.renderYoutubeFilter, 1000);
 
@@ -130,29 +135,20 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
-    state : function (state) {
-        var readonly  = state === 'read-only';
-        var writeonly = state === 'write-only';
-
-        if ($window.width() < MININUM_WIDTH && !readonly && !writeonly) writeonly = true;
-
-        this.$readOnlyButton.state('pressed', readonly);
-        this.$writeOnlyButton.state('pressed', writeonly);
-
-        this.$el.state('write-only', writeonly);
-        this.$el.state('read-only', readonly);
-
-        // Cache current state.
-        this._state = state;
+    save : function () {
+        this.model.get('document').save();
     },
 
 
     // Event Handlers
     // --------------
 
-    // When the window resizes too small, let the state update itself.
+    // When the window resizes too small, if we're not in one of the two states,
+    // force us into write-only mode.
     onWindowResize : function (event) {
-        this.state(this._state);
+        if (this.model.has('state')) return;
+
+        if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write-only');
     },
 
     onTextareaKeyup : function (event) {
@@ -163,12 +159,12 @@ Socrates.View = Backbone.View.extend({
 
     onReadOnlyButtonClick : function (event) {
         var state = this.$readOnlyButton.state('pressed') ? null : 'read-only';
-        this.state(state);
+        this.model.set('set', state);
     },
 
     onWriteOnlyButtonClick : function (event) {
         var state = this.$writeOnlyButton.state('pressed') ? null : 'write-only';
-        this.state(state);
+        this.model.set('set', state);
     },
 
     onAddButtonClick : function (event) {
@@ -187,6 +183,19 @@ Socrates.View = Backbone.View.extend({
 
         this.renderTextarea()
             .renderArticle();
+    },
+
+    onAppStateChange : function (model, state) {
+        if ($window.width() < MININUM_WIDTH && !state) return model.set('state', 'write-only');
+
+        var readonly  = state === 'read-only';
+        var writeonly = state === 'write-only';
+
+        this.$readOnlyButton.state('pressed', readonly);
+        this.$writeOnlyButton.state('pressed', writeonly);
+
+        this.$el.state('write-only', writeonly);
+        this.$el.state('read-only', readonly);
     },
 
     onDocumentLoad : function (document) {
