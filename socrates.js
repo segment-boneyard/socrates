@@ -100,8 +100,7 @@ $(function() {
         });
 
         $('.write-menu-button').on('click', function () {
-            var hidden = $list.state('hidden');
-            $list.state('hidden', !hidden);
+            $list.slideToggle();
         });
     };
 
