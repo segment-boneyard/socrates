@@ -11,8 +11,8 @@ Socrates.View = Backbone.View.extend({
         'keyup .document-textarea' : 'onTextareaKeyup',
         'click .read-only-button'  : 'onReadOnlyButtonClick',
         'click .write-only-button' : 'onWriteOnlyButtonClick',
-        'click .add-button'        : 'new',
-        'click .menu-button'       : 'toggleMenu'
+        'click .add-button'        : 'onAddButtonClick',
+        'click .menu-button'       : 'onMenuButtonClick'
     },
 
     initialize : function (options) {
@@ -179,10 +179,6 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
-    new : function () {
-        this.model.set('document', this.model.createDocument());
-    },
-
     save : function () {
         this.model.get('document').save();
     },
@@ -209,7 +205,19 @@ Socrates.View = Backbone.View.extend({
         this.save();
     },
 
+    onMenuButtonClick : function (event) {
+        event.preventDefault();
+
+        this.toggleMenu();
+    },
+
+    onAddButtonClick : function (event) {
+        this.model.set('document', this.model.createDocument());
+    },
+
     onReadOnlyButtonClick : function (event) {
+        event.preventDefault();
+
         var state = this.$readOnlyButton.state('pressed') ? null : 'read';
         this.model.set('state', state);
 
@@ -217,6 +225,8 @@ Socrates.View = Backbone.View.extend({
     },
 
     onWriteOnlyButtonClick : function (event) {
+        event.preventDefault();
+
         var state = this.$writeOnlyButton.state('pressed') ? null : 'write';
         this.model.set('state', state);
 
