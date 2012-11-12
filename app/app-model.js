@@ -106,6 +106,8 @@ Socrates.Model = Backbone.Model.extend({
     // --------------
 
     onDocumentOrStateChange : function (model) {
+        if (!this.has('document')) return;
+
         var document = this.get('document');
         var state = this.get('state');
 
