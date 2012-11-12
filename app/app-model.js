@@ -165,6 +165,8 @@ var onboarding = [
     '',
     'It\'s a weekend project by [@ivolo][1] and [@ianstormtaylor][2]. We we\'re always sending around Stypis and Etherpads while working on [Segment.io][3], but we really wanted to just write and read in Markdown instead. So that\'s what we built. Thanks to [Firebase][4], it was incredibly easy and it\'s all realtime! You can see all the code [on Github][5].',
     '',
+    'Socrates updates for everyone in real time, but is best when edited by a single person at a time.',
+    '',
     'More importantly though, erase this junk and start writing your own stuff...',
     '',
     '[1]: https://twitter.com/ivolo',
