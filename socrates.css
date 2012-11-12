@@ -10,8 +10,8 @@
 */
 @font-face {
   font-family: "SSStandard";
-  src: url("/symbolset/ss-standard.eot");
-  src: url("/symbolset/ss-standard.eot?#iefix") format("embedded-opentype"), url("/symbolset/ss-standard.woff") format("woff"), url("/symbolset/ss-standard.ttf") format("truetype"), url("/symbolset/ss-standard.svg#SSStandard") format("svg");
+  src: url("http://socrates.io/symbolset/ss-standard.eot");
+  src: url("http://socrates.io/symbolset/ss-standard.eot?#iefix") format("embedded-opentype"), url("http://socrates.io/symbolset/ss-standard.woff") format("woff"), url("http://socrates.io/symbolset/ss-standard.ttf") format("truetype"), url("http://socrates.io/symbolset/ss-standard.svg#SSStandard") format("svg");
   font-weight: normal;
   font-style: normal; }
 
