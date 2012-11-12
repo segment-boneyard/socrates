@@ -64,7 +64,9 @@ Socrates.DocumentModel = Backbone.Model.extend({
         var year    = created.getFullYear();
         var title   = 'Untitled - '+day+', '+month+' '+date+nth+', '+year;
 
-        var headings = $(marked(this.get('body'))).filter('h1, h2, h3, h4, h5, h6');
+        var body     = this.get('body');
+        var markdown = marked(body);
+        var headings = $(markdown).filter('h1, h2, h3, h4, h5, h6');
         if (headings.length > 0) title = $(headings[0]).text();
 
         this.set('title', title);
