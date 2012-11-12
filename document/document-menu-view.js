@@ -49,6 +49,8 @@ Socrates.DocumentMenuView = Backbone.View.extend({
     },
 
     onDeleteButtonClick : function (event) {
+        event.preventDefault();
+
         var id = $(event.currentTarget).closest('li').attr('data-id');
         var document = this.collection.find(function (document) {
             return id === document.id;
