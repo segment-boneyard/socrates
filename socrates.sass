@@ -48,6 +48,7 @@ $dark-aqua: darken($aqua, 7%)
 $dark-sand: #f7f6f2
 
 $text: #35332e
+$rule: #eee
 
 $button-padding: .5rem
 
@@ -57,7 +58,7 @@ $button-padding: .5rem
 
 html
     font-size: 16px
-    line-height: 1.4
+    line-height: 1.45
     color: $text
     overflow-y: scroll
     overflow-x: hidden
@@ -109,7 +110,7 @@ article
             width: 100px
             left: 50%
             margin-left: -50px
-            border-bottom: 1px solid #eee
+            border-bottom: 1px solid $rule
             top: 100%
             position: absolute
             margin-top: 1rem
@@ -153,8 +154,12 @@ article
         margin-left: 2em
         font-size: .9em
 
-        > li:not(:last-child)
+        > li
+            margin-top: .5em
             margin-bottom: .5em
+
+    ul
+        list-style-type: disc
 
     pre,
     code
@@ -165,6 +170,15 @@ article
         font-size: .8em
     code
         font-size: .95em
+
+    hr
+        background: transparent
+        border: none
+
+        width: 100px
+        margin: 1.5em auto
+
+        border-bottom: 1px solid $rule
 
 textarea
     -webkit-appearance: none

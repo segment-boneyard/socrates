@@ -41,50 +41,35 @@ Socrates.Model = Backbone.Model.extend({
 
         this.set('documents', documents, {silent:true});
 
-        _.each(this.readBookmarks(), this.addDocument);
-    },
-
-    // Fixtures
-    // --------
-
-    randomFixture: function () {
-        var index = _.random(0, _.size(Socrates.fixtures.random)-1);
-        return Socrates.fixtures.random[index];
-    },
-
-    pickFixture: function () {
-        if (localStorage.getItem(this.bookmarkKey)) {
-            return this.randomFixture();
-        } else {
-            return Socrates.fixtures.onboarding;
-        }
+        _.each(this.readBookmarks(), this.fetchDocument);
     },
 
 
     // Actions
     // -------
 
-    addDocument : function (id, body) {
+    fetchDocument : function (id, body) {
         if (!_.isString(body)) body = '';
 
         var document = new Socrates.DocumentModel({
-            id : id,
-            body: body
+            id   : id,
+            body : body
         });
 
         this.get('documents').add(document);
 
-        window.analytics.track('Add Document', {
-            id : id
+        window.analytics.track('Fetch Document', {
+            id    : id,
+            title : document.get('title')
         });
 
         return document;
     },
 
-    newDocument : function (body) {
+    createDocument : function (body) {
         window.analytics.track('Create New Document');
 
-        return this.addDocument(this.generateDocumentId(), body);
+        return this.fetchDocument(this.generateDocumentId(), body);
     },
 
     readBookmarks : function () {
@@ -104,7 +89,13 @@ Socrates.Model = Backbone.Model.extend({
     // --------------
 
     onHomeRoute : function () {
-        this.set('document', this.newDocument(this.pickFixture()));
+        var body = onboarding;
+        if (localStorage.getItem(this.bookmarkKey)) {
+            var index = _.random(0, random.length-1);
+            body = random[index];
+        }
+
+        this.set('document', this.createDocument(body));
 
         window.analytics.track('Visit Home Page');
     },
@@ -113,7 +104,7 @@ Socrates.Model = Backbone.Model.extend({
         var document = this.get('documents').find(function (document) {
             return id === document.id;
         });
-        document || (document = this.addDocument(id));
+        document || (document = this.fetchDocument(id));
 
         this.set('document', document);
         if (state === 'read' || state ==='write') this.set('state', state);
@@ -147,7 +138,7 @@ Socrates.Model = Backbone.Model.extend({
 
         // Otherwise, we need to promote another document. Try to take the last
         // of the documents, otherwise make a fresh one.
-        var document = this.get('documents').last() || this.newDocument();
+        var document = this.get('documents').last() || this.createDocument();
         this.set('document', document);
     },
 
@@ -166,3 +157,41 @@ Socrates.Model = Backbone.Model.extend({
     }
 
 });
+
+var onboarding = [
+
+    '# What the _heck_ is this?',
+    'Socrates lets you write Markdown with whoever you want. Write words on the left, read _real_ similar words on the right, and send out the link!',
+    '',
+    'It\'s a weekend project by [@ivolo][1] and [@ianstormtaylor][2]. We we\'re always sending around Stypis and Etherpads while working on [Segment.io][3], but we really wanted to just write and read in Markdown instead. So that\'s what we built. Thanks to [Firebase][4], it was incredibly easy and it\'s all realtime! You can see all the code [on Github][5].',
+    '',
+    'More importantly though, erase this junk and start writing your own stuff...',
+    '',
+    '[1]: https://twitter.com/ivolo',
+    '[2]: https://twitter.com/ianstormtaylor',
+    '[3]: https://segment.io',
+    '[4]: https://firebase.com',
+    '[5]: https://github.com/segmentio/socrates',
+    '',
+    '---',
+    '',
+    'Oh, and you can embed Youtube videos too, so...',
+    '',
+    'http://www.youtube.com/watch?v=sdRm4hhb8wY'
+].join('\n');
+
+var random = [
+    [
+        '# Dr. Steven Brule\n\n',
+        '> I stare in the water at my own sweet reflection,',
+        '>',
+        '> And I feel a feeling of warm sweet affection.',
+        '>',
+        '> Why doesn\'t my body do the things that I want?',
+        '>',
+        '> For lack of exercise, it\'s surely the cause.\n',
+        '– by **Beverly Dingus**, a poem.\n\n',
+        '[On Health](http://www.youtube.com/watch?v=sYMYktsKmSk)'
+
+    ].join('\n')
+];

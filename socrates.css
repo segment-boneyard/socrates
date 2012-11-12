@@ -523,7 +523,7 @@
 
 html {
   font-size: 16px;
-  line-height: 1.4;
+  line-height: 1.45;
   color: #35332e;
   overflow-y: scroll;
   overflow-x: hidden; }
@@ -604,9 +604,12 @@ article ul,
 article ol {
   margin-left: 2em;
   font-size: 0.9em; }
-  article ul > li:not(:last-child),
-  article ol > li:not(:last-child) {
+  article ul > li,
+  article ol > li {
+    margin-top: 0.5em;
     margin-bottom: 0.5em; }
+article ul {
+  list-style-type: disc; }
 article pre,
 article code {
   font-family: "inconsolata", mono;
@@ -616,6 +619,12 @@ article pre {
   font-size: 0.8em; }
 article code {
   font-size: 0.95em; }
+article hr {
+  background: transparent;
+  border: none;
+  width: 100px;
+  margin: 1.5em auto;
+  border-bottom: 1px solid #eeeeee; }
 
 textarea {
   -webkit-appearance: none;

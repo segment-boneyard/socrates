@@ -5,7 +5,7 @@ var MININUM_WIDTH = 1000;
 
 Socrates.View = Backbone.View.extend({
 
-    youtubeEmbedTemplate : _.template('<iframe width="560" height="315" src="http://www.youtube.com/embed/<%= id %>" frameborder="0" allowfullscreen></iframe>'),
+    youtubeEmbedTemplate : _.template('<iframe width="100%" height="400" src="http://www.youtube.com/embed/<%= id %>" frameborder="0" allowfullscreen></iframe>'),
 
     events : {
         'keyup .document-textarea' : 'onTextareaKeyup',
@@ -45,7 +45,7 @@ Socrates.View = Backbone.View.extend({
         if (this.model.has('document')) this.applyDocumentEventHandlers(this.model.get('document'));
 
         // Throttle saving to not hit firebase so much.
-        this.save = _.debounce(this.save, 1000, true);
+        this.save = _.debounce(this.save, 500);
         // Debounce applying the youtube filter since it's kinda intensive.
         this.renderYoutubeFilter = _.debounce(this.renderYoutubeFilter, 1000);
 
@@ -103,8 +103,10 @@ Socrates.View = Backbone.View.extend({
         if (!this.model.has('document')) return this;
 
         // Convert the model's markdown body into html.
-        var markdown = marked(this.model.get('document').get('body'));
-        this.$article.html(markdown);
+        var body     = this.model.get('document').get('body');
+        var markdown = marked(body);
+        var quoted   = this.renderSmartQuoteFilter(markdown);
+        this.$article.html(quoted);
 
         // Apply extra filters.
         this.renderYoutubeFilter();
@@ -124,6 +126,24 @@ Socrates.View = Backbone.View.extend({
 
         this.$el.state('write-only', writeonly);
         this.$el.state('read-only', readonly);
+    },
+
+    // Turn dumb quotes into smart quotes.
+    renderSmartQuoteFilter : function (markdown) {
+        // Left quotes are either next to a space or an HTML tag.
+        var leftSingleQuote = /[\s>]&#39;/g;
+        var leftDoubleQuote = /[\s>]&quot;+/g;
+        // Right quotes are everything else...
+        var singleQuote = /&#39;/g;
+        var doubleQuote = /&quot;/g;
+
+        markdown = markdown
+            .replace(leftSingleQuote, ' &lsquo;')
+            .replace(leftDoubleQuote, ' &ldquo;')
+            .replace(singleQuote, '&rsquo;')
+            .replace(doubleQuote, '&rdquo;');
+
+        return markdown;
     },
 
     // Create embeds for any youtube links.
@@ -160,7 +180,7 @@ Socrates.View = Backbone.View.extend({
     },
 
     new : function () {
-        this.model.set('document', this.model.newDocument());
+        this.model.set('document', this.model.createDocument());
     },
 
     save : function () {
