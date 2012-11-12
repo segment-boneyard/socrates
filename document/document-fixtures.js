@@ -1,21 +1,7 @@
+Socrates.fixtures = {
 
-Socrates.fixtures = [
+    onboarding : [
 
-    [
-        '# Dr. Steven Brule\n\n',
-        '> I stare in the water at my own sweet reflection,',
-        '>',
-        '> And I feel a feeling of warm sweet affection.',
-        '>',
-        '> Why doesn\'t my body do the things that I want?',
-        '>',
-        '> For lack of exercise, it\'s surely the cause.\n',
-        '– by **Beverly Dingus**, a poem.\n\n',
-        '[On Health](http://www.youtube.com/watch?v=sYMYktsKmSk)'
-
-    ].join('\n'),
-
-    [
         '#Backbone\n',
         'Backbone.js gives structure to web applications by providing models with key-value binding and custom events, collections with a rich API of enumerable functions, views with declarative event handling, and connects it all to your existing API over a RESTful JSON interface.\n',
         '### Backbone.Events\n',
@@ -33,6 +19,22 @@ Socrates.fixtures = [
         'var dispatcher = _.clone(Backbone.Events)',
         '```'
 
-    ].join('\n')
+    ].join('\n'),
 
-];
+    random: [
+
+        [
+            '# Dr. Steven Brule\n\n',
+            '> I stare in the water at my own sweet reflection,',
+            '>',
+            '> And I feel a feeling of warm sweet affection.',
+            '>',
+            '> Why doesn\'t my body do the things that I want?',
+            '>',
+            '> For lack of exercise, it\'s surely the cause.\n',
+            '– by **Beverly Dingus**, a poem.\n\n',
+            '[On Health](http://www.youtube.com/watch?v=sYMYktsKmSk)'
+
+        ].join('\n')
+    ]
+};

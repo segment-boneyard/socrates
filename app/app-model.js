@@ -44,12 +44,34 @@ Socrates.Model = Backbone.Model.extend({
         _.each(this.readBookmarks(), this.addDocument);
     },
 
+    // Fixtures
+    // --------
+
+    randomFixture: function () {
+        var index = _.random(0, _.size(Socrates.fixtures.random)-1);
+        return Socrates.fixtures.random[index];
+    },
+
+    pickFixture: function () {
+        if (localStorage.getItem(this.bookmarkKey)) {
+            return this.randomFixture();
+        } else {
+            return Socrates.fixtures.onboarding;
+        }
+    },
+
 
     // Actions
     // -------
 
-    addDocument : function (id) {
-        var document = new Socrates.DocumentModel({ id : id });
+    addDocument : function (id, body) {
+        if (!_.isString(body)) body = '';
+
+        var document = new Socrates.DocumentModel({
+            id : id,
+            body: body
+        });
+
         this.get('documents').add(document);
 
         window.analytics.track('Add Document', {
@@ -59,10 +81,10 @@ Socrates.Model = Backbone.Model.extend({
         return document;
     },
 
-    newDocument : function () {
+    newDocument : function (body) {
         window.analytics.track('Create New Document');
 
-        return this.addDocument(this.generateDocumentId());
+        return this.addDocument(this.generateDocumentId(), body);
     },
 
     readBookmarks : function () {
@@ -82,7 +104,7 @@ Socrates.Model = Backbone.Model.extend({
     // --------------
 
     onHomeRoute : function () {
-        this.set('document', this.newDocument());
+        this.set('document', this.newDocument(this.pickFixture()));
 
         window.analytics.track('Visit Home Page');
     },
@@ -106,6 +128,8 @@ Socrates.Model = Backbone.Model.extend({
     // --------------
 
     onDocumentOrStateChange : function (model) {
+        if (!this.has('document')) return;
+
         var document = this.get('document');
         var state = this.get('state');
 
