@@ -79,7 +79,6 @@ Socrates.DocumentModel = Backbone.Model.extend({
         this.firebase.on('value', function (snapshot) {
             var val = snapshot.val();
             if (val) self.set(val);
-            self.trigger('load', this);
         });
     },
 

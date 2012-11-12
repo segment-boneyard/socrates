@@ -55,9 +55,7 @@ Socrates.View = Backbone.View.extend({
 
     applyDocumentEventHandlers : function (document, unbind) {
         var method = unbind ? 'off' : 'on';
-        document
-            [method]('change:body', this.onDocumentBodyChange)
-            [method]('load', this.renderTextarea);
+        document[method]('change:body', this.onDocumentBodyChange);
     },
 
 
