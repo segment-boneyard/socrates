@@ -182,7 +182,6 @@ var onboarding = [
 
 var random = [
     [
-        '# Dr. Steven Brule\n\n',
         '> I stare in the water at my own sweet reflection,',
         '>',
         '> And I feel a feeling of warm sweet affection.',
