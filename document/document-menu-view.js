@@ -38,6 +38,8 @@ Socrates.DocumentMenuView = Backbone.View.extend({
     // --------------
 
     onClickLi : function (event) {
+        event.preventDefault();
+
         var id = $(event.currentTarget).attr('data-id');
         var document = this.collection.find(function (document) {
             return id === document.id;
