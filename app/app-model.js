@@ -178,7 +178,7 @@ var onboarding = [
     '---',
     '',
     'Oh, and you can embed Youtube videos too, so...',
-    '',share
+    '',
     'http://www.youtube.com/watch?v=sdRm4hhb8wY'
 ].join('\n');
 
