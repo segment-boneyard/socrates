@@ -1,6 +1,6 @@
 # Socrates
 
-Socrates is a real-time markdown and editor.Check out the [demo](http://socrates.io).
+Socrates is a real-time markdown editor and previewer. Check out the [demo](http://socrates.io).
 
 Although it updates in real time, its not a perfect etherpad. It behaves best when edited by a single person at a time. 
 
