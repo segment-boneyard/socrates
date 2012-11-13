@@ -127,7 +127,7 @@ Socrates.Model = Backbone.Model.extend({
         var fragment = document.id;
         if (state) fragment += '/'+state;
 
-        this.router.navigate(fragment);
+        this.router.navigate(fragment, {replace:true});
     },
 
     onDocumentRemove : function (removedDocument) {
