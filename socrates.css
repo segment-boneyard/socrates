@@ -581,7 +581,8 @@ article h4,
 article h5,
 article h6 {
   font-size: 1rem;
-  margin-top: 2rem; }
+  margin-top: 2rem;
+  margin-bottom: -0.5rem; }
 article p {
   text-align: justify;
   -webkit-hyphens: auto;
@@ -776,15 +777,24 @@ body {
     color: #3f996b; }
 
 .document-menu-item-wrap {
+  position: relative;
   max-width: 26rem;
   margin: 0 auto;
-  padding: 0.5rem 0.6rem 0.45rem;
   overflow: hidden; }
+
+.document-menu-item-title {
+  padding: 0.5rem 0 0.45rem;
+  position: absolute;
+  left: 0;
+  right: 2em;
+  top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
 
 .document-menu-item-delete-button {
   float: right;
-  opacity: 0.1;
-  padding: 0; }
+  opacity: 0.15; }
 
 .menu-button,
 .add-button {
@@ -863,4 +873,4 @@ pre .selector,
 pre .string:not(.value),
 pre .regexp,
 pre .function {
-  color: #957a96; }
+  color: #4b8b8d; }

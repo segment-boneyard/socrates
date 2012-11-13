@@ -125,6 +125,7 @@ article
     h6,
         font-size: 1rem
         margin-top: 2rem
+        margin-bottom: -.5rem
 
     p
         text-align: justify
@@ -326,20 +327,31 @@ body
         color: $dark-aqua
 
 .document-menu-item-wrap
+    position: relative
+
     // Match textarea width.
     max-width: 26rem
     margin: 0 auto
 
-    // Match button padding.
-    padding: $button-padding $button-padding*1.2 $button-padding*.9
-
     // Clearfix.
     overflow: hidden
 
+.document-menu-item-title
+    // Match button padding.
+    padding: $button-padding 0 $button-padding*.9
+
+    // Make sure it overflows with an ellipsis
+    position: absolute
+    left: 0
+    right: 2em
+    top: 0
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
+
 .document-menu-item-delete-button
     float: right
-    opacity: .1
-    padding: 0
+    opacity: .15
 
 .menu-button,
 .add-button
@@ -421,4 +433,4 @@ pre
     .string:not(.value),
     .regexp,
     .function
-        color: $purple
+        color: $blue

@@ -128,16 +128,16 @@ Socrates.View = Backbone.View.extend({
 
     // Turn dumb quotes into smart quotes.
     renderSmartQuoteFilter : function (markdown) {
-        // Left quotes are either next to a space or an HTML tag.
-        var leftSingleQuote = /[\s>]&#39;/g;
-        var leftDoubleQuote = /[\s>]&quot;+/g;
+        // Left quotes are either next to a space or code stuff.
+        var leftSingleQuote = /([^\w])&#39;/g;
+        var leftDoubleQuote = /([^\w])&quot;/g;
         // Right quotes are everything else...
         var singleQuote = /&#39;/g;
         var doubleQuote = /&quot;/g;
 
         markdown = markdown
-            .replace(leftSingleQuote, ' &lsquo;')
-            .replace(leftDoubleQuote, ' &ldquo;')
+            .replace(leftSingleQuote, '$1&lsquo;')
+            .replace(leftDoubleQuote, '$1&ldquo;')
             .replace(singleQuote, '&rsquo;')
             .replace(doubleQuote, '&rdquo;');
 
@@ -162,11 +162,28 @@ Socrates.View = Backbone.View.extend({
     // that marked.js gives us into ones that Rainbow.js can read first.
     renderCodeHighlightingFilter : function () {
         this.$article.find('code').each(function (index, el) {
+            var $el = $(el);
+
+            // Convert any smart quotes into dumb quotes. This is janky.
+            var html = $el.html();
+            var leftSingleQuote = /‘/g;
+            var leftDoubleQuote = /“/g;
+            var singleQuote     = /’/g;
+            var doubleQuote     = /”/g;
+
+            html = html
+                .replace(leftSingleQuote, '\'')
+                .replace(leftDoubleQuote, '\"')
+                .replace(singleQuote, '\'')
+                .replace(doubleQuote, '\"');
+
+            $el.html(html);
+
             var classes = el.className.split(/\s+/);
             _.each(classes, function (className, i) {
                 if (className.indexOf('lang-') !== -1) {
                     var language = className.substring('lang-'.length);
-                    $(el).attr('data-language', language);
+                    $el.attr('data-language', language);
 
                     window.analytics.track('Render Code Highlighting', {
                         language : language
