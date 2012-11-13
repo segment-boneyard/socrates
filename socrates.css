@@ -706,7 +706,7 @@ body {
   -ms-flex: 1;
   flex: 1; }
 
-.document-textarea,
+.write-textarea-wrap,
 .document-article {
   padding: 3rem;
   max-width: 32rem;
@@ -739,12 +739,17 @@ body {
     .document-textarea {
       font-size: 14px; } }
 
-.document-textarea {
+.write-textarea-wrap {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0; }
+
+.document-textarea {
+  position: relative;
+  width: 100%;
+  height: 100%; }
   .document-textarea::-webkit-scrollbar {
     width: 7px; }
   .document-textarea::-webkit-scrollbar-track {
