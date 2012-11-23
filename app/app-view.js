@@ -75,6 +75,8 @@ Socrates.View = Backbone.View.extend({
             document[hidden] ? self.stopTitleCursor() : self.startTitleCursor();
         }, false);
         this.startTitleCursor();
+
+        shortcut.add("Ctrl+P", this.print);
     },
 
     applyDocumentEventHandlers : function (document, unbind) {
@@ -85,6 +87,10 @@ Socrates.View = Backbone.View.extend({
 
     // Actions
     // -------
+
+    print: function () {
+        this.$article.print();
+    },
 
     render : function () {
         this.renderMenu()

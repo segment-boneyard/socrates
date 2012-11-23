@@ -2316,3 +2316,237 @@ if (typeof module !== 'undefined') {
 
 // Analytics.js
 (function(){var e=this,t={},n=!1,r=function(e){if(!e)return;var t={};for(var n in e)t[n]=e[n];return t},s=function(e){return Object.prototype.toString.call(e)==="[object String]"},o=function(e){return e===Object(e)},u=function(e){if(!s(e)&&!o(e))throw new Error("Encountered unresolvable settings value.");if(s(e)){var t=e;e={},e.apiKey=t}return e};e.analytics||(e.analytics={providers:[],initialize:function(e){var r=[];for(var i in e){if(!t[i])throw new Error("Couldn't find a provider named \""+i+'"');t[i].initialize(e[i]),r.push(t[i])}this.providers=r,n=!0},identify:function(e,t){if(!n)return;for(var i=0,s;s=this.providers[i];i++){if(!s.identify)continue;var o=r(t);s.identify(e,o)}},track:function(e,t){if(!n)return;for(var i=0,s;s=this.providers[i];i++){if(!s.track)continue;var o=r(t);s.track(e,o)}}}),t["Google Analytics"]={initialize:function(e){this.settings=e=u(e);var t=t||[];t.push(["_setAccount",e.apiKey]);if(this.settings.enhancedLinkAttribution===!0){var n=("https:"==document.location.protocol?"https://ssl.":"http://www.")+"google-analytics.com/plugins/ga/inpage_linkid.js";t.push(["_require","inpage_linkid",n])}this.settings.siteSpeedSampleRate!=null&&typeof this.settings.siteSpeedSampleRate=="number"&&t.push(["_setSiteSpeedSampleRate",this.settings.siteSpeedSampleRate]),t.push(["_trackPageview"]),function(){var e=document.createElement("script");e.type="text/javascript",e.async=!0,e.src=("https:"==document.location.protocol?"https://ssl":"http://www")+".google-analytics.com/ga.js";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}(),window._gaq=t},track:function(e,t){window._gaq.push(["_trackEvent","All",e])}},t["Segment.io"]={initialize:function(e){this.settings=e=u(e);var t=t||[];t.load=function(e){var n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=e,e=document.getElementsByTagName("script")[0],e.parentNode.insertBefore(n,e),n=function(e){return function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}},e="init initialize identify track callback logLevel verbose".split(" ");for(i=0;i<e.length;i++)t[e[i]]=n(e[i])},t.load(("https:"===document.location.protocol?"https://":"http://")+"d47xnnr8b1rki.cloudfront.net/api/js/v2/segmentio.js"),t.initialize(e.apiKey,e),window.segment=t},identify:function(e,t){window.segment.identify(e,t)},track:function(e,t){window.segment.track(e,t)}},t.KISSmetrics={initialize:function(e){function n(e){setTimeout(function(){var t=document,n=t.getElementsByTagName("script")[0],r=t.createElement("script");r.type="text/javascript",r.async=!0,r.src=e,n.parentNode.insertBefore(r,n)},1)}this.settings=e=u(e);var t=t||[];n("//i.kissmetrics.com/i.js"),n("//doug1izaerwt3.cloudfront.net/"+e.apiKey+".1.js"),window._kmq=t},identify:function(e,t){window._kmq.push(["identify",e]),window._kmq.push(["set",t])},track:function(e,t){window._kmq.push(["record",e,t])}},t.Mixpanel={initialize:function(e){this.settings=e=u(e),function(e,t){window.mixpanel=t;var n,r,i,s;n=e.createElement("script"),n.type="text/javascript",n.async=!0,n.src=("https:"===e.location.protocol?"https:":"http:")+"//cdn.mxpnl.com/libs/mixpanel-2.1.min.js",r=e.getElementsByTagName("script")[0],r.parentNode.insertBefore(n,r),t._i=[],t.init=function(e,n,r){function o(e,t){var n=t.split(".");2==n.length&&(e=e[n[0]],t=n[1]),e[t]=function(){e.push([t].concat(Array.prototype.slice.call(arguments,0)))}}var u=t;"undefined"!=typeof r?u=t[r]=[]:r="mixpanel",u.people=u.people||[],i=["disable","track","track_pageview","track_links","track_forms","register","register_once","unregister","identify","name_tag","set_config","people.identify","people.set","people.increment"];for(s=0;s<i.length;s++)o(u,i[s]);t._i.push([e,n,r])},t.__SV=1.1}(document,window.mixpanel||[]),window.mixpanel.init(e.apiKey,e)},identify:function(e,t){window.mixpanel.identify(e),window.mixpanel.name_tag(e),window.mixpanel.register(t),this.settings.people===!0&&(window.mixpanel.people.identify(e),window.mixpanel.people.set(t))},track:function(e,t){window.mixpanel.track(e,t)}},t.Intercom={initialize:function(e){this.settings=e=u(e)},identify:function(e,t){function n(){var e=document.createElement("script");e.type="text/javascript",e.async=!0,e.src="https://api.intercom.io/api/js/library.js";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}window.intercomSettings={app_id:this.settings.apiKey,email:e,created_at:Math.round((new Date).getTime()/1e3)},window.attachEvent?window.attachEvent("onload",n):window.addEventListener("load",n,!1)}},t.Olark={initialize:function(e){this.settings=e=u(e),window.olark||function(e){var t=window,n=document,r=t.location.protocol=="https:"?"https:":"http:",i=e.name,s="load",o=function(){function h(){u.P(s),t[i](s)}t[i]=function(){(u.s=u.s||[]).push(arguments)};var u=t[i]._={},a=e.methods.length;while(a--)(function(e){t[i][e]=function(){t[i]("call",e,arguments)}})(e.methods[a]);u.l=e.loader,u.i=o,u.p={0:+(new Date)},u.P=function(e){u.p[e]=new Date-u.p[0]},t.addEventListener?t.addEventListener(s,h,!1):t.attachEvent("on"+s,h);var p=function(){function t(e){return e="head",["<",e,"></",e,"><",s,' onload="var d=',y,";d.getElementsByTagName('head')[0].",a,"(d.",f,"('script')).",h,"='",r,"//",u.l,"'",'"',"></",s,">"].join("")}var s="body",o=n[s];if(!o)return setTimeout(p,100);u.P(1);var a="appendChild",f="createElement",h="src",v=n[f]("div"),m=v[a](n[f](i)),g=n[f]("iframe"),y="document",b="domain",w;v.style.display="none",o.insertBefore(v,o.firstChild).id=i,g.frameBorder="0",g.id=i+"-loader",/MSIE[ ]+6/.test(navigator.userAgent)&&(g.src="javascript:false"),g.allowTransparency="true",m[a](g);try{g.contentWindow[y].open()}catch(E){e[b]=n[b],w="javascript:var d="+y+".open();d.domain='"+n.domain+"';",g[h]=w+"void(0);"}try{var S=g.contentWindow[y];S.write(t()),S.close()}catch(x){g[h]=w+'d.write("'+t().replace(/"/g,String.fromCharCode(92)+'"')+'");d.close();'}u.P(2)};p()};o()}({loader:"static.olark.com/jsclient/loader0.js",name:"olark",methods:["configure","extend","declare","identify"]}),window.olark.identify(e.apiKey)},identify:function(e,t){window.olark("api.chat.updateVisitorNickname",{snippet:e})},track:function(e,t){if(!this.settings.track)return;window.olark("api.chat.sendNotificationToOperator",{body:'Visitor triggered "'+e+'".'})}}}).call(this);
+
+// Shortcut.js
+// Script: http://www.openjs.com/scripts/events/keyboard_shortcuts/shortcut.js
+// Docs: http://www.openjs.com/scripts/events/keyboard_shortcuts/index.php
+// Note: keymaster.js did not work with ctrl+p
+/**
+ * http://www.openjs.com/scripts/events/keyboard_shortcuts/
+ * Version : 2.01.B
+ * By Binny V A
+ * License : BSD
+ */
+(function () {
+window.shortcut = {
+    'all_shortcuts':{},//All the shortcuts are stored in this array
+    'add': function(shortcut_combination,callback,opt) {
+        //Provide a set of default options
+        var default_options = {
+            'type':'keydown',
+            'propagate':false,
+            'disable_in_input':false,
+            'target':document,
+            'keycode':false
+        }
+        if(!opt) opt = default_options;
+        else {
+            for(var dfo in default_options) {
+                if(typeof opt[dfo] == 'undefined') opt[dfo] = default_options[dfo];
+            }
+        }
+
+        var ele = opt.target;
+        if(typeof opt.target == 'string') ele = document.getElementById(opt.target);
+        var ths = this;
+        shortcut_combination = shortcut_combination.toLowerCase();
+
+        //The function to be called at keypress
+        var func = function(e) {
+            e = e || window.event;
+
+            if(opt['disable_in_input']) { //Don't enable shortcut keys in Input, Textarea fields
+                var element;
+                if(e.target) element=e.target;
+                else if(e.srcElement) element=e.srcElement;
+                if(element.nodeType==3) element=element.parentNode;
+
+                if(element.tagName == 'INPUT' || element.tagName == 'TEXTAREA') return;
+            }
+
+            //Find Which key is pressed
+            if (e.keyCode) code = e.keyCode;
+            else if (e.which) code = e.which;
+            var character = String.fromCharCode(code).toLowerCase();
+
+            if(code == 188) character=","; //If the user presses , when the type is onkeydown
+            if(code == 190) character="."; //If the user presses , when the type is onkeydown
+
+            var keys = shortcut_combination.split("+");
+            //Key Pressed - counts the number of valid keypresses - if it is same as the number of keys, the shortcut function is invoked
+            var kp = 0;
+
+            //Work around for stupid Shift key bug created by using lowercase - as a result the shift+num combination was broken
+            var shift_nums = {
+                "`":"~",
+                "1":"!",
+                "2":"@",
+                "3":"#",
+                "4":"$",
+                "5":"%",
+                "6":"^",
+                "7":"&",
+                "8":"*",
+                "9":"(",
+                "0":")",
+                "-":"_",
+                "=":"+",
+                ";":":",
+                "'":"\"",
+                ",":"<",
+                ".":">",
+                "/":"?",
+                "\\":"|"
+            }
+            //Special Keys - and their codes
+            var special_keys = {
+                'esc':27,
+                'escape':27,
+                'tab':9,
+                'space':32,
+                'return':13,
+                'enter':13,
+                'backspace':8,
+
+                'scrolllock':145,
+                'scroll_lock':145,
+                'scroll':145,
+                'capslock':20,
+                'caps_lock':20,
+                'caps':20,
+                'numlock':144,
+                'num_lock':144,
+                'num':144,
+
+                'pause':19,
+                'break':19,
+
+                'insert':45,
+                'home':36,
+                'delete':46,
+                'end':35,
+
+                'pageup':33,
+                'page_up':33,
+                'pu':33,
+
+                'pagedown':34,
+                'page_down':34,
+                'pd':34,
+
+                'left':37,
+                'up':38,
+                'right':39,
+                'down':40,
+
+                'f1':112,
+                'f2':113,
+                'f3':114,
+                'f4':115,
+                'f5':116,
+                'f6':117,
+                'f7':118,
+                'f8':119,
+                'f9':120,
+                'f10':121,
+                'f11':122,
+                'f12':123
+            }
+
+            var modifiers = {
+                shift: { wanted:false, pressed:false},
+                ctrl : { wanted:false, pressed:false},
+                alt  : { wanted:false, pressed:false},
+                meta : { wanted:false, pressed:false}   //Meta is Mac specific
+            };
+
+            if(e.ctrlKey)   modifiers.ctrl.pressed = true;
+            if(e.shiftKey)  modifiers.shift.pressed = true;
+            if(e.altKey)    modifiers.alt.pressed = true;
+            if(e.metaKey)   modifiers.meta.pressed = true;
+
+            for(var i=0; k=keys[i],i<keys.length; i++) {
+                //Modifiers
+                if(k == 'ctrl' || k == 'control') {
+                    kp++;
+                    modifiers.ctrl.wanted = true;
+
+                } else if(k == 'shift') {
+                    kp++;
+                    modifiers.shift.wanted = true;
+
+                } else if(k == 'alt') {
+                    kp++;
+                    modifiers.alt.wanted = true;
+                } else if(k == 'meta') {
+                    kp++;
+                    modifiers.meta.wanted = true;
+                } else if(k.length > 1) { //If it is a special key
+                    if(special_keys[k] == code) kp++;
+
+                } else if(opt['keycode']) {
+                    if(opt['keycode'] == code) kp++;
+
+                } else { //The special keys did not match
+                    if(character == k) kp++;
+                    else {
+                        if(shift_nums[character] && e.shiftKey) { //Stupid Shift key bug created by using lowercase
+                            character = shift_nums[character];
+                            if(character == k) kp++;
+                        }
+                    }
+                }
+            }
+
+            if(kp == keys.length &&
+                        modifiers.ctrl.pressed == modifiers.ctrl.wanted &&
+                        modifiers.shift.pressed == modifiers.shift.wanted &&
+                        modifiers.alt.pressed == modifiers.alt.wanted &&
+                        modifiers.meta.pressed == modifiers.meta.wanted) {
+                callback(e);
+
+                if(!opt['propagate']) { //Stop the event
+                    //e.cancelBubble is supported by IE - this will kill the bubbling process.
+                    e.cancelBubble = true;
+                    e.returnValue = false;
+
+                    //e.stopPropagation works in Firefox.
+                    if (e.stopPropagation) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                    return false;
+                }
+            }
+        }
+        this.all_shortcuts[shortcut_combination] = {
+            'callback':func,
+            'target':ele,
+            'event': opt['type']
+        };
+        //Attach the function with the event
+        if(ele.addEventListener) ele.addEventListener(opt['type'], func, false);
+        else if(ele.attachEvent) ele.attachEvent('on'+opt['type'], func);
+        else ele['on'+opt['type']] = func;
+    },
+
+    //Remove the shortcut - just specify the shortcut and I will remove the binding
+    'remove':function(shortcut_combination) {
+        shortcut_combination = shortcut_combination.toLowerCase();
+        var binding = this.all_shortcuts[shortcut_combination];
+        delete(this.all_shortcuts[shortcut_combination])
+        if(!binding) return;
+        var type = binding['event'];
+        var ele = binding['target'];
+        var callback = binding['callback'];
+
+        if(ele.detachEvent) ele.detachEvent('on'+type, callback);
+        else if(ele.removeEventListener) ele.removeEventListener(type, callback, false);
+        else ele['on'+type] = false;
+    }
+}
+})();
+
+// jQuery.print.js
+//https://raw.github.com/DoersGuild/jQuery.print/master/jQuery.print.js
+(function(a){a.print=a.fn.print=function(){var c,d,b=function(a){return typeof Node=="object"?a instanceof Node:a&&typeof a=="object"&&typeof a.nodeType=="number"&&typeof a.nodeName=="string"};b(this)?d=a(this):arguments.length>0?(d=a(arguments[0]),b(d[0])?arguments.length>1&&(c=arguments[1]):(c=arguments[0],d=a(this))):d=a(this);var e={globalStyles:!0,mediaPrint:!1,stylesheet:null,rejectWindow:!0,noPrintSelector:".no-print",iframe:!0,append:null,prepend:null};c=a.extend(e,c),c.rejectWindow&&d[0]===window&&(d=a(document));var f=a("");c.globalStyles?f=a("style, link"):c.mediaPrint&&(f=a("link[media=print]")),c.stylesheet&&(f=a.merge(f,a('<link rel="stylesheet" href="'+c.stylesheet+'">')));var g=d.clone();g=a("<span/>").append(g),g.find(c.noPrintSelector).remove(),g.append(f.clone()),g.append(a(c.append).clone()),g.prepend(a(c.prepend).clone());var h=g.html();g.remove();var i,j;if(c.iframe)try{$iframe=a(c.iframe+"");var k=$iframe.length;k===0&&($iframe=a("<iframe/>").appendTo("body").hide()),i=$iframe[0],i=i.contentWindow||i.contentDocument,j=i.document||i,j.open(),j.write(h),i.print(),k===0&&$iframe.remove()}catch(l){i=window.open(),i.document.write(h),i.print(),i.close()}else i=window.open(),i.document.write(h),i.print(),i.close();return this}})(jQuery)
