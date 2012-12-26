@@ -28,8 +28,10 @@ var months = [
 var nths = {
     1  : 'st',
     2  : 'nd',
+    3  : 'rd',
     21 : 'st',
     22 : 'nd',
+    23 : 'rd',
     31 : 'st'
 };
 
