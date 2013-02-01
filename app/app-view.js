@@ -117,6 +117,7 @@ Socrates.View = Backbone.View.extend({
         // Apply extra filters.
         this.renderYoutubeFilter();
         this.renderCodeHighlightingFilter();
+        this.renderMathJax();
     },
 
     renderState : function () {
@@ -164,6 +165,11 @@ Socrates.View = Backbone.View.extend({
                 video : youtubeId
             });
         });
+    },
+
+    // Tell mathjax to do it's thing
+    renderMathJax : function () {
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     },
 
     // Apply code highlighting. We have to convert the highlighting classes
