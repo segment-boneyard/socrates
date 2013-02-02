@@ -117,6 +117,7 @@ Socrates.View = Backbone.View.extend({
         // Apply extra filters.
         this.renderYoutubeFilter();
         this.renderCodeHighlightingFilter();
+        this.renderMathJax();
     },
 
     renderState : function () {
@@ -165,6 +166,11 @@ Socrates.View = Backbone.View.extend({
             });
         });
     },
+
+    // Tell mathjax to do it's thing
+    renderMathJax : _.debounce(function () {
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }, 150),
 
     // Apply code highlighting. We have to convert the highlighting classes
     // that marked.js gives us into ones that Rainbow.js can read first.
