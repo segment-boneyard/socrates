@@ -626,6 +626,8 @@ article hr {
   width: 100px;
   margin: 1.5em auto;
   border-bottom: 1px solid #eeeeee; }
+article img {
+  max-width: 100%; }
 
 textarea {
   -webkit-appearance: none;
