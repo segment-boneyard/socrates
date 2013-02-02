@@ -168,9 +168,9 @@ Socrates.View = Backbone.View.extend({
     },
 
     // Tell mathjax to do it's thing
-    renderMathJax : function () {
+    renderMathJax : _.debounce(function () {
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    },
+    }, 150),
 
     // Apply code highlighting. We have to convert the highlighting classes
     // that marked.js gives us into ones that Rainbow.js can read first.
