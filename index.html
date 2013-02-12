@@ -48,7 +48,7 @@
         <script type="text/template" id="document-menu-item-template">
             <li data-id="<%= document.id %>" class="document-menu-item">
                 <div class="document-menu-item-wrap">
-                    <span class="document-menu-item-title"><%= document.get('title') %></span>
+                    <span class="document-menu-item-title"><%= _.escape(document.get('title')) %></span>
                     <button class="document-menu-item-delete-button ss-trash"></button>
                 </div>
             </li>
