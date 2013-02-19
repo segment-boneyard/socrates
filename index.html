@@ -27,9 +27,9 @@
             <ul class="document-menu"></ul>
             <form class="write-form">
                 <div class="write-buttons">
-                    <button class="menu-button ss-rows"></button>
-                    <button class="add-button ss-plus"></button>
-                    <button class="write-only-button ss-write"></button>
+                    <button title="Your Documents" class="menu-button ss-rows"></button>
+                    <button title="New Document" class="add-button ss-plus"></button>
+                    <button title="Write Mode" class="write-only-button ss-write"></button>
                 </div>
                 <div class="write-textarea-wrap">
                     <textarea class="document-textarea"></textarea>
@@ -40,7 +40,7 @@
 
         <section class="read">
             <div class="read-buttons">
-                <button class="read-only-button ss-view"></button>
+                <button title="Read Mode" class="read-only-button ss-view"></button>
             </div>
             <article class="document-article"></article>
         </section>
@@ -49,7 +49,7 @@
             <li data-id="<%= document.id %>" class="document-menu-item">
                 <div class="document-menu-item-wrap">
                     <span class="document-menu-item-title"><%= _.escape(document.get('title')) %></span>
-                    <button class="document-menu-item-delete-button ss-trash"></button>
+                    <button title="Delete Document" class="document-menu-item-delete-button ss-trash"></button>
                 </div>
             </li>
         </script>
