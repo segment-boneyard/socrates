@@ -442,3 +442,37 @@ pre
     .regexp,
     .function
         color: $blue
+
+
+// Print Styles
+// ------------
+
+// Contributed by https://github.com/SimpleAsCouldBe
+
+@media print
+    .write,
+    .read-buttons
+        display: none
+    
+    .document-article
+        padding: 0
+        max-width: none
+    
+    *
+        background: white !important
+        color: black !important
+    
+    a
+        text-decoration: none !important
+    
+    a[href]:after 
+        color:#666
+        font-size: 75%
+        content: " (" attr(href) ")"
+    
+    // Don't show links for images, or javascript/internal links
+    .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after
+        content: ""
+
+    img
+        max-width: 100% !important
