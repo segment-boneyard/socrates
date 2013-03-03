@@ -1,56 +1,13 @@
+@charset "UTF-8";
 /*
-Syntax error: File to import not found or unreadable: symbolset/ss-standard.
-              Load path: /Users/reinpk/dev/socrates
-        on line 1 of socrates.sass
-
-1: @import symbolset/ss-standard
-2: 
-3: @mixin flexbox()
-4:     display: -webkit-box
-5:     display: -moz-box
-6:     display: -ms-box
-
-Backtrace:
-socrates.sass:1
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/import_node.rb:67:in `rescue in import'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/import_node.rb:45:in `import'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/import_node.rb:28:in `imported_file'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/import_node.rb:37:in `css_import?'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:215:in `visit_import'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/base.rb:37:in `visit'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:98:in `visit'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/base.rb:53:in `block in visit_children'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/base.rb:53:in `map'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/base.rb:53:in `visit_children'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:107:in `block in visit_children'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:119:in `with_environment'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:106:in `visit_children'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/base.rb:37:in `block in visit'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:126:in `visit_root'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/base.rb:37:in `visit'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:98:in `visit'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/visitors/perform.rb:7:in `visit'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/tree/root_node.rb:20:in `render'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/engine.rb:315:in `_render'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/engine.rb:262:in `render'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/plugin/compiler.rb:341:in `update_stylesheet'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/plugin/compiler.rb:203:in `block in update_stylesheets'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/plugin/compiler.rb:201:in `each'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/plugin/compiler.rb:201:in `update_stylesheets'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/lib/sass/plugin/compiler.rb:299:in `block in watch'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/vendor/listen/lib/listen/multi_listener.rb:86:in `call'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/vendor/listen/lib/listen/multi_listener.rb:86:in `on_change'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/vendor/listen/lib/listen/multi_listener.rb:95:in `block in initialize_adapter'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/vendor/listen/lib/listen/adapters/polling.rb:55:in `call'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/vendor/listen/lib/listen/adapters/polling.rb:55:in `poll'
-/Users/reinpk/.rvm/gems/ruby-1.9.3-p194/gems/sass-3.2.5/vendor/listen/lib/listen/adapters/polling.rb:31:in `block in start'
+* Symbolset
+* www.symbolset.com
+* Copyright © 2012 Oak Studios LLC
+*
+* Upload this file to your web server
+* and place this within your <head> tags.
+* <link href="webfonts/ss-standard.css" rel="stylesheet" />
 */
-<<<<<<< HEAD
-body:before {
-  white-space: pre;
-  font-family: monospace;
-  content: "Syntax error: File to import not found or unreadable: symbolset/ss-standard.\A               Load path: /Users/reinpk/dev/socrates\A         on line 1 of socrates.sass\A \A 1: @import symbolset/ss-standard\A 2: \A 3: @mixin flexbox()\A 4:     display: -webkit-box\A 5:     display: -moz-box\A 6:     display: -ms-box"; }
-=======
 @font-face {
   font-family: "SSStandard";
   src: url("http://socrates.io/symbolset/ss-standard.eot");
@@ -954,4 +911,3 @@ pre .function {
 
   img {
     max-width: 100% !important; } }
->>>>>>> b6c7a5ee51e71c7732a8075ce1bc61ef0d9a2bd7
