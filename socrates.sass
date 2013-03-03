@@ -28,7 +28,7 @@
     flex: $flex
 
 @mixin mono()
-    font-family: "inconsolata", mono
+    font-family: "inconsolata", monospace
 
 @mixin serif()
     font-family: "kepler-std", serif
@@ -447,32 +447,33 @@ pre
 // Print Styles
 // ------------
 
-// Contributed by https://github.com/SimpleAsCouldBe
-
+// Contributed by https://github.com/SimpleAsCouldBe with slight modifications.
 @media print
     .write,
     .read-buttons
         display: none
-    
+
+    .read
+        border: none
+        box-shadow: none
+
     .document-article
+        margin: 0 auto
+        max-width: 35em
         padding: 0
-        max-width: none
-    
+
+    @page
+        margin: 5em 0
+
     *
         background: white !important
         color: black !important
-    
+
     a
         text-decoration: none !important
-    
-    a[href]:after 
-        color:#666
-        font-size: 75%
+
+    a[href]::after
         content: " (" attr(href) ")"
-    
-    // Don't show links for images, or javascript/internal links
-    .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after
-        content: ""
 
     img
         max-width: 100% !important
