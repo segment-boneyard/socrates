@@ -89,11 +89,9 @@ Socrates.Model = Backbone.Model.extend({
     // --------------
 
     onHomeRoute : function () {
-        var body = onboarding;
-        if (localStorage.getItem(this.bookmarkKey)) {
-            var index = _.random(0, random.length-1);
-            body = random[index];
-        }
+        var body = ''; // blank slate for an experienced user
+        if (!localStorage.getItem(this.bookmarkKey))
+            body = onboarding; // onboarding text for a new user 
 
         this.set('document', this.createDocument(body));
 
