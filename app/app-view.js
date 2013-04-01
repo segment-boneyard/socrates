@@ -44,6 +44,10 @@ Socrates.View = Backbone.View.extend({
         this.$readOnlyButton  = this.$('.read-only-button');
         this.$writeOnlyButton = this.$('.write-only-button');
 
+        var codeMirror = CodeMirror.fromTextArea(this.$textarea[0]);
+
+
+
         // Allow tabs in the textarea using a jQuery plugin.
         this.$textarea.tabby({tabString:'    '});
 
