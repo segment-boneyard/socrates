@@ -198,22 +198,22 @@ onboarding = [
     'If you haven\'t used it before, Socrates is a real-time [markdown](http://daringfireball.net/projects/markdown/) editor in your browser. And **today we added support for beautiful math**, using [MathJax](http://mathjax.com/)!\n',
 
     'Let\'s derive the quadratic formula. Starting with:',
-    '$$ ax^2 + bx + c = 0 $$\n',
+    '$$$ ax^2 + bx + c = 0 $$$\n',
 
     'We\'ll move around the constant terms and coefficients:',
-    '$$ ax^2 + bx = -c $$',
-    '$$ x^2 + \\frac{b}{a} x = -\\frac{c}{a} $$\n',
+    '$$$ ax^2 + bx = -c $$$',
+    '$$$ x^2 + \\frac{b}{a} x = -\\frac{c}{a} $$$\n',
 
     'Then we add a new mystery constant so that things will simplify later:',
-    '$$ x^2 + \\frac{b}{a} x + \\frac{b^2}{4a^2} = -\\frac{c}{a}  + \\frac{b^2}{4a^2} $$\n',
+    '$$$ x^2 + \\frac{b}{a} x + \\frac{b^2}{4a^2} = -\\frac{c}{a}  + \\frac{b^2}{4a^2} $$$\n',
 
     'Then it\'s a simple matter of boiling this down to the final solution:',
-    '$$ x^2 + \\frac{b}{a} x + \\frac{b^2}{4a^2} = \\frac{b^2 - 4ac}{4a^2} $$',
-    '$$ \\left( x + \\frac{b}{2a} \\right)^2 = \\frac{b^2 - 4ac}{4a^2} $$',
-    '$$ x + \\frac{b}{2a} = \\pm \\sqrt{ \\frac{b^2 - 4ac}{4a^2} } $$',
-    '$$ x = - \\frac{b \\pm \\sqrt{ b^2 - 4ac } }{2a} $$\n',
+    '$$$ x^2 + \\frac{b}{a} x + \\frac{b^2}{4a^2} = \\frac{b^2 - 4ac}{4a^2} $$$',
+    '$$$ \\left( x + \\frac{b}{2a} \\right)^2 = \\frac{b^2 - 4ac}{4a^2} $$$',
+    '$$$ x + \\frac{b}{2a} = \\pm \\sqrt{ \\frac{b^2 - 4ac}{4a^2} } $$$',
+    '$$$ x = - \\frac{b \\pm \\sqrt{ b^2 - 4ac } }{2a} $$$\n',
 
-    '$$ \\Box $$\n',
+    '$$$ \\Box $$$\n',
 
     'Keeping all of the LaTeX math syntax in your head is no easy feat, but you\'ll find the [Art of Problem Solving Wiki](http://www.artofproblemsolving.com/Wiki/index.php/LaTeX:Symbols) is an invaluable reference.\n',
 
