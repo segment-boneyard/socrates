@@ -43,11 +43,9 @@ Socrates.View = Backbone.View.extend({
         this.$readOnlyButton  = this.$('.read-only-button');
         this.$writeOnlyButton = this.$('.write-only-button');
 
-        this.codeMirror = CodeMirror.fromTextArea(this.$textarea[0], {
-          lineWrapping: true
-        });
-
-        this.codeMirror.on('change', this.onTextareaKeyup);
+        if (this.model.has('document')) {
+            this.initializeFirepad(this.model.get('document'));
+        }
 
         // Allow tabs in the textarea using a jQuery plugin.
         //this.$textarea.tabby({tabString:'    '});
@@ -93,20 +91,12 @@ Socrates.View = Backbone.View.extend({
 
     render : function () {
         this.renderMenu()
-            .renderTextarea()
             .renderArticle()
             .renderState();
     },
 
     renderMenu : function () {
         this.documentMenu.render();
-        return this;
-    },
-
-    renderTextarea : function () {
-        if (!this.model.has('document')) return this;
-
-        this.codeMirror.setValue(this.model.get('document').get('body'));
         return this;
     },
 
@@ -213,6 +203,38 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
+    initializeFirepad : function (document) {
+        var self = this;
+
+        if (this.firepad) {
+            // we already have a codemirror and firepad, and have to delete
+
+            // testing hack to remove old codemirror / firepad
+            this.$('.firepad').remove();
+            delete this.firepad;
+            delete this.codeMirror;
+        }
+
+        this.codeMirror = CodeMirror.fromTextArea(this.$textarea[0], {
+          lineWrapping: true
+        });
+
+        this.firepad = Firepad.fromCodeMirror(document.firebase.child('body'), this.codeMirror);
+
+        var ready = false;
+        this.firepad.on('ready', function () {
+            ready = true;
+        });
+
+        document.firebase.on('value', function (val) {
+            // have to wait unti ready for get text
+            if (ready) {
+                var body = self.firepad.getText();
+                document.set({ body: body });
+            }
+        });
+    },
+
     save : function () {
         this.model.get('document').save();
     },
@@ -255,11 +277,6 @@ Socrates.View = Backbone.View.extend({
         if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write');
     },
 
-    onTextareaKeyup : function (codeMirror, changeObj) {
-        this.model.get('document').set('body', codeMirror.getValue());
-        this.save();
-    },
-
     onMenuButtonClick : function (event) {
         event.preventDefault();
 
@@ -292,14 +309,12 @@ Socrates.View = Backbone.View.extend({
         var previousDocument = this.model.previous('document');
         if (previousDocument) this.applyDocumentEventHandlers(previousDocument, true);
         this.applyDocumentEventHandlers(document);
-
-        this.renderTextarea()
-            .renderArticle();
+        this.initializeFirepad(document);
+        this.renderArticle();
     },
 
     onDocumentBodyChange : function (document) {
-        this.renderTextarea()
-            .renderArticle();
+        this.renderArticle();
     },
 
     onDocumentMenuSelect : function (menu, document) {
