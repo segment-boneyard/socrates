@@ -25,7 +25,6 @@ Socrates.View = Backbone.View.extend({
     youtubeEmbedTemplate : _.template('<iframe width="100%" height="400" src="http://www.youtube.com/embed/<%= id %>" frameborder="0" allowfullscreen></iframe>'),
 
     events : {
-        'keyup .document-textarea' : 'onTextareaKeyup',
         'click .read-only-button'  : 'onReadOnlyButtonClick',
         'click .write-only-button' : 'onWriteOnlyButtonClick',
         'click .add-button'        : 'onAddButtonClick',
@@ -44,12 +43,14 @@ Socrates.View = Backbone.View.extend({
         this.$readOnlyButton  = this.$('.read-only-button');
         this.$writeOnlyButton = this.$('.write-only-button');
 
-        var codeMirror = CodeMirror.fromTextArea(this.$textarea[0]);
+        this.codeMirror = CodeMirror.fromTextArea(this.$textarea[0], {
+          lineWrapping: true
+        });
 
-
+        this.codeMirror.on('change', this.onTextareaKeyup);
 
         // Allow tabs in the textarea using a jQuery plugin.
-        this.$textarea.tabby({tabString:'    '});
+        //this.$textarea.tabby({tabString:'    '});
 
         // Make a menu to select documents from.
         this.documentMenu = new Socrates.DocumentMenuView({
@@ -105,7 +106,7 @@ Socrates.View = Backbone.View.extend({
     renderTextarea : function () {
         if (!this.model.has('document')) return this;
 
-        this.$textarea.val(this.model.get('document').get('body'));
+        this.codeMirror.setValue(this.model.get('document').get('body'));
         return this;
     },
 
@@ -254,8 +255,8 @@ Socrates.View = Backbone.View.extend({
         if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write');
     },
 
-    onTextareaKeyup : function (event) {
-        this.model.get('document').set('body', this.$textarea.val());
+    onTextareaKeyup : function (codeMirror, changeObj) {
+        this.model.get('document').set('body', codeMirror.getValue());
         this.save();
     },
 
