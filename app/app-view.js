@@ -44,7 +44,10 @@ Socrates.View = Backbone.View.extend({
         this.$writeOnlyButton = this.$('.write-only-button');
 
         this.codeMirror = CodeMirror.fromTextArea(this.$textarea[0], {
-          lineWrapping: true
+          autofocus               : true,
+          lineWrapping            : true,
+          showCursorWhenSelecting : true,
+          tabindex                : 1
         });
 
         this.codeMirror.on('change', this.onTextareaKeyup);
