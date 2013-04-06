@@ -72,7 +72,10 @@ Socrates.DocumentModel = Backbone.Model.extend({
         if (headings.length > 0) title = $(headings[0]).text();
 
         this.set('title', title);
+        if (this.firebase) this.firebase.child('title').set(title);
     },
+
+
 
     initializeFirebase: function () {
         var self = this;
@@ -80,16 +83,26 @@ Socrates.DocumentModel = Backbone.Model.extend({
         this.firebase = new Firebase(this.urlRoot + this.id);
         this.firebase.on('value', function (snapshot) {
             var val = snapshot.val();
-            if (val) self.set(val);
+            if (val) {
+                var changes = _.omit(val, 'body');
+                self.set(changes);
+            }
         });
-    },
+    }
 
+    /*
     save : function () {
-        this.firebase.set(this.toJSON());
+
+        var self = this;
+
+        // Firepad is managing body so can't save it
+        _.each(['created', 'title'], function (attr) {
+            self.firebase.child(attr).set(self.get(attr));
+        });
 
         window.analytics.track('Save a Document', {
             id : this.id
         });
-    }
+    }*/
 
 });
