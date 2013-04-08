@@ -25,20 +25,6 @@
   background-color: white; /* The little square between H and V scrollbars */
 }
 
-/* GUTTER */
-
-.CodeMirror-gutters {
-  border-right: 1px solid #ddd;
-  background-color: #f7f7f7;
-}
-.CodeMirror-linenumbers {}
-.CodeMirror-linenumber {
-  padding: 0 3px 0 5px;
-  min-width: 20px;
-  text-align: right;
-  color: #999;
-}
-
 /* CURSOR */
 
 .CodeMirror div.CodeMirror-cursor {

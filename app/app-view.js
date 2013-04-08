@@ -227,6 +227,7 @@ Socrates.View = Backbone.View.extend({
 
         var firepad = this.firepad;
         firepad.on('ready', function () {
+
           document.firebase.on('value', function (snapshot) {
             // the document firebase changed,
 
