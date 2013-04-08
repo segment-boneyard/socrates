@@ -82,7 +82,7 @@ Socrates.View = Backbone.View.extend({
 
     applyDocumentEventHandlers : function (document, unbind) {
         var method = unbind ? 'off' : 'on';
-        document[method]('change:body', this.onDocumentBodyChange);
+        document[method]('change:firepad', this.onDocumentBodyChange);
     },
 
 
@@ -104,7 +104,7 @@ Socrates.View = Backbone.View.extend({
         if (!this.model.has('document')) return this;
 
         // Convert the model's markdown body into html.
-        var body     = this.model.get('document').get('body');
+        var body     = this.model.get('document').get('firepad');
         var markdown = marked(body);
         var quoted   = this.renderSmartQuoteFilter(markdown);
         this.$article.html(quoted);
@@ -216,22 +216,35 @@ Socrates.View = Backbone.View.extend({
         }
 
         this.codeMirror = CodeMirror.fromTextArea(this.$textarea[0], {
-          lineWrapping: true
+            autofocus               : true,
+            lineWrapping            : true,
+            showCursorWhenSelecting : true,
+            tabindex                : 1
         });
 
-        this.firepad = Firepad.fromCodeMirror(document.firebase.child('body'), this.codeMirror);
+        this.firepad = Firepad.fromCodeMirror(
+            document.firebase.child('firepad'), this.codeMirror);
 
-        var ready = false;
-        this.firepad.on('ready', function () {
-            ready = true;
-        });
+        var firepad = this.firepad;
+        firepad.on('ready', function () {
+          document.firebase.on('value', function (snapshot) {
+            // the document firebase changed,
 
-        document.firebase.on('value', function (val) {
-            // have to wait unti ready for get text
-            if (ready) {
-                var body = self.firepad.getText();
-                document.set({ body: body });
+            var val = snapshot.val();
+            if (val) {
+                if (_.isString(val.body) && val.body.length > 0) {
+                    // if we have a body set from before firepad
+                    firepad.setText(val.body);
+
+                    // remove the body as its not the format anymore
+                    document.firebase.child('body').remove();
+                }
             }
+
+            // set the firepad text now
+            var body = firepad.getText();
+            document.set({ firepad: body });
+          });
         });
     },
 

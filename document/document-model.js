@@ -41,7 +41,7 @@ Socrates.DocumentModel = Backbone.Model.extend({
         return {
             created : new Date(),
             title   : 'Untitled',
-            body    : ''
+            firepad : ''
         };
     },
 
@@ -53,7 +53,7 @@ Socrates.DocumentModel = Backbone.Model.extend({
         this.generateTitle();
         this.initializeFirebase();
 
-        this.on('change:body', this.generateTitle);
+        this.on('change:firepad', this.generateTitle);
     },
 
     generateTitle: function () {
@@ -66,7 +66,7 @@ Socrates.DocumentModel = Backbone.Model.extend({
         var year    = created.getFullYear();
         var title   = 'Untitled - '+day+', '+month+' '+date+nth+', '+year;
 
-        var body     = this.get('body');
+        var body     = this.get('firepad');
         var markdown = marked(body);
         var headings = $(markdown).filter('h1, h2, h3, h4, h5, h6');
         if (headings.length > 0) title = $(headings[0]).text();
@@ -84,7 +84,7 @@ Socrates.DocumentModel = Backbone.Model.extend({
         this.firebase.on('value', function (snapshot) {
             var val = snapshot.val();
             if (val) {
-                var changes = _.omit(val, 'body');
+                var changes = _.omit(val, 'body', 'firepad');
                 self.set(changes);
             }
         });
