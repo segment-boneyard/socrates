@@ -666,13 +666,6 @@ body {
   overflow: hidden; }
 
 .write {
-  -webkit-box-flex: 0;
-  -moz-box-flex: 0;
-  -ms-box-flex: 0;
-  -webkit-flex: 0;
-  -moz-flex: 0;
-  -ms-flex: 0;
-  flex: 0;
   display: -webkit-box;
   display: -moz-box;
   display: -ms-box;
@@ -752,13 +745,14 @@ body {
   position: relative;
   width: 100%;
   height: 100%; }
-  .document-textarea::-webkit-scrollbar {
-    width: 7px; }
-  .document-textarea::-webkit-scrollbar-track {
-    margin: 3rem; }
-  .document-textarea::-webkit-scrollbar-thumb {
-    border-radius: 14px;
-    background: #edebe2; }
+
+.document-textarea::-webkit-scrollbar,
+.CodeMirror-vscrollbar::-webkit-scrollbar {
+  width: 7px; }
+.document-textarea::-webkit-scrollbar-thumb,
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb {
+  border-radius: 14px;
+  background: #edebe2; }
 
 .document-menu {
   list-style: none;

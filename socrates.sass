@@ -1,37 +1,37 @@
 @import symbolset/ss-standard
 
 @mixin flexbox()
-    display: -webkit-box
-    display: -moz-box
-    display: -ms-box
-    display: -webkit-flex
-    display: -moz-flex
-    display: -ms-flex
-    display: flex
+  display: -webkit-box
+  display: -moz-box
+  display: -ms-box
+  display: -webkit-flex
+  display: -moz-flex
+  display: -ms-flex
+  display: flex
 
 @mixin vertical-flexbox()
-    -webkit-box-orient: vertical
-    -moz-box-orient: vertical
-    -ms-box-orient: vertical
-    -webkit-flex-direction: column
-    -moz-flex-direction: column
-    -ms-flex-direction: column
-    flex-direction: column
+  -webkit-box-orient: vertical
+  -moz-box-orient: vertical
+  -ms-box-orient: vertical
+  -webkit-flex-direction: column
+  -moz-flex-direction: column
+  -ms-flex-direction: column
+  flex-direction: column
 
 @mixin flex($flex)
-    -webkit-box-flex: $flex
-    -moz-box-flex: $flex
-    -ms-box-flex: $flex
-    -webkit-flex: $flex
-    -moz-flex: $flex
-    -ms-flex: $flex
-    flex: $flex
+  -webkit-box-flex: $flex
+  -moz-box-flex: $flex
+  -ms-box-flex: $flex
+  -webkit-flex: $flex
+  -moz-flex: $flex
+  -ms-flex: $flex
+  flex: $flex
 
 @mixin mono()
-    font-family: "inconsolata", monospace
+  font-family: "inconsolata", monospace
 
 @mixin serif()
-    font-family: "kepler-std", serif
+  font-family: "kepler-std", serif
 
 
 // Constants
@@ -57,181 +57,180 @@ $button-padding: .5rem
 // ----
 
 html
-    font-size: 16px
-    line-height: 1.45
-    color: $text
-    overflow-y: scroll
-    overflow-x: hidden
+  font-size: 16px
+  line-height: 1.45
+  color: $text
+  overflow-y: scroll
+  overflow-x: hidden
 
-    @media (min-width: 1200px)
-        font-size: 17px
-    @media (min-width: 1300px)
-        font-size: 18px
-    @media (min-width: 1600px)
-        font-size: 20px
-    @media (min-width: 1800px)
-        font-size: 22px
+  @media (min-width: 1200px)
+    font-size: 17px
+  @media (min-width: 1300px)
+    font-size: 18px
+  @media (min-width: 1600px)
+    font-size: 20px
+  @media (min-width: 1800px)
+    font-size: 22px
 
 button
-    -webkit-appearance: none
-    -moz-appearance: none
-    background: transparent
-    border: none
+  -webkit-appearance: none
+  -moz-appearance: none
+  background: transparent
+  border: none
 
-    font-size: 12px
-    color: $text
-    padding: $button-padding $button-padding*1.2 $button-padding*.9
-    cursor: pointer
+  font-size: 12px
+  color: $text
+  padding: $button-padding $button-padding*1.2 $button-padding*.9
+  cursor: pointer
 
-    opacity: .2
-    &:hover,
-    &:active,
-    &.pressed
-        opacity: 1
+  opacity: .2
+  &:hover,
+  &:active,
+  &.pressed
+    opacity: 1
 
 article
-    > :first-child
-        margin-top: 0
+  > :first-child
+    margin-top: 0
 
-    > *
-        margin-top: 1rem
-        margin-bottom: 1rem
+  > *
+    margin-top: 1rem
+    margin-bottom: 1rem
 
-    h1
-        font-size: 1.5rem
-        margin-top: 4rem
-        margin-bottom: 2.5rem
+  h1
+    font-size: 1.5rem
+    margin-top: 4rem
+    margin-bottom: 2.5rem
 
-        position: relative
-        text-align: center
+    position: relative
+    text-align: center
 
-        &::after
-            content: ''
-            width: 100px
-            left: 50%
-            margin-left: -50px
-            border-bottom: 1px solid $rule
-            top: 100%
-            position: absolute
-            margin-top: 1rem
+    &::after
+      content: ''
+      width: 100px
+      left: 50%
+      margin-left: -50px
+      border-bottom: 1px solid $rule
+      top: 100%
+      position: absolute
+      margin-top: 1rem
 
-    h2
-        font-size: 1.25rem
-        margin-top: 2rem
+  h2
+    font-size: 1.25rem
+    margin-top: 2rem
 
-    h3,
-    h4,
-    h5,
-    h6,
-        font-size: 1rem
-        margin-top: 2rem
-        margin-bottom: -.5rem
+  h3,
+  h4,
+  h5,
+  h6,
+    font-size: 1rem
+    margin-top: 2rem
+    margin-bottom: -.5rem
 
-    p
-        text-align: justify
+  p
+    text-align: justify
 
-        -webkit-hyphens: auto
-        -moz-hyphens: auto
-        -ms-hyphens: auto
-        -o-hyphens: auto
-        hyphens: auto
+    -webkit-hyphens: auto
+    -moz-hyphens: auto
+    -ms-hyphens: auto
+    -o-hyphens: auto
+    hyphens: auto
 
-    blockquote
-        margin-top: 1.5rem
-        margin-bottom: 1.5rem
-        font-style: italic
+  blockquote
+    margin-top: 1.5rem
+    margin-bottom: 1.5rem
+    font-style: italic
 
-    a
-        position: relative
-        color: $aqua
-        &:hover,
-        &:focus
-            color: $dark-aqua
-        &:active
-            top: 1px
+  a
+    position: relative
+    color: $aqua
+    &:hover,
+    &:focus
+      color: $dark-aqua
+    &:active
+      top: 1px
 
-    ul,
-    ol
-        margin-left: 2em
-        font-size: .9em
+  ul,
+  ol
+    margin-left: 2em
+    font-size: .9em
 
-        > li
-            margin-top: .5em
-            margin-bottom: .5em
+    > li
+      margin-top: .5em
+      margin-bottom: .5em
 
-    ul
-        list-style-type: disc
+  ul
+    list-style-type: disc
 
-    pre,
-    code
-        +mono
-        margin-top: 1.5rem
-        margin-bottom: 1.5rem
-    pre
-        font-size: .8em
-    code
-        font-size: .95em
+  pre,
+  code
+    +mono
+    margin-top: 1.5rem
+    margin-bottom: 1.5rem
+  pre
+    font-size: .8em
+  code
+    font-size: .95em
 
-    hr
-        background: transparent
-        border: none
+  hr
+    background: transparent
+    border: none
 
-        width: 100px
-        margin: 1.5em auto
+    width: 100px
+    margin: 1.5em auto
 
-        border-bottom: 1px solid $rule
+    border-bottom: 1px solid $rule
 
-    img
-        max-width: 100%
+  img
+    max-width: 100%
 
 textarea
-    -webkit-appearance: none
-    -moz-appearance: none
-    display: block
+  -webkit-appearance: none
+  -moz-appearance: none
+  display: block
 
-    border: none
-    background: transparent
-    resize: none
+  border: none
+  background: transparent
+  resize: none
 
-    &:focus
-        outline: none
+  &:focus
+    outline: none
 
 
 // Layout
 // ------
 
 *
-    margin: 0
-    padding: 0
+  margin: 0
+  padding: 0
 
 body
-    +flexbox
+  +flexbox
 
 // Fix weirdness with Firefox.
 html
-    height: 100%
-    width: 100%
+  height: 100%
+  width: 100%
 body
-    min-height: 100%
-    min-width: 100%
+  min-height: 100%
+  min-width: 100%
 
 .write,
 .read
-    position: relative
-    overflow: hidden
+  position: relative
+  overflow: hidden
 
 .write
-    +flex(0)
-    +flexbox
-    +vertical-flexbox
-    width: 33rem
+  +flexbox
+  +vertical-flexbox
+  width: 33rem
 
 .write-form
-    position: relative
-    +flex(1)
+  position: relative
+  +flex(1)
 
 .read
-    +flex(1)
+  +flex(1)
 
 
 
@@ -240,138 +239,138 @@ body
 
 .write-textarea-wrap,
 .document-article
-    padding: 3rem
-    max-width: 32rem
-    margin: 0 auto
+  padding: 3rem
+  max-width: 32rem
+  margin: 0 auto
 
 .write-buttons,
 .read-buttons
-    position: relative
-    overflow: hidden
-    z-index: 1
+  position: relative
+  overflow: hidden
+  z-index: 1
 
 
 // Read
 // ----
 
 .read
-    +serif
-    border-left: 1px solid darken($sand, 6%)
-    box-shadow: 0 -1px 10px darken($sand, 6%)
+  +serif
+  border-left: 1px solid darken($sand, 6%)
+  box-shadow: 0 -1px 10px darken($sand, 6%)
 
 .document-article
 
 .read-only-button
-    float: left
+  float: left
 
 
 // Write
 // -----
 
 .write
-    background: $sand
+  background: $sand
 
 .write,
 .document-textarea
-    +mono
-    font-size: 12px
-    line-height: 1.2
+  +mono
+  font-size: 12px
+  line-height: 1.2
 
-    @media (min-width: 1200px)
-        font-size: 14px
+  @media (min-width: 1200px)
+    font-size: 14px
 
 .write-textarea-wrap
-    position: absolute
-    top: 0
-    left: 0
-    right: 0
-    bottom: 0
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
 
 .document-textarea
-    position: relative
-    width: 100%
-    height: 100%
+  position: relative
+  width: 100%
+  height: 100%
 
-    &::-webkit-scrollbar
-        width: 7px
-    &::-webkit-scrollbar-track
-        margin: 3rem
-    &::-webkit-scrollbar-thumb
-        border-radius: 14px
-        background: darken($dark-sand, 5%)
+.document-textarea,
+.CodeMirror-vscrollbar
+  &::-webkit-scrollbar
+    width: 7px
+  &::-webkit-scrollbar-thumb
+    border-radius: 14px
+    background: darken($dark-sand, 5%)
 
 
 .document-menu
-    list-style: none
+  list-style: none
 
-    position: relative
+  position: relative
 
-    background-color: $dark-sand
-    border-top: 1px darken($dark-sand, 5%) solid
-    border-bottom: 1px darken($dark-sand, 5%) solid
+  background-color: $dark-sand
+  border-top: 1px darken($dark-sand, 5%) solid
+  border-bottom: 1px darken($dark-sand, 5%) solid
 
-    box-shadow: inset 2px 0 6px darken($dark-sand, 6%)
+  box-shadow: inset 2px 0 6px darken($dark-sand, 6%)
 
-    // Initial display state.
-    display: none
+  // Initial display state.
+  display: none
 
-    // For safety, give a reasonable max-height and just don't show a scrollbar
-    // since I don't want to deal with styling it right now.
-    max-height: 500px
-    overflow-y: auto
-    &::-webkit-scrollbar
-        width: 0
+  // For safety, give a reasonable max-height and just don't show a scrollbar
+  // since I don't want to deal with styling it right now.
+  max-height: 500px
+  overflow-y: auto
+  &::-webkit-scrollbar
+    width: 0
 
 .document-menu-item
-    overflow: hidden
+  overflow: hidden
 
-    cursor: pointer
-    &:hover,
-    &:focus
-        background: rgba($text, .01)
-        outline: none
-        color: $aqua
-    &:active
-        color: $dark-aqua
+  cursor: pointer
+  &:hover,
+  &:focus
+    background: rgba($text, .01)
+    outline: none
+    color: $aqua
+  &:active
+    color: $dark-aqua
 
 .document-menu-item-wrap
-    position: relative
+  position: relative
 
-    // Match textarea width.
-    max-width: 26rem
-    margin: 0 auto
+  // Match textarea width.
+  max-width: 26rem
+  margin: 0 auto
 
-    // Clearfix.
-    overflow: hidden
+  // Clearfix.
+  overflow: hidden
 
 .document-menu-item-title
-    // Match button padding.
-    padding: $button-padding 0 $button-padding*.9
+  // Match button padding.
+  padding: $button-padding 0 $button-padding*.9
 
-    // Make sure it overflows with an ellipsis
-    position: absolute
-    left: 0
-    right: 2em
-    top: 0
-    overflow: hidden
-    text-overflow: ellipsis
-    white-space: nowrap
+  // Make sure it overflows with an ellipsis
+  position: absolute
+  left: 0
+  right: 2em
+  top: 0
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
 
 .document-menu-item-delete-button
-    float: right
-    opacity: .15
+  float: right
+  opacity: .15
 
 .menu-button,
 .add-button
-    float: left
+  float: left
 .write-only-button
-    float: right
+  float: right
 
 // Reduce the padding between the two buttons.
 .add-button
-    padding-left: $button-padding / 1.5
+  padding-left: $button-padding / 1.5
 .menu-button
-    padding-right: $button-padding / 1.5
+  padding-right: $button-padding / 1.5
 
 
 // Write & Read Only
@@ -379,51 +378,51 @@ body
 
 .write-only .read,
 .read-only .write
-    +flex(0)
+  +flex(0)
 .write-only .read
-    width: 37rem
-    margin-right: -30rem
+  width: 37rem
+  margin-right: -30rem
 
 .read-only .write
-    margin-left: -26rem
+  margin-left: -26rem
 
 .write-only .write,
 .read-only .read
-    +flex(1)
+  +flex(1)
 
 
 // Attribution
 // -----------
 
 .attribution
-    +serif
-    padding: 1rem
-    text-align: center
-    color: rgba($text, .4)
+  +serif
+  padding: 1rem
+  text-align: center
+  color: rgba($text, .4)
 
-    .segmentio-link,
-    .firebase-link
-        vertical-align: middle
-        display: inline-block
-        text-indent: -9999px
-        background-size: cover
-        background-repeat: none
-        background-position: center center
-        margin-left: .3em
+  .segmentio-link,
+  .firebase-link
+    vertical-align: middle
+    display: inline-block
+    text-indent: -9999px
+    background-size: cover
+    background-repeat: none
+    background-position: center center
+    margin-left: .3em
 
-        opacity: .4
-        &:hover
-            opacity: 1
+    opacity: .4
+    &:hover
+      opacity: 1
 
-    .segmentio-link
-        background-image: url('images/segmentio.png')
-        width: 110px
-        height: 20px
+  .segmentio-link
+    background-image: url('images/segmentio.png')
+    width: 110px
+    height: 20px
 
-    .firebase-link
-        background-image: url('images/firebase.png')
-        width: 98px
-        height: 19px
+  .firebase-link
+    background-image: url('images/firebase.png')
+    width: 98px
+    height: 19px
 
 
 // Code Highlighting
@@ -431,17 +430,17 @@ body
 
 // Everything's purple or light gray.
 pre
-    .comment
-        color: lighten($text, 45%)
-    .constant,
-    .storage,
-    .tag,
-    .keyword:not(.operator),
-    .selector,
-    .string:not(.value),
-    .regexp,
-    .function
-        color: $blue
+  .comment
+    color: lighten($text, 45%)
+  .constant,
+  .storage,
+  .tag,
+  .keyword:not(.operator),
+  .selector,
+  .string:not(.value),
+  .regexp,
+  .function
+    color: $blue
 
 
 // Print Styles
@@ -449,31 +448,31 @@ pre
 
 // Contributed by https://github.com/SimpleAsCouldBe with slight modifications.
 @media print
-    .write,
-    .read-buttons
-        display: none
+  .write,
+  .read-buttons
+    display: none
 
-    .read
-        border: none
-        box-shadow: none
+  .read
+    border: none
+    box-shadow: none
 
-    .document-article
-        margin: 0 auto
-        max-width: 35em
-        padding: 0
+  .document-article
+    margin: 0 auto
+    max-width: 35em
+    padding: 0
 
-    @page
-        margin: 5em 0
+  @page
+    margin: 5em 0
 
-    *
-        background: white !important
-        color: black !important
+  *
+    background: white !important
+    color: black !important
 
-    a
-        text-decoration: none !important
+  a
+    text-decoration: none !important
 
-    a[href]::after
-        content: " (" attr(href) ")"
+  a[href]::after
+    content: " (" attr(href) ")"
 
-    img
-        max-width: 100% !important
+  img
+    max-width: 100% !important

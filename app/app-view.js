@@ -3,23 +3,6 @@
 var $window = $(window);
 var MININUM_WIDTH = 1000;
 
-// Pave over the page visibility API in different browsers.
-// https://developer.mozilla.org/en-US/docs/DOM/Using_the_Page_Visibility_API
-var hidden, visibilityChange;
-if (typeof document.hidden !== "undefined") {
-    hidden = "hidden";
-    visibilityChange = "visibilitychange";
-} else if (typeof document.mozHidden !== "undefined") {
-    hidden = "mozHidden";
-    visibilityChange = "mozvisibilitychange";
-} else if (typeof document.msHidden !== "undefined") {
-    hidden = "msHidden";
-    visibilityChange = "msvisibilitychange";
-} else if (typeof document.webkitHidden !== "undefined") {
-    hidden = "webkitHidden";
-    visibilityChange = "webkitvisibilitychange";
-}
-
 Socrates.View = Backbone.View.extend({
 
     youtubeEmbedTemplate : _.template('<iframe width="100%" height="400" src="http://www.youtube.com/embed/<%= id %>" frameborder="0" allowfullscreen></iframe>'),
@@ -68,16 +51,6 @@ Socrates.View = Backbone.View.extend({
         this.save = _.debounce(this.save, 500);
         // Debounce applying the youtube filter since it's kinda intensive.
         this.renderYoutubeFilter = _.debounce(this.renderYoutubeFilter, 1000);
-
-        // Add a window resize handler to re-try state.
-        $window.on('resize', this.onWindowResize);
-
-        // Only show the title cursor when the page is visible.
-        var self = this;
-        document.addEventListener(visibilityChange, function () {
-            document[hidden] ? self.stopTitleCursor() : self.startTitleCursor();
-        }, false);
-        this.startTitleCursor();
     },
 
     applyDocumentEventHandlers : function (document, unbind) {
@@ -258,38 +231,9 @@ Socrates.View = Backbone.View.extend({
         this.$menuButton.toggleState('pressed');
     },
 
-    startTitleCursor : function () {
-        this._cursorInterval = setInterval(this.renderTitleCursor, 500);
-    },
-
-    stopTitleCursor : function () {
-        clearInterval(this._cursorInterval);
-        this.$title.html('Socrates');
-    },
-
-    renderTitleCursor : function () {
-        this._titleCursor || (this._titleCursor = 'on');
-
-        var cursor = this._titleCursor === 'on' ? '|' : '';
-        this.$title.html('Socrates' + cursor);
-
-        // Swap the cursor for next time.
-        this._titleCursor = this._titleCursor === 'on' ? 'off' : 'on';
-
-        return this;
-    },
-
 
     // Event Handlers
     // --------------
-
-    // When the window resizes too small, if we're not in one of the two states,
-    // force us into write-only mode.
-    onWindowResize : function (event) {
-        if (this.model.has('state')) return;
-
-        if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write');
-    },
 
     onMenuButtonClick : function (event) {
         event.preventDefault();
