@@ -9206,6 +9206,14 @@ firepad.FirebaseAdapter = (function (global) {
   FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
     var self = this;
 
+    // If we're not ready yet, do nothing right now, and trigger a retry when we're ready.
+    if (!this.ready_) {
+      this.on('ready', function() {
+        self.trigger('retry');
+      });
+      return;
+    }
+
     // Sanity check that this operation is valid.
     assert(this.document_.targetLength === operation.baseLength, "sendOperation() called with invalid operation.");
 
@@ -9332,18 +9340,16 @@ firepad.FirebaseAdapter = (function (global) {
     // Compose the checkpoint and all subsequent revisions into a single operation to apply at once.
     this.revision_ = this.checkpointRevision_;
     var revisionId = revisionToId(this.revision_), pending = this.pendingReceivedRevisions_;
-    while (pending[revisionId]) {
-      var author = pending[revisionId].a,
-          op = TextOperation.fromJSON(pending[revisionId].o);
-      delete pending[revisionId];
-
-      // If a misbehaved client adds a bad operation, just ignore it.
-      if (this.document_.targetLength !== op.baseLength) {
-        utils.log('Invalid operation.', revisionId, author, op);
+    while (pending[revisionId] != null) {
+      var revision = this.parseRevision_(pending[revisionId]);
+      if (!revision) {
+        // If a misbehaved client adds a bad operation, just ignore it.
+        utils.log('Invalid operation.', this.ref_.toString(), revisionId, pending[revisionId]);
       } else {
-        this.document_ = this.document_.compose(op);
+        this.document_ = this.document_.compose(revision.operation);
       }
 
+      delete pending[revisionId];
       this.revision_++;
       revisionId = revisionToId(this.revision_);
     }
@@ -9351,27 +9357,28 @@ firepad.FirebaseAdapter = (function (global) {
     this.trigger('operation', this.document_);
 
     this.ready_ = true;
-    this.trigger('ready');
+    var self = this;
+    setTimeout(function() {
+      self.trigger('ready');
+    }, 0);
   };
 
   FirebaseAdapter.prototype.handlePendingReceivedRevisions_ = function() {
     var pending = this.pendingReceivedRevisions_;
     var revisionId = revisionToId(this.revision_);
     var triggerRetry = false;
-    while (pending[revisionId]) {
-      var author = pending[revisionId].a,
-          op = TextOperation.fromJSON(pending[revisionId].o);
-      delete pending[revisionId];
+    while (pending[revisionId] != null) {
       this.revision_++;
 
-      if (op.baseLength !== this.document_.targetLength) {
+      var revision = this.parseRevision_(pending[revisionId]);
+      if (!revision) {
         // If a misbehaved client adds a bad operation, just ignore it.
-        utils.log('Invalid operation.', revisionId, author, op);
+        utils.log('Invalid operation.', this.ref_.toString(), revisionId, pending[revisionId]);
       } else {
-        this.document_ = this.document_.compose(op);
+        this.document_ = this.document_.compose(revision.operation);
         if (this.sent_ && revisionId === this.sent_.id) {
           // We have an outstanding change at this revision id.
-          if (this.sent_.op.equals(op) && author === this.userId_) {
+          if (this.sent_.op.equals(revision.operation) && revision.author === this.userId_) {
             // This is our change; it succeeded.
             if (this.revision_ % CHECKPOINT_FREQUENCY === 0) {
               this.saveCheckpoint_();
@@ -9381,12 +9388,13 @@ firepad.FirebaseAdapter = (function (global) {
           } else {
             // our op failed.  Trigger a retry after we're done catching up on any incoming ops.
             triggerRetry = true;
-            this.trigger('operation', op);
+            this.trigger('operation', revision.operation);
           }
         } else {
-          this.trigger('operation', op);
+          this.trigger('operation', revision.operation);
         }
       }
+      delete pending[revisionId];
 
       revisionId = revisionToId(this.revision_);
     }
@@ -9395,6 +9403,24 @@ firepad.FirebaseAdapter = (function (global) {
       this.sent_ = null;
       this.trigger('retry');
     }
+  };
+
+  FirebaseAdapter.prototype.parseRevision_ = function(data) {
+    // We could do some of this validation via security rules.  But it's nice to be robust, just in case.
+    if (typeof data !== 'object') { return null; }
+    if (typeof data.a !== 'string' || typeof data.o !== 'object') { return null; }
+    var op = null;
+    try {
+      op = TextOperation.fromJSON(data.o);
+    }
+    catch (e) {
+      return null;
+    }
+
+    if (op.baseLength !== this.document_.targetLength) {
+      return null;
+    }
+    return { author: data.a, operation: op }
   };
 
   FirebaseAdapter.prototype.saveCheckpoint_ = function() {
@@ -9501,7 +9527,7 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'})
-    ], { class: 'firepad-toolbar' });
+    ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
   };
@@ -9548,7 +9574,7 @@ firepad.RichTextToolbar = (function(global) {
 
   RichTextToolbar.prototype.makeDropdown_ = function(title, eventName, items) {
     var self = this;
-    var button = utils.elt('a', title + ' ▾', { 'class': 'firepad-btn firepad-dropdown' });
+    var button = utils.elt('a', title + ' â–¾', { 'class': 'firepad-btn firepad-dropdown' });
     var list = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
     button.appendChild(list);
 
@@ -10697,6 +10723,17 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
   RichTextCodeMirrorAdapter.prototype.setOtherCursor = function (cursor, color, clientId) {
     var cursorPos = this.cm.posFromIndex(cursor.position);
+    if (typeof color !== 'string' || !color.match(/^#[a-fA-F0-9]{3,6}$/)) {
+      return;
+    }
+    var end = this.rtcm.end();
+    if (typeof cursor !== 'object' || typeof cursor.position !== 'number' || typeof cursor.selectionEnd !== 'number') {
+      return;
+    }
+    if (cursor.position < 0 || cursor.position > end || cursor.selectionEnd < 0 || cursor.selectionEnd > end) {
+      return;
+    }
+
     if (cursor.position === cursor.selectionEnd) {
       // show cursor
       var cursorCoords = this.cm.cursorCoords(cursorPos);
@@ -10719,7 +10756,6 @@ firepad.RichTextCodeMirrorAdapter = (function () {
       };
     } else {
       // show selection
-      if (typeof color !== 'string') { return; }
       var selectionClassName = 'selection-' + color.replace('#', '');
       var rule = '.' + selectionClassName + ' { background: ' + color + '; }';
       addStyleRule(rule);
@@ -10952,19 +10988,25 @@ firepad.Firepad = (function(global) {
       utils.assert(op.isInsert());
       var prefix = '', suffix = '';
       for(var attr in attrs) {
-        var tag;
+        var value = attrs[attr];
+        var start, end;
         if (attr === 'b' || attr === 'i' || attr === 'u') {
-          utils.assert(attrs[attr] === true);
-          tag = attr;
-        } else if (attr === 'h') {
-          // TODO: Font size.
-          utils.assert (typeof attrs[attr] === 'number' && attrs[attr] >= 1 && attrs[attr] <= 3);
-          tag = 'h' + attrs[attr];
+          utils.assert(value === true);
+          start = end = attr;
+        } else if (attr === 'fs') {
+          start = 'font size="' + value + '"';
+          end = 'font';
+        } else if (attr === 'f') {
+          start = 'font face="' + value + '"';
+          end = 'font';
+        } else if (attr === 'c') {
+          start = 'font color="' + value + '"';
+          end = 'font';
         } else {
-          utils.assert(false, "Encountered unknown attribute while rendering html.");
+          utils.assert(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        prefix += '<' + tag + '>';
-        suffix = '</' + tag + '>' + suffix;
+        prefix += '<' + start + '>';
+        suffix = '</' + end + '>' + suffix;
       }
 
       html += prefix + this.textToHtml_(op.text) + suffix;
@@ -11048,7 +11090,7 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.addPoweredByLogo_ = function() {
-    var poweredBy = utils.elt('a', null, { class: 'powered-by-firepad'} );
+    var poweredBy = utils.elt('a', null, { 'class': 'powered-by-firepad'} );
     poweredBy.setAttribute('href', 'http://www.firepad.io/');
     poweredBy.setAttribute('target', '_blank');
     this.firepadWrapper_.appendChild(poweredBy)
@@ -11077,7 +11119,7 @@ firepad.Firepad = (function(global) {
     }
     var hue = a/360;
 
-    return hsl2hex(hue, 0.75, 0.5);
+    return hsl2hex(hue, 1, 0.85);
   }
 
   function rgb2hex (r, g, b) {
