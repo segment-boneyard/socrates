@@ -5,6 +5,7 @@
     "component/dom": "*",
     "component/emitter": "*",
     "component/events": "*",
+    "component/reactive": "*",
     "component/type": "*",
     "yields/prevent": "*",
     "yields/stop": "*"

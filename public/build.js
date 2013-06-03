@@ -352,12 +352,6 @@ require.register("component-event-manager/index.js", Function("exports, require,
 require.register("component-events/index.js", Function("exports, require, module",
 "\n/**\n * Module dependencies.\n */\n\nvar Manager = require('event-manager')\n  , event = require('event');\n\n/**\n * Return a new event manager.\n */\n\nmodule.exports = function(target, obj){\n  var manager = new Manager(target, obj);\n\n  manager.onbind(function(name, fn){\n    event.bind(target, name, fn);\n  });\n\n  manager.onunbind(function(name, fn){\n    event.unbind(target, name, fn);\n  });\n\n  return manager;\n};\n//@ sourceURL=component-events/index.js"
 ));
-require.register("yields-prevent/index.js", Function("exports, require, module",
-"\n/**\n * prevent default on the given `e`.\n * \n * examples:\n * \n *      anchor.onclick = prevent;\n *      anchor.onclick = function(e){\n *        if (something) return prevent(e);\n *      };\n * \n * @param {Event} e\n */\n\nmodule.exports = function(e){\n  e = e || window.event\n  return e.preventDefault\n    ? e.preventDefault()\n    : e.returnValue = false;\n};\n//@ sourceURL=yields-prevent/index.js"
-));
-require.register("yields-stop/index.js", Function("exports, require, module",
-"\n/**\n * stop propagation on the given `e`.\n * \n * examples:\n * \n *      anchor.onclick = require('stop');\n *      anchor.onclick = function(e){\n *        if (!some) return require('stop')(e);\n *      };\n * \n * \n * @param {Event} e\n */\n\nmodule.exports = function(e){\n  e = e || window.event;\n  return e.stopPropagation\n    ? e.stopPropagation()\n    : e.cancelBubble = true;\n};\n//@ sourceURL=yields-stop/index.js"
-));
 require.register("component-format-parser/index.js", Function("exports, require, module",
 "\n/**\n * Parse the given format `str`.\n *\n * @param {String} str\n * @return {Array}\n * @api public\n */\n\nmodule.exports = function(str){\n\treturn str.split(/ *\\| */).map(function(call){\n\t\tvar parts = call.split(':');\n\t\tvar name = parts.shift();\n\t\tvar args = parseArgs(parts.join(':'));\n\n\t\treturn {\n\t\t\tname: name,\n\t\t\targs: args\n\t\t};\n\t});\n};\n\n/**\n * Parse args `str`.\n *\n * @param {String} str\n * @return {Array}\n * @api private\n */\n\nfunction parseArgs(str) {\n\tvar args = [];\n\tvar re = /\"([^\"]*)\"|'([^']*)'|([^ \\t,]+)/g;\n\tvar m;\n\t\n\twhile (m = re.exec(str)) {\n\t\targs.push(m[2] || m[1] || m[0]);\n\t}\n\t\n\treturn args;\n}\n//@ sourceURL=component-format-parser/index.js"
 ));
@@ -388,17 +382,17 @@ require.register("component-reactive/lib/binding.js", Function("exports, require
 require.register("component-reactive/lib/bindings.js", Function("exports, require, module",
 "/**\n * Module dependencies.\n */\n\nvar classes = require('classes');\nvar event = require('event');\n\n/**\n * Attributes supported.\n */\n\nvar attrs = [\n  'id',\n  'src',\n  'rel',\n  'cols',\n  'rows',\n  'name',\n  'href',\n  'title',\n  'class',\n  'style',\n  'width',\n  'value',\n  'height',\n  'tabindex',\n  'placeholder'\n];\n\n/**\n * Events supported.\n */\n\nvar events = [\n  'change',\n  'click',\n  'dblclick',\n  'mousedown',\n  'mouseup',\n  'blur',\n  'focus',\n  'input',\n  'keydown',\n  'keypress',\n  'keyup'\n];\n\n/**\n * Apply bindings.\n */\n\nmodule.exports = function(bind){\n\n  /**\n   * Generate attribute bindings.\n   */\n\n  attrs.forEach(function(attr){\n    bind('data-' + attr, function(el, name, obj){\n      this.change(function(){\n        el.setAttribute(attr, this.interpolate(name));\n      });\n    });\n  });\n\n/**\n * Append child element.\n */\n\n  bind('data-append', function(el, name){\n    var other = this.value(name);\n    el.appendChild(other);\n  });\n\n/**\n * Replace element.\n */\n\n  bind('data-replace', function(el, name){\n    var other = this.value(name);\n    el.parentNode.replaceChild(other, el);\n  });\n\n  /**\n   * Show binding.\n   */\n\n  bind('data-show', function(el, name){\n    this.change(function(){\n      if (this.value(name)) {\n        classes(el).add('show').remove('hide');\n      } else {\n        classes(el).remove('show').add('hide');\n      }\n    });\n  });\n\n  /**\n   * Hide binding.\n   */\n\n  bind('data-hide', function(el, name){\n    this.change(function(){\n      if (this.value(name)) {\n        classes(el).remove('show').add('hide');\n      } else {\n        classes(el).add('show').remove('hide');\n      }\n    });\n  });\n\n  /**\n   * Checked binding.\n   */\n\n  bind('data-checked', function(el, name){\n    this.change(function(){\n      if (this.value(name)) {\n        el.setAttribute('checked', 'checked');\n      } else {\n        el.removeAttribute('checked');\n      }\n    });\n  });\n\n  /**\n   * Text binding.\n   */\n\n  bind('data-text', function(el, name){\n    this.change(function(){\n      el.textContent = this.interpolate(name);\n    });\n  });\n\n  /**\n   * HTML binding.\n   */\n\n  bind('data-html', function(el, name){\n    this.change(function(){\n      el.innerHTML = this.formatted(name);\n    });\n  });\n\n  /**\n   * Generate event bindings.\n   */\n\n  events.forEach(function(name){\n    bind('on-' + name, function(el, method){\n      var fns = this.view.fns\n      event.bind(el, name, function(e){\n        var fn = fns[method];\n        if (!fn) throw new Error('method .' + method + '() missing');\n        fns[method](e);\n      });\n    });\n  });\n};\n//@ sourceURL=component-reactive/lib/bindings.js"
 ));
-require.register("nav-item/index.js", Function("exports, require, module",
-"\nvar dom = require('dom')\n  , reactive = require('reactive')\n  , template = require('./template');\n\n\nmodule.exports = NavItem;\n\n\n/**\n * Initialize a new `NavItem`.\n */\n\nfunction NavItem (model) {\n  this.el = dom(template);\n  reactive(this.el.get(0), model);\n  model.on('change', function (title) {\n    console.log(title);\n  });\n}//@ sourceURL=nav-item/index.js"
+require.register("yields-prevent/index.js", Function("exports, require, module",
+"\n/**\n * prevent default on the given `e`.\n * \n * examples:\n * \n *      anchor.onclick = prevent;\n *      anchor.onclick = function(e){\n *        if (something) return prevent(e);\n *      };\n * \n * @param {Event} e\n */\n\nmodule.exports = function(e){\n  e = e || window.event\n  return e.preventDefault\n    ? e.preventDefault()\n    : e.returnValue = false;\n};\n//@ sourceURL=yields-prevent/index.js"
 ));
-require.register("nav-item/template.js", Function("exports, require, module",
-"module.exports = '<li class=\"nav-item\"><a data-text=\"title\"></a></li>';//@ sourceURL=nav-item/template.js"
+require.register("yields-stop/index.js", Function("exports, require, module",
+"\n/**\n * stop propagation on the given `e`.\n * \n * examples:\n * \n *      anchor.onclick = require('stop');\n *      anchor.onclick = function(e){\n *        if (!some) return require('stop')(e);\n *      };\n * \n * \n * @param {Event} e\n */\n\nmodule.exports = function(e){\n  e = e || window.event;\n  return e.stopPropagation\n    ? e.stopPropagation()\n    : e.cancelBubble = true;\n};\n//@ sourceURL=yields-stop/index.js"
 ));
-require.register("nav/index.js", Function("exports, require, module",
-"\nvar bind = require('bind')\n  , dom = require('dom')\n  , Emitter = require('emitter')\n  , events = require('events')\n  , NavItem = require('nav-item')\n  , prevent = require('prevent')\n  , stop = require('stop');\n\n\nmodule.exports = Nav;\n\n\n/**\n * Initialize a new `Nav`.\n */\n\nfunction Nav (collection) {\n  Emitter.call(this);\n  this.items = {};\n  this.el = dom('<ul>');\n\n  this.onkeydown = bind(this, this.onkeydown); // keep bound to this\n\n  this.events = events(this.el.get(0), this);\n  this.events.bind('hover');\n  this.events.bind('focus');\n  this.events.bind('blur');\n\n  if (collection) collection.each(this.add.bind(this));\n}\n\n\n/**\n * Mixin emitter.\n */\n\nNav.prototype = new Emitter();\n\n\n/**\n * Deselect selected menu items.\n * @api public\n */\n\nNav.prototype.deselect = function(){\n  this.el.find('.selected').removeClass('selected');\n  return this;\n};\n\n\n/**\n * Focus the next menu item in `direction`.\n *\n * @param {String} direction  'previous' or 'next'\n * @api public\n */\n\nNav.prototype.move = function (direction) {\n  var previous = this.el.find('.selected').at(0);\n\n  var next = previous.length\n    ? previous[direction]\n    : this.el.find('li:first-chid');\n\n  if (next.length) {\n    previous.removeClass('selected');\n    next.addClass('selected');\n  }\n  return this;\n};\n\n\n/**\n * Add menu item with the given `text` and optional callback `fn`.\n *\n * @param {String} text\n * @param {Function} fn (optional)\n * @return {Nav}\n * @api public\n */\n\nNav.prototype.add = function (model, fn) {\n  var item = new NavItem(model);\n  item.el\n    .appendTo(this.el)\n    .on('click', function (e) {\n      prevent(e);\n      stop(e);\n      fn && fn();\n    });\n\n  this.items[model.primary()] = item;\n  this.emit('add', item);\n  return this;\n};\n\n\n/**\n * Remove menu item with the given `slug`.\n *\n * @param {String} slug\n * @return {Nav}\n * @api public\n */\n\nNav.prototype.remove = function (id) {\n  var item = this.items[id];\n  if (!item) throw new Error('no menu item named \"' + id + '\"');\n  item.el.remove();\n  delete this.items[id];\n  this.emit('remove', item);\n  return this;\n};\n\n\n/**\n * Check if this menu has an item with the given `slug`.\n *\n * @param {String} slug\n * @return {Boolean}\n * @api public\n */\n\nNav.prototype.has = function (id) {\n  return !!this.items[id];\n};\n\n\n/**\n * Event handlers.\n */\n\nNav.prototype.onhover = function (e) {\n  this.deselect();\n};\n\nNav.prototype.onfocus = function (e) {\n  dom(document).bind('keydown', this.onkeydown);\n};\n\nNav.prototype.onblur = function (e) {\n  dom(document).unbind('keydown', this.onkeydown);\n};\n\nNav.prototype.onkeydown = function(e){\n  switch (e.keyCode) {\n    // esc\n    case 27:\n      break;\n    // enter\n    case 13:\n      break;\n    // up\n    case 38:\n      prevent(e);\n      this.move('prev');\n      break;\n    // down\n    case 40:\n      prevent(e);\n      this.move('next');\n      break;\n  }\n};\n\n//@ sourceURL=nav/index.js"
+require.register("menu/index.js", Function("exports, require, module",
+"\nvar bind = require('bind')\n  , dom = require('dom')\n  , Emitter = require('emitter')\n  , events = require('events')\n  , prevent = require('prevent')\n  , reactive = require('reactive')\n  , stop = require('stop')\n  , type = require('type');\n\n\nmodule.exports = Menu;\n\n\n/**\n * Initialize a new `Menu`.\n */\n\nfunction Menu (collection) {\n  Emitter.call(this);\n  this.items = {};\n  this.el = dom('<ul>');\n\n  this.onkeydown = bind(this, this.onkeydown); // keep bound to this\n\n  this.events = events(this.el.get(0), this);\n  this.events.bind('hover');\n  this.events.bind('focus');\n  this.events.bind('blur');\n\n  if (collection) collection.each(this.add.bind(this));\n}\n\n\n/**\n * Mixin emitter.\n */\n\nMenu.prototype = new Emitter();\n\n\n/**\n * Deselect selected menu items.\n * @api public\n */\n\nMenu.prototype.deselect = function(){\n  this.el.find('.selected').removeClass('selected');\n  return this;\n};\n\n\n/**\n * Focus the next menu item in `direction`.\n *\n * @param {String} direction  'previous' or 'next'\n * @api public\n */\n\nMenu.prototype.move = function (direction) {\n  var previous = this.el.find('.selected').at(0);\n\n  var next = previous.length\n    ? previous[direction]\n    : this.el.find('li:first-chid');\n\n  if (next.length) {\n    previous.removeClass('selected');\n    next.addClass('selected');\n  }\n  return this;\n};\n\n\n/**\n * Add menu item with the given `model` and optional `view` and callback `fn`.\n *\n * @param {Object}   model\n * @param {Object}   view (optional)\n * @param {Function} fn (optional)\n * @return {Menu}\n * @api public\n */\n\nMenu.prototype.add = function (model, view, fn) {\n  // model, [view], fn\n  if ('function' === type(view)) {\n    fn = view;\n    view = undefined;\n  }\n\n  var el = this.template();\n  reactive(el.get(0), model, view);\n  el\n    .appendTo(this.el)\n    .on('click', function (e) {\n      prevent(e);\n      stop(e);\n      fn && fn();\n    });\n\n  this.items[model.id || model.primary()] = el;\n  this.emit('add', model);\n  return this;\n};\n\n\n/**\n * Remove menu item with the given `slug`.\n *\n * @param {String} slug\n * @return {Menu}\n * @api public\n */\n\nMenu.prototype.remove = function (id) {\n  var item = this.items[id];\n  if (!item) throw new Error('no menu item named \"' + id + '\"');\n  item.el.remove();\n  delete this.items[id];\n  this.emit('remove', item);\n  return this;\n};\n\n\n/**\n * Check if this menu has an item with the given `slug`.\n *\n * @param {String} slug\n * @return {Boolean}\n * @api public\n */\n\nMenu.prototype.has = function (id) {\n  return !!this.items[id];\n};\n\n\n/**\n * Set or render the template for the menu.\n *\n * @param {String|Function} template (optional)  The template string.\n */\n\nMenu.prototype.template = function (template) {\n  if (!template) {\n    if ('function' === type(this._template)) return this._template();\n    else return dom(this._template);\n  }\n  this._template = template;\n};\n\n\n/**\n * Event handlers.\n */\n\nMenu.prototype.onhover = function (e) {\n  this.deselect();\n};\n\nMenu.prototype.onfocus = function (e) {\n  dom(document).bind('keydown', this.onkeydown);\n};\n\nMenu.prototype.onblur = function (e) {\n  dom(document).unbind('keydown', this.onkeydown);\n};\n\nMenu.prototype.onkeydown = function(e){\n  switch (e.keyCode) {\n    // esc\n    case 27:\n      break;\n    // enter\n    case 13:\n      break;\n    // up\n    case 38:\n      prevent(e);\n      this.move('prev');\n      break;\n    // down\n    case 40:\n      prevent(e);\n      this.move('next');\n      break;\n  }\n};\n\n//@ sourceURL=menu/index.js"
 ));
 require.register("app/app.js", Function("exports, require, module",
-"\nvar bookmarks  = require('bookmarks')\n  , Collection = require('collection')\n  , Document   = require('document')\n  , dom        = require('dom')\n  , each       = require('each')\n  , Editor     = require('editor')\n  , find       = require('find')\n  , Firebase   = window.Firebase\n  , map        = require('map')\n  , Nav        = require('nav')\n  , Router     = require('router')\n  , store      = require('store')\n  , type       = require('type')\n  , uid        = require('uid');\n\n\n/**\n * Keep a reference to the documents, current document and editor.\n */\n\nvar doc\n  , documents = new Collection()\n  , editor;\n\n\n/**\n * DOM elements.\n */\n\nvar app         = dom('html')\n  , article     = dom('article')\n  , nav         = dom('nav')\n  , textarea    = dom('textarea')\n  , addButton   = dom('.add-button')\n  , menuButton  = dom('.menu-button')\n  , readButton  = dom('.read-button')\n  , writeButton = dom('.write-button');\n\n\n/**\n * Create our documents menu.\n */\n\nvar menu = new Nav();\nnav.append(menu.el.get(0));\ndocuments.on('add', function (doc) {\n  menu.add(doc, function () {\n    load(doc.primary());\n  });\n});\n\n\n/**\n * Retrieve all of the bookmarks with Firebase.\n */\n\neach(bookmarks(), function (id) {\n  Document.get(id, function (err, doc) {\n    if (!doc) doc = new Document();\n    documents.push(doc);\n  });\n});\n\n\n/**\n * Routes.\n */\n\nvar router = new Router();\n\nrouter.get('/:id/:state', load);\nrouter.get('/:id', load);\nrouter.get('/', function () {\n  var id = uid();\n  bookmarks.add(id);\n  router.dispatch('/' + id);\n});\n\n\n/**\n * Start.\n */\n\nrouter.dispatch(location.pathname);\n\n\n/**\n * Load a document into the editor.\n *\n * @param {String} id               The ID of the document.\n * @param {String} state (optiona)  What state to start in.\n */\n\nfunction load (id, state) {\n  doc = find(documents, \"id === '\" + id + \"'\");\n  if (!doc) doc = new Document();\n  editor = new Editor(doc);\n  textarea = textarea.replace(editor.textarea);\n  article = article.replace(editor.article);\n  mode(state);\n}\n\n\n/**\n * Change the mode of the app to either default, read or write.\n *\n * @param {String} mode (optional)  State to change to, or nothing for default.\n */\n\nfunction mode (value) {\n  app\n    .toggleClass('reading', value === 'read')\n    .toggleClass('writing', value === 'write');\n}//@ sourceURL=app/app.js"
+"\nvar bookmarks  = require('bookmarks')\n  , Collection = require('collection')\n  , Document   = require('document')\n  , dom        = require('dom')\n  , each       = require('each')\n  , Editor     = require('editor')\n  , find       = require('find')\n  , Firebase   = window.Firebase\n  , map        = require('map')\n  , Menu       = require('menu')\n  , Router     = require('router')\n  , store      = require('store')\n  , type       = require('type')\n  , uid        = require('uid');\n\n\n/**\n * Keep a reference to the documents, current document and editor.\n */\n\nvar doc\n  , documents = new Collection()\n  , editor;\n\n\n/**\n * DOM elements.\n */\n\nvar app         = dom('html')\n  , article     = dom('article')\n  , nav         = dom('nav')\n  , textarea    = dom('textarea')\n  , addButton   = dom('.add-button')\n  , menuButton  = dom('.menu-button')\n  , readButton  = dom('.read-button')\n  , writeButton = dom('.write-button');\n\n\n/**\n * Create our documents menu.\n */\n\nvar menu = new Menu();\nnav.append(menu.el.get(0));\n\nmenu.template('<li><a data-text=\"title\"></a></li>');\n\ndocuments.on('add', function (doc) {\n  menu.add(doc, function () {\n    load(doc.primary());\n  });\n});\n\n\n/**\n * Retrieve all of the bookmarks with Firebase.\n */\n\neach(bookmarks(), function (id) {\n  Document.get(id, function (err, doc) {\n    if (!doc) doc = new Document();\n    documents.push(doc);\n  });\n});\n\n\n/**\n * Routes.\n */\n\nvar router = new Router();\n\nrouter.get('/:id/:state', load);\nrouter.get('/:id', load);\nrouter.get('/', function () {\n  var id = uid();\n  bookmarks.add(id);\n  router.dispatch('/' + id);\n});\n\n\n/**\n * Start.\n */\n\nrouter.dispatch(location.pathname);\n\n\n/**\n * Load a document into the editor.\n *\n * @param {String} id               The ID of the document.\n * @param {String} state (optiona)  What state to start in.\n */\n\nfunction load (id, state) {\n  doc = find(documents, \"id === '\" + id + \"'\");\n  if (!doc) doc = new Document();\n  editor = new Editor(doc);\n  textarea = textarea.replace(editor.textarea);\n  article = article.replace(editor.article);\n  mode(state);\n}\n\n\n/**\n * Change the mode of the app to either default, read or write.\n *\n * @param {String} mode (optional)  State to change to, or nothing for default.\n */\n\nfunction mode (value) {\n  app\n    .toggleClass('reading', value === 'read')\n    .toggleClass('writing', value === 'write');\n}//@ sourceURL=app/app.js"
 ));
 require.alias("app/app.js", "socrates/deps/app/app.js");
 require.alias("app/app.js", "socrates/deps/app/index.js");
@@ -577,10 +571,10 @@ require.alias("segmentio-marked/lib/marked.js", "editor/deps/marked/lib/marked.j
 require.alias("segmentio-marked/lib/marked.js", "editor/deps/marked/index.js");
 require.alias("segmentio-marked/lib/marked.js", "segmentio-marked/index.js");
 
-require.alias("nav/index.js", "app/deps/nav/index.js");
-require.alias("component-bind/index.js", "nav/deps/bind/index.js");
+require.alias("menu/index.js", "app/deps/menu/index.js");
+require.alias("component-bind/index.js", "menu/deps/bind/index.js");
 
-require.alias("component-dom/index.js", "nav/deps/dom/index.js");
+require.alias("component-dom/index.js", "menu/deps/dom/index.js");
 require.alias("component-type/index.js", "component-dom/deps/type/index.js");
 
 require.alias("component-event/index.js", "component-dom/deps/event/index.js");
@@ -610,57 +604,21 @@ require.alias("component-value/index.js", "component-value/index.js");
 
 require.alias("component-query/index.js", "component-dom/deps/query/index.js");
 
-require.alias("component-emitter/index.js", "nav/deps/emitter/index.js");
+require.alias("component-emitter/index.js", "menu/deps/emitter/index.js");
 require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
 
-require.alias("component-events/index.js", "nav/deps/events/index.js");
+require.alias("component-events/index.js", "menu/deps/events/index.js");
 require.alias("component-event/index.js", "component-events/deps/event/index.js");
 
 require.alias("component-event-manager/index.js", "component-events/deps/event-manager/index.js");
 
-require.alias("yields-prevent/index.js", "nav/deps/prevent/index.js");
-
-require.alias("yields-stop/index.js", "nav/deps/stop/index.js");
-
-require.alias("nav-item/index.js", "nav/deps/nav-item/index.js");
-require.alias("nav-item/template.js", "nav/deps/nav-item/template.js");
-require.alias("component-dom/index.js", "nav-item/deps/dom/index.js");
-require.alias("component-type/index.js", "component-dom/deps/type/index.js");
-
-require.alias("component-event/index.js", "component-dom/deps/event/index.js");
-
-require.alias("component-delegate/index.js", "component-dom/deps/delegate/index.js");
-require.alias("component-matches-selector/index.js", "component-delegate/deps/matches-selector/index.js");
-require.alias("component-query/index.js", "component-matches-selector/deps/query/index.js");
-
-require.alias("component-event/index.js", "component-delegate/deps/event/index.js");
-
-require.alias("component-indexof/index.js", "component-dom/deps/indexof/index.js");
-
-require.alias("component-domify/index.js", "component-dom/deps/domify/index.js");
-
-require.alias("component-classes/index.js", "component-dom/deps/classes/index.js");
-require.alias("component-indexof/index.js", "component-classes/deps/indexof/index.js");
-
-require.alias("component-css/index.js", "component-dom/deps/css/index.js");
-
-require.alias("component-sort/index.js", "component-dom/deps/sort/index.js");
-
-require.alias("component-value/index.js", "component-dom/deps/value/index.js");
-require.alias("component-value/index.js", "component-dom/deps/value/index.js");
-require.alias("component-type/index.js", "component-value/deps/type/index.js");
-
-require.alias("component-value/index.js", "component-value/index.js");
-
-require.alias("component-query/index.js", "component-dom/deps/query/index.js");
-
-require.alias("component-reactive/lib/index.js", "nav-item/deps/reactive/lib/index.js");
-require.alias("component-reactive/lib/utils.js", "nav-item/deps/reactive/lib/utils.js");
-require.alias("component-reactive/lib/text-binding.js", "nav-item/deps/reactive/lib/text-binding.js");
-require.alias("component-reactive/lib/attr-binding.js", "nav-item/deps/reactive/lib/attr-binding.js");
-require.alias("component-reactive/lib/binding.js", "nav-item/deps/reactive/lib/binding.js");
-require.alias("component-reactive/lib/bindings.js", "nav-item/deps/reactive/lib/bindings.js");
-require.alias("component-reactive/lib/index.js", "nav-item/deps/reactive/index.js");
+require.alias("component-reactive/lib/index.js", "menu/deps/reactive/lib/index.js");
+require.alias("component-reactive/lib/utils.js", "menu/deps/reactive/lib/utils.js");
+require.alias("component-reactive/lib/text-binding.js", "menu/deps/reactive/lib/text-binding.js");
+require.alias("component-reactive/lib/attr-binding.js", "menu/deps/reactive/lib/attr-binding.js");
+require.alias("component-reactive/lib/binding.js", "menu/deps/reactive/lib/binding.js");
+require.alias("component-reactive/lib/bindings.js", "menu/deps/reactive/lib/bindings.js");
+require.alias("component-reactive/lib/index.js", "menu/deps/reactive/index.js");
 require.alias("component-format-parser/index.js", "component-reactive/deps/format-parser/index.js");
 
 require.alias("component-props/index.js", "component-reactive/deps/props/index.js");
@@ -678,6 +636,12 @@ require.alias("component-indexof/index.js", "component-classes/deps/indexof/inde
 require.alias("component-query/index.js", "component-reactive/deps/query/index.js");
 
 require.alias("component-reactive/lib/index.js", "component-reactive/index.js");
+
+require.alias("component-type/index.js", "menu/deps/type/index.js");
+
+require.alias("yields-prevent/index.js", "menu/deps/prevent/index.js");
+
+require.alias("yields-stop/index.js", "menu/deps/stop/index.js");
 
 require.alias("app/app.js", "app/index.js");
 

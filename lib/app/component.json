@@ -16,7 +16,7 @@
     "bookmarks",
     "document",
     "editor",
-    "nav"
+    "menu"
   ],
   "scripts": [
     "app.js"
