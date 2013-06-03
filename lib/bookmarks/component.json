@@ -1,0 +1,11 @@
+{
+  "name": "bookmarks",
+  "dependencies": {
+    "component/each": "*",
+    "component/set": "*",
+    "yields/store": "*"
+  },
+  "scripts": [
+    "index.js"
+  ]
+}

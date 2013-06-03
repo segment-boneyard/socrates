@@ -1,0 +1,31 @@
+{
+  "name": "app",
+  "dependencies": {
+    "segmentio/collection": "*",
+    "segmentio/dom": "*",
+    "component/each": "*",
+    "component/find": "*",
+    "component/map": "*",
+    "component/menu": "*",
+    "component/router": "*",
+    "component/type": "*",
+    "matthewmueller/uid": "*",
+    "yields/store": "*"
+  },
+  "local": [
+    "bookmarks",
+    "document",
+    "editor",
+    "nav"
+  ],
+  "scripts": [
+    "app.js"
+  ],
+  "styles": [
+    "app.css"
+  ],
+  "images": [
+    "images/favicon.ico"
+  ],
+  "main": "app.js"
+}

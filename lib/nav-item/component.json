@@ -1,0 +1,11 @@
+{
+  "name": "nav-item",
+  "dependencies": {
+    "component/dom": "*",
+    "component/reactive": "*"
+  },
+  "scripts": [
+    "index.js",
+    "template.js"
+  ]
+}

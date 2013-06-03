@@ -3,22 +3,6 @@
 var $window = $(window);
 var MININUM_WIDTH = 1000;
 
-// Pave over the page visibility API in different browsers.
-// https://developer.mozilla.org/en-US/docs/DOM/Using_the_Page_Visibility_API
-var hidden, visibilityChange;
-if (typeof document.hidden !== "undefined") {
-    hidden = "hidden";
-    visibilityChange = "visibilitychange";
-} else if (typeof document.mozHidden !== "undefined") {
-    hidden = "mozHidden";
-    visibilityChange = "mozvisibilitychange";
-} else if (typeof document.msHidden !== "undefined") {
-    hidden = "msHidden";
-    visibilityChange = "msvisibilitychange";
-} else if (typeof document.webkitHidden !== "undefined") {
-    hidden = "webkitHidden";
-    visibilityChange = "webkitvisibilitychange";
-}
 
 Socrates.View = Backbone.View.extend({
 
@@ -68,41 +52,6 @@ Socrates.View = Backbone.View.extend({
 
         // Add a window resize handler to re-try state.
         $window.on('resize', this.onWindowResize);
-
-        // Only show the title cursor when the page is visible.
-        var self = this;
-        document.addEventListener(visibilityChange, function () {
-            document[hidden] ? self.stopTitleCursor() : self.startTitleCursor();
-        }, false);
-        this.startTitleCursor();
-    },
-
-    applyDocumentEventHandlers : function (document, unbind) {
-        var method = unbind ? 'off' : 'on';
-        document[method]('change:body', this.onDocumentBodyChange);
-    },
-
-
-    // Actions
-    // -------
-
-    render : function () {
-        this.renderMenu()
-            .renderTextarea()
-            .renderArticle()
-            .renderState();
-    },
-
-    renderMenu : function () {
-        this.documentMenu.render();
-        return this;
-    },
-
-    renderTextarea : function () {
-        if (!this.model.has('document')) return this;
-
-        this.$textarea.val(this.model.get('document').get('body'));
-        return this;
     },
 
     renderArticle : function () {
@@ -118,21 +67,6 @@ Socrates.View = Backbone.View.extend({
         this.renderYoutubeFilter();
         this.renderCodeHighlightingFilter();
         this.renderMathJax();
-    },
-
-    renderState : function () {
-        var state = this.model.get('state');
-
-        var readonly  = state === 'read';
-        var writeonly = state === 'write';
-
-        if ($window.width() < MININUM_WIDTH && !state) return this.model.set('state', 'write');
-
-        this.$readOnlyButton.state('pressed', readonly);
-        this.$writeOnlyButton.state('pressed', writeonly);
-
-        this.$el.state('write-only', writeonly);
-        this.$el.state('read-only', readonly);
     },
 
     // Turn dumb quotes into smart quotes.
@@ -208,34 +142,9 @@ Socrates.View = Backbone.View.extend({
         try { Rainbow.color(); } catch (e) {}
     },
 
-    save : function () {
-        this.model.get('document').save();
-    },
-
     toggleMenu : function () {
         this.$menu.slideToggle();
         this.$menuButton.toggleState('pressed');
-    },
-
-    startTitleCursor : function () {
-        this._cursorInterval = setInterval(this.renderTitleCursor, 500);
-    },
-
-    stopTitleCursor : function () {
-        clearInterval(this._cursorInterval);
-        this.$title.html('Socrates');
-    },
-
-    renderTitleCursor : function () {
-        this._titleCursor || (this._titleCursor = 'on');
-
-        var cursor = this._titleCursor === 'on' ? '|' : '';
-        this.$title.html('Socrates' + cursor);
-
-        // Swap the cursor for next time.
-        this._titleCursor = this._titleCursor === 'on' ? 'off' : 'on';
-
-        return this;
     },
 
 
@@ -248,11 +157,6 @@ Socrates.View = Backbone.View.extend({
         if (this.model.has('state')) return;
 
         if ($window.width() < MININUM_WIDTH) this.model.set('state', 'write');
-    },
-
-    onTextareaKeyup : function (event) {
-        this.model.get('document').set('body', this.$textarea.val());
-        this.save();
     },
 
     onMenuButtonClick : function (event) {
@@ -288,11 +192,6 @@ Socrates.View = Backbone.View.extend({
         if (previousDocument) this.applyDocumentEventHandlers(previousDocument, true);
         this.applyDocumentEventHandlers(document);
 
-        this.renderTextarea()
-            .renderArticle();
-    },
-
-    onDocumentBodyChange : function (document) {
         this.renderTextarea()
             .renderArticle();
     },

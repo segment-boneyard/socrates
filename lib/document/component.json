@@ -1,0 +1,14 @@
+{
+  "name": "document",
+  "dependencies": {
+    "segmentio/model": "*",
+    "matthewmueller/uid": "*"
+  },
+  "local": [
+    "model-defaults",
+    "model-firebase"
+  ],
+  "scripts": [
+    "index.js"
+  ]
+}

@@ -1,7 +1,19 @@
-server:
-	node server.js
+build: components
+	component build --out ./public --copy # no symlinks for heroku
 
-css:
-	sass --watch socrates.sass:socrates.css
+build-dev: components-dev
+	component build --out ./public --copy --dev
 
-.PHONY: css
+clean:
+	rm -fr components public
+
+components: component.json
+	component install
+
+components-dev: component.json
+	component install --dev
+
+test:
+	foreman start
+
+.PHONY: test

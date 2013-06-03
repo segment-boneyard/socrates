@@ -1,0 +1,11 @@
+{
+  "name": "model-firebase",
+  "dependencies": {
+    "component/collection": "*"
+  },
+  "scripts": [
+    "index.js",
+    "statics.js",
+    "protos.js"
+  ]
+}

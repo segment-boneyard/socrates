@@ -1,0 +1,11 @@
+{
+  "name": "model-defaults",
+  "dependencies": {
+    "component/clone": "*",
+    "component/each": "*",
+    "component/type": "*"
+  },
+  "scripts": [
+    "index.js"
+  ]
+}
