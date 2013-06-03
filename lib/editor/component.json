@@ -2,11 +2,13 @@
   "name": "editor",
   "dependencies": {
     "segmentio/dom": "*",
+    "component/domify": "*",
     "component/moment": "*",
     "component/value": "*",
     "component/throttle": "*",
     "matthewmueller/debounce": "*",
-    "segmentio/marked": "*"
+    "segmentio/marked": "*",
+    "timoxley/async-compose": "*"
   },
   "scripts": [
     "index.js"
