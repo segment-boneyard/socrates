@@ -10,6 +10,8 @@
     "component/router": "*",
     "component/type": "*",
     "matthewmueller/uid": "*",
+    "segmentio/mathjax": "*",
+    "segmentio/rainbow": "*",
     "yields/store": "*"
   },
   "local": [
@@ -19,7 +21,9 @@
     "menu"
   ],
   "scripts": [
-    "app.js"
+    "app.js",
+    "filters/mathjax.js",
+    "filters/rainbow.js"
   ],
   "styles": [
     "app.css"

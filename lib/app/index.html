@@ -5,7 +5,7 @@
   <meta name="description" content="Write and read beautiful Markdown with whoever you want, in realtime!">
   <meta name="viewport" content ="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="shortcut icon" href="app/favicon.ico"/>
-  <link rel="stylesheet" type="text/css" href="socrates.css">
+  <link rel="stylesheet" type="text/css" href="build.css">
   <script src="https://static.firebase.com/v0/firebase.js"></script>
   <script src="http://use.typekit.net/gmy5jor.js"></script>
   <script>try{Typekit.load();}catch(e){}</script>
@@ -28,27 +28,7 @@
     <article></article>
   </section>
 
-  <script type="text/template" id="document-menu-item-template">
-    <li data-id="<%= document.id %>" class="document-menu-item">
-      <div class="document-menu-item-wrap">
-        <span class="document-menu-item-title"><%= _.escape(document.get('title')) %></span>
-        <button title="Delete Document" class="document-menu-item-delete-button ss-trash"></button>
-      </div>
-    </li>
-  </script>
-
   <script src="build.js"></script>
   <script>require('app');</script>
-
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-    tex2jax: {
-      displayMath: [['$$','$$'], ['\\[','\\]']],
-      inlineMath: [['\\(','\\)']]
-    }
-    });
-  </script>
-  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
 </body>
 </html>
