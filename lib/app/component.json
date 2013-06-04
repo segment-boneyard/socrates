@@ -4,15 +4,10 @@
     "segmentio/collection": "*",
     "segmentio/dom": "*",
     "component/each": "*",
-    "component/find": "*",
-    "component/map": "*",
     "component/menu": "*",
     "component/router": "*",
-    "component/type": "*",
-    "matthewmueller/uid": "*",
     "segmentio/mathjax": "*",
-    "segmentio/rainbow": "*",
-    "yields/store": "*"
+    "segmentio/rainbow": "*"
   },
   "local": [
     "bookmarks",
