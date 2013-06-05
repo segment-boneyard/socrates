@@ -5,6 +5,7 @@
     "component/moment": "*",
     "component/throttle": "*",
     "matthewmueller/debounce": "*",
+    "matthewmueller/grow": "*",
     "segmentio/marked": "*",
     "timoxley/async-compose": "*"
   },
