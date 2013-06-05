@@ -5,9 +5,11 @@
     "segmentio/dom": "*",
     "component/each": "*",
     "component/menu": "*",
+    "component/mousetrap": "*",
     "component/router": "*",
     "segmentio/mathjax": "*",
-    "segmentio/rainbow": "*"
+    "segmentio/rainbow": "*",
+    "yields/prevent": "*"
   },
   "local": [
     "bookmarks",
