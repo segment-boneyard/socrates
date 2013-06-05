@@ -3,7 +3,6 @@
   "dependencies": {
     "segmentio/dom": "*",
     "component/moment": "*",
-    "component/value": "*",
     "component/throttle": "*",
     "matthewmueller/debounce": "*",
     "segmentio/marked": "*",

@@ -486,6 +486,7 @@ button {
      -moz-appearance: none;
   background-color: transparent;
   border: none;
+  padding: 0;
   cursor: pointer;
   opacity: .5;
   -webkit-transition: opacity .1s;
@@ -496,13 +497,13 @@ button:hover {
   opacity: 1;
 }
 
-textarea {
+.input {
   background-color: transparent;
   border: none;
   resize: none;
 }
 
-textarea:focus {
+.input:focus {
   outline: none;
 }
 
@@ -564,20 +565,15 @@ textarea:focus {
   display: none;
 }
 
-form,
-article {
+.input,
+.output {
   max-width: 32em;
   margin: 0 auto;
+  padding: 0 1em;
 }
 
-form {
-  position: relative;
-  height: 100%;
-}
-
-textarea {
-  width: 100%;
-  min-height: 50em;
+.input {
+  min-height: 100%;
 }
 
 .toolbar {
@@ -591,7 +587,7 @@ textarea {
 
 .toolbar .wrap {
   position: absolute;
-  padding: .75em;
+  padding: 1em;
   -webkit-transition: padding .3s, right .3s, left .3s;
           transition: padding .3s, right .3s, left .3s;
 }
@@ -631,6 +627,10 @@ button {
   color: #c1b08e;
 }
 
+button + button {
+  margin-left: 1em;
+}
+
 .read {
   background-color: white;
 }
@@ -645,24 +645,27 @@ button {
   background: url("app/images/read-shadow.png") top right repeat-y;
 }
 
-textarea {
+.input {
   font-size: .85em;
-  font-family: "inconsolata", monospace;
   line-height: 1.2;
   opacity: .7;
   -webkit-transition: opacity .3s;
           transition: opacity .3s;
 }
 
-textarea:focus {
+.input:focus {
   opacity: 1;
+}
+
+.input:empty::before {
+  content: 'Start writing here...';
+  opacity: .5;
 }
 
 
 /**
  * Prose.
  */
-
 
 pre .comment {
   opacity: .5em;

@@ -16,7 +16,7 @@
 </head>
 <body class="loading ss-loading">
   <nav class="nav">
-    <input text="search">
+    <input class="search" type="search" placeholder="Filter the list&hellip;">
   </nav>
 
   <menu type="toolbar" class="toolbar">
@@ -26,23 +26,21 @@
       <button class="write-button ss-write"  title="Write Mode (Ctrl + Alt + ⇽)"></button>
     </div>
     <div class="wrap">
+      <button class="read-button  ss-view"   title="Read Mode (Ctrl + Alt + ⇾)"></button>
       <button class="email-button ss-send"   title="Email Document"></button>
       <button class="copy-button  ss-attach" title="Copy HTML"></button>
-      <button class="read-button  ss-view"   title="Read Mode (Ctrl + Alt + ⇾)"></button>
     </div>
   </menu>
 
   <div class="write">
     <div class="wrap">
-      <form>
-        <textarea></textarea>
-      </form>
+      <pre class="input"></pre>
     </div>
   </div>
 
   <div class="read">
     <div class="wrap">
-      <article></article>
+      <article class="output"></article>
     </div>
   </div>
 
