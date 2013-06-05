@@ -1,9 +1,9 @@
 {
   "name": "socrates",
   "description": "",
+  "private": true,
   "version": "2.0.0",
   "license": "MIT",
-  "dependecies": {},
   "paths": ["lib"],
-  "local": ["app"]
+  "local": ["boot"]
 }

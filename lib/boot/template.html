@@ -7,7 +7,7 @@
   <link rel="shortcut icon" href="app/favicon.ico">
   <link rel="stylesheet" href="build.css">
   <link rel="stylesheet" href="//cdn.symbolset.com/642033f5ccb39687fae4ddd32935734073a661fd/symbolset.css">
-  <script src="http://use.typekit.net/gmy5jor.js"></script>
+  <script src="http://use.typekit.net/rkl7tni.js"></script>
   <script>try{Typekit.load();}catch(e){}</script>
   <script>
     var analytics=analytics||[];(function(){var e=["identify","track","trackLink","trackForm","trackClick","trackSubmit","page","pageview","ab","alias","ready","group"],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"===document.location.protocol?"https://":"http://")+"d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/"+e+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};
@@ -15,23 +15,6 @@
   </script>
 </head>
 <body class="loading ss-loading">
-  <nav class="nav">
-    <input class="search" type="search" placeholder="Filter the list&hellip;">
-  </nav>
-
-  <menu type="toolbar" class="toolbar">
-    <div class="wrap">
-      <button class="nav-button   ss-rows"   title="Your Documents (Ctrl + Alt + O)"></button>
-      <button class="add-button   ss-plus"   title="New Document (Ctrl + Alt + N)"></button>
-      <button class="write-button ss-write"  title="Write Mode (Ctrl + Alt + ⇽)"></button>
-    </div>
-    <div class="wrap">
-      <button class="read-button  ss-view"   title="Read Mode (Ctrl + Alt + ⇾)"></button>
-      <button class="email-button ss-send"   title="Email Document"></button>
-      <button class="copy-button  ss-attach" title="Copy HTML"></button>
-    </div>
-  </menu>
-
   <div class="write">
     <div class="wrap">
       <form>
@@ -46,8 +29,28 @@
     </div>
   </div>
 
+  <menu type="toolbar" class="toolbar">
+    <div class="wrap">
+      <button class="nav-button   ss-rows"   title="Your Documents (Ctrl + Alt + O)"></button>
+      <button class="add-button   ss-plus"   title="New Document (Ctrl + Alt + N)"></button>
+      <button class="write-button ss-write"  title="Write Mode (Ctrl + Alt + ⇽)"></button>
+    </div>
+    <div class="wrap">
+      <button class="read-button  ss-view"   title="Read Mode (Ctrl + Alt + ⇾)"></button>
+      <button class="email-button ss-send"   title="Email Document"></button>
+      <button class="copy-button  ss-attach" title="Copy HTML"></button>
+    </div>
+  </menu>
+
+  <nav class="nav">
+    <form>
+      <input class="search" type="search" placeholder="Filter the list&hellip;">
+      <i class="ss-search"></i>
+    </form>
+  </nav>
+
   <script src="https://static.firebase.com/v0/firebase.js"></script>
   <script src="build.js"></script>
-  <script>require('app');</script>
+  <script>require('boot');</script>
 </body>
 </html>

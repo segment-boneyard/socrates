@@ -14,7 +14,7 @@ app.use(express.static(__dirname + '/public'));
  * Mount.
  */
 
-app.use(require('./lib/app'));
+app.use(require('./lib/boot/server'));
 
 
 /**

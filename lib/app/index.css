@@ -4,13 +4,18 @@
  */
 
 html {
-  font: 18px/1.45 "kepler-std", serif;
+  font: 18px/1.45 "freight-sans-pro", sans-serif;
   color: #35332e;
 }
 
 pre,
 code {
   font-family: "inconsolata", monospace;
+}
+
+input {
+  background: transparent;
+  border: none;
 }
 
 button {
@@ -44,12 +49,13 @@ button:hover {
  * Structure.
  */
 
+body,
 .nav,
 .write,
 .read,
 .toolbar {
-  -webkit-transition: -webkit-transform .3s, right .3s, left .3s, opacity .3s;
-          transition:         transform .3s, right .3s, left .3s, opacity .3s;
+  -webkit-transition: all .3s;
+          transition: all .3s;
 }
 
 .nav,
@@ -62,8 +68,7 @@ button:hover {
 
 .nav {
   width: 20em;
-  -webkit-transform: translateX(-20em);
-          transform: translateX(-20em);
+  right: 100%;
 }
 
 .write {
@@ -72,6 +77,7 @@ button:hover {
 }
 
 .read {
+  z-index: 1;
   right: 0;
   left: 40%;
 }
@@ -85,42 +91,25 @@ button:hover {
   left: 0;
   overflow-y: scroll;
   overflow-x: hidden;
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
   -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
           mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
 }
 
 .write .wrap::-webkit-scrollbar,
-.read .wrap::-webkit-scrollbar,
-.input::-webkit-scrollbar {
+.read .wrap::-webkit-scrollbar {
   display: none;
-}
-
-form,
-.output {
-  max-width: 32em;
-  margin: 0 auto;
 }
 
 .input,
 .output {
+  max-width: 32em;
+  margin: 0 auto;
   padding: 6em 1em;
-}
-
-form {
-  position: relative;
-  height: 100%;
-}
-
-.input {
-  height: 100%;
-  width: 100%;
 }
 
 .toolbar {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 0;
   left: 0;
   right: 0;
@@ -215,8 +204,54 @@ button + button {
 
 
 /**
+ * Nav theme.
+ */
+
+.nav {
+  background-color: #2d2b26;
+  color: #7e7c76;
+}
+
+.nav form {
+  position: relative;
+}
+
+.nav i {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+}
+
+.nav input {
+  display: block;
+  width: 100%;
+  padding: .9em 1em .9em 2.5em;
+  -moz-box-sizing: border-box;
+       box-sizing: border-box;
+}
+
+.nav li {
+  padding: .35em 1em .35em 2.5em;
+}
+
+
+/**
  * Prose.
  */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+
+h1,
+h2 {
+  font-family: "ff-angie-pro", "freight-sans-prop", sans-serif;
+}
 
 pre .comment {
   opacity: .5em;
@@ -258,6 +293,11 @@ body::before {
  * Navigating state.
  */
 
+body.navigating {
+  -webkit-transform: translateX(20em);
+          transform: translateX(20em);
+}
+
 body.navigating .nav-button {
   opacity: 1;
 }
@@ -270,13 +310,13 @@ body.navigating .nav-button {
 body.writing .toolbar .wrap:first-child,
 body.reading .toolbar .wrap:first-child {
   right: 50%;
-  padding-right: 0;
+  padding-right: .375em;
 }
 
 body.writing .toolbar .wrap:last-child,
 body.reading .toolbar .wrap:last-child {
   left: 50%;
-  padding-left: 0;
+  padding-left: .375em;
 }
 
 
@@ -347,4 +387,33 @@ body.loading .read {
 @keyframes spin {
   from { transform: rotate(0deg) }
   to   { transform: rotate(360deg) }
+}
+
+
+/**
+ * Hacks.
+ */
+
+/* This is a crappy magic number that makes the indicator dead centered.*/
+body .loading::before {
+  line-height: 1.26;
+}
+
+/* Textarea's don't act like normal block elements, so we wrap it in a form. */
+.write form {
+  max-width: 32em;
+  margin: 0 auto;
+  position: relative;
+  height: 100%;
+}
+
+.write textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.write textarea {
+  max-width: none;
+  margin: 0;
+  height: 100%;
+  width: 100%;
 }

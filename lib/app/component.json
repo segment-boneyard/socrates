@@ -1,35 +1,29 @@
 {
   "name": "app",
   "dependencies": {
-    "segmentio/collection": "*",
     "segmentio/dom": "*",
-    "component/each": "*",
+    "component/emitter": "*",
     "component/menu": "*",
     "component/mousetrap": "*",
-    "component/router": "*",
     "component/value": "*",
     "ianstormtaylor/reset": "*",
+    "segmentio/bind-all": "*",
     "segmentio/mathjax": "*",
-    "segmentio/rainbow": "*",
-    "yields/prevent": "*"
+    "segmentio/rainbow": "*"
   },
   "local": [
-    "bookmarks",
-    "document",
     "editor",
     "menu"
   ],
   "scripts": [
-    "app.js",
+    "index.js",
     "filters/mathjax.js",
     "filters/rainbow.js"
   ],
   "styles": [
-    "app.css"
+    "index.css"
   ],
   "images": [
-    "images/favicon.ico",
     "images/read-shadow.png"
-  ],
-  "main": "app.js"
+  ]
 }

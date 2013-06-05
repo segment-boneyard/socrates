@@ -1,0 +1,20 @@
+{
+  "name": "boot",
+  "dependencies": {
+    "segmentio/collection": "*",
+    "component/each": "*",
+    "component/router": "*"
+  },
+  "local": [
+    "app",
+    "bookmarks",
+    "document"
+  ],
+  "scripts": [
+    "browser.js"
+  ],
+  "images": [
+    "favicon.ico"
+  ],
+  "main": "browser.js"
+}
