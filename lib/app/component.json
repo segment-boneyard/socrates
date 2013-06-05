@@ -7,7 +7,7 @@
     "component/mousetrap": "*",
     "component/value": "*",
     "ianstormtaylor/reset": "*",
-    "segmentio/bind-all": "*",
+    "segmentio/bindAll": "*",
     "segmentio/mathjax": "*",
     "segmentio/rainbow": "*"
   },

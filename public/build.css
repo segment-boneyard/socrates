@@ -1,0 +1,886 @@
+.menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  margin: 0;
+  padding: 0;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+
+.menu li {
+  list-style: none;
+}
+
+.menu li a {
+  display: block;
+  padding: 5px 30px 5px 12px;
+  text-decoration: none;
+  border-top: 1px solid #eee;
+  color: #2e2e2e;
+  outline: none;
+}
+
+.menu li:first-child a {
+  border-top: none;
+}
+
+.menu li a:hover,
+.menu li.selected a {
+  background: #f1faff;
+}
+
+
+
+/**
+ * -----
+ * Fixes
+ * -----
+ */
+
+/**
+ * Correct `block` display not defined in IE 8/9.
+ */
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+nav,
+section,
+summary,
+audio,
+canvas,
+video {
+  display: block;
+}
+
+/**
+ * Prevent modern browsers from displaying `audio` without controls.
+ * Remove excess height in iOS 5 devices.
+ */
+
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+
+/**
+ * Address styling not present in IE 8/9.
+ */
+
+[hidden] {
+  display: none;
+}
+
+
+/**
+ * Set default font family to sans-serif. Prevent iOS text size adjust after
+ * orientation change, without disabling user zoom.
+ */
+
+html {
+  font-family: sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/**
+ * Address style set to `bolder` in Firefox 4+, Safari 5, and Chrome.
+ */
+
+b,
+strong {
+  font-weight: bold;
+}
+
+/**
+ * Address differences between Firefox and other browsers.
+ */
+
+hr {
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+  height: 0;
+}
+
+/**
+ * Correct font family set oddly in Safari 5 and Chrome.
+ */
+
+code,
+kbd,
+pre,
+samp {
+  font-family: monospace, serif;
+  font-size: 1em;
+}
+
+/**
+ * Improve readability of pre-formatted text in all browsers.
+ */
+
+pre {
+  white-space: pre-wrap;
+}
+
+/**
+ * Address inconsistent and variable font size in all browsers.
+ */
+
+small {
+  font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` affecting `line-height` in all browsers.
+ */
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+/**
+ * Remove border when inside `a` element in IE 8/9.
+ */
+
+img {
+  border: 0;
+}
+
+/**
+ * Correct overflow displayed oddly in IE 9.
+ */
+
+svg:not(:root) {
+  overflow: hidden;
+}
+
+/**
+ * Correct font family not being inherited in all browsers. Correct font size
+ * not being inherited in all browsers. Address margins set differently in
+ * Firefox 4+, Safari 5, and Chrome.
+ */
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  margin: 0;
+}
+
+/**
+ * Address Firefox 4+ setting `line-height` on `input` using `!important` in
+ * the UA stylesheet. The dumbest UA style setting I've ever seen.
+ */
+
+button,
+input {
+  line-height: normal;
+}
+
+/**
+ * Address inconsistent `text-transform` inheritance for `button` and `select`.
+ * All other form control elements do not inherit `text-transform` values.
+ * Correct `button` style inheritance in Chrome, Safari 5+, and IE 8+.
+ * Correct `select` style inheritance in Firefox 4+ and Opera.
+ */
+
+button,
+select {
+  text-transform: none;
+}
+
+/**
+ * Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio` and
+ * `video` controls. Correct inability to style clickable `input` types in
+ * iOS. Improve usability and consistency of cursor style between image-type
+ * `input` and others.
+ */
+
+button,
+html input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button;
+  cursor: pointer;
+}
+
+/**
+ * Re-set default cursor for disabled elements.
+ */
+
+button[disabled],
+html input[disabled] {
+  cursor: default;
+}
+
+/**
+ * Address box sizing set to `content-box` in IE 8/9. Remove excess padding in
+ * IE 8/9.
+ */
+
+input[type="checkbox"],
+input[type="radio"] {
+  box-sizing: border-box;
+  padding: 0;
+}
+
+/**
+ * Address `appearance` set to `searchfield` in Safari 5 and Chrome. Address
+ * `box-sizing` set to `border-box` in Safari 5 and Chrome (include `-moz` to
+ * future-proof).
+ */
+
+input[type="search"] {
+  -webkit-appearance: textfield;
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+/**
+ * Remove inner padding and search cancel button in Safari 5 and Chrome
+ * on OS X.
+ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/**
+ * Remove default vertical scrollbar in IE 8/9. Improve readability and
+ * alignment in all browsers.
+ */
+
+textarea {
+  overflow: auto;
+  vertical-align: top;
+}
+
+
+
+/**
+ * ------
+ * Resets
+ * ------
+ */
+
+/**
+ * Remove default html styles.
+ */
+ 
+html {
+  line-height: 1;
+}
+
+/**
+ * Remove default body styles.
+ */
+
+body {
+  margin: 0;
+}
+
+/**
+ * Remove default heading styles.
+ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/**
+ * Remove default link styles.
+ */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/**
+ * Remove outline for links. You should style it, but not necessarily outline.
+ */
+
+a:focus,
+a:active,
+a:hover {
+  outline: 0;
+}
+
+/**
+ * Remove default paragraph styles.
+ */
+
+p,
+small {
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Remove default list styles.
+ */
+
+ol,
+ul,
+menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Remove default blockquote and quote styles.
+ */
+
+blockquote,
+q {
+  margin: 0;
+  quotes: none;
+}
+
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: '';
+  content: none;
+}
+
+/**
+ * Remove default cite styles.
+ */
+
+cite {
+  font-style: inherit;
+}
+
+/**
+ * Address margin not present in IE 8/9 and Safari 5.
+ */
+
+figure {
+  margin: 0;
+}
+
+/**
+ * Remove default form styles.
+ */
+
+form {
+  margin: 0;
+}
+
+/**
+ * Remove default fieldset styles.
+ */
+
+fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Correct `color` not being inherited in IE 8/9. Remove padding so people
+ * aren't caught out if they zero out fieldsets.
+ */
+
+legend {
+  border: 0;
+  padding: 0;
+}
+
+/**
+ * Remove inner padding and border in Firefox 4+.
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/**
+ * Almost always want images to be block.
+ */
+
+img { 
+  display: block;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Base styles.
+ */
+
+html {
+  font: 18px/1.45 "freight-sans-pro", sans-serif;
+  color: #35332e;
+}
+
+pre,
+code {
+  font-family: "inconsolata", monospace;
+}
+
+input {
+  background: transparent;
+  border: none;
+}
+
+button {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: .5;
+  -webkit-transition: opacity .1s;
+          transition: opacity .1s;
+}
+
+button:hover {
+  opacity: 1;
+}
+
+.input {
+  background-color: transparent;
+  border: none;
+  resize: none;
+}
+
+.input:focus {
+  outline: none;
+}
+
+
+/**
+ * Structure.
+ */
+
+body,
+.nav,
+.write,
+.read,
+.toolbar {
+  -webkit-transition: all .3s;
+          transition: all .3s;
+}
+
+.nav,
+.write,
+.read {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.nav {
+  width: 20em;
+  right: 100%;
+}
+
+.write {
+  left: 0;
+  right: 60%;
+}
+
+.read {
+  z-index: 1;
+  right: 0;
+  left: 40%;
+}
+
+.write .wrap,
+.read .wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+          mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+}
+
+.write .wrap::-webkit-scrollbar,
+.read .wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.input,
+.output {
+  max-width: 32em;
+  margin: 0 auto;
+  padding: 6em 1em;
+}
+
+.toolbar {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.toolbar .wrap {
+  position: absolute;
+  padding: 1em;
+  -webkit-transition: padding .3s, right .3s, left .3s;
+          transition: padding .3s, right .3s, left .3s;
+}
+
+.toolbar .wrap:first-child {
+  left: 0;
+  right: 60%;
+}
+
+.toolbar .wrap:last-child {
+  left: 40%;
+  right: 0;
+}
+
+.nav-button,
+.add-button,
+.read-button {
+  float: left;
+}
+
+.write-button,
+.email-button,
+.copy-button {
+  float: right;
+}
+
+
+/**
+ * Appearance.
+ */
+
+body {
+  background-color: #ede5d5;
+}
+
+button {
+  color: #c1b08e;
+}
+
+button + button {
+  margin-left: 1em;
+}
+
+.read {
+  background-color: white;
+}
+
+.read::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: 30px;
+  background: url("app/images/read-shadow.png") top right repeat-y;
+}
+
+.input {
+  font-family: "inconsolata", monospace;
+  font-size: .85em;
+  line-height: 1.2;
+  opacity: .7;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+}
+
+.input:focus {
+  opacity: 1;
+}
+
+.input:empty::before {
+  content: 'Start writing here...';
+  opacity: .5;
+}
+
+.input::-webkit-input-placeholder {
+  color: #ab976f;
+}
+
+.input:-moz-placeholder {
+  color: #ab976f;
+}
+
+
+/**
+ * Nav theme.
+ */
+
+.nav {
+  background-color: #2d2b26;
+  color: #7e7c76;
+}
+
+.nav form {
+  position: relative;
+}
+
+.nav i {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+}
+
+.nav input {
+  display: block;
+  width: 100%;
+  padding: .9em 1em .9em 2.5em;
+  -moz-box-sizing: border-box;
+       box-sizing: border-box;
+}
+
+.nav li {
+  padding: .35em 1em .35em 2.5em;
+}
+
+
+/**
+ * Prose.
+ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+
+h1,
+h2 {
+  font-family: "ff-angie-pro", "freight-sans-prop", sans-serif;
+}
+
+pre .comment {
+  opacity: .5em;
+}
+
+pre .constant,
+pre .storage,
+pre .tag,
+pre .keyword:not(.operator),
+pre .selector,
+pre .string:not(.value),
+pre .regexp,
+pre .function {
+  color: #91b65b;
+}
+
+
+/**
+ * Normal state.
+ */
+
+body::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -0.5em;
+  margin-left: -0.5em;
+  font-size: 3em;
+  color: #c1b08e;
+  opacity: 0;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+  -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+}
+
+
+/**
+ * Navigating state.
+ */
+
+body.navigating {
+  -webkit-transform: translateX(20em);
+          transform: translateX(20em);
+}
+
+body.navigating .nav-button {
+  opacity: 1;
+}
+
+
+/**
+ * Writing and reading states.
+ */
+
+body.writing .toolbar .wrap:first-child,
+body.reading .toolbar .wrap:first-child {
+  right: 50%;
+  padding-right: .375em;
+}
+
+body.writing .toolbar .wrap:last-child,
+body.reading .toolbar .wrap:last-child {
+  left: 50%;
+  padding-left: .375em;
+}
+
+
+/**
+ * Writing state.
+ */
+
+body.writing .write {
+  right: 0;
+}
+
+body.writing .read {
+  -webkit-transform: translateX(100%);
+          transform: translateX(100%);
+}
+
+body.writing .write-button {
+  opacity: 1;
+}
+
+
+/**
+ * Reading state.
+ */
+
+body.reading .write {
+  -webkit-transform: translateX(-100%);
+          transform: translateX(-100%);
+}
+
+body.reading .read {
+  left: 0;
+}
+
+body.reading .read-button {
+  opacity: 1;
+}
+
+
+/**
+ * Loading state.
+ */
+
+body.loading::before {
+  opacity: .5;
+}
+
+body.loading .write,
+body.loading .toolbar {
+  opacity: 0;
+}
+
+body.loading .read {
+  -webkit-transform: translateX(100%);
+          transform: translateX(100%);
+}
+
+
+/**
+ * Spinning animation.
+ */
+
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg) }
+  to   { -webkit-transform: rotate(360deg) }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
+}
+
+
+/**
+ * Hacks.
+ */
+
+/* This is a crappy magic number that makes the indicator dead centered.*/
+body .loading::before {
+  line-height: 1.26;
+}
+
+/* Textarea's don't act like normal block elements, so we wrap it in a form. */
+.write form {
+  max-width: 32em;
+  margin: 0 auto;
+  position: relative;
+  height: 100%;
+}
+
+.write textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.write textarea {
+  max-width: none;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}

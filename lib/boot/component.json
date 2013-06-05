@@ -13,8 +13,5 @@
   "scripts": [
     "browser.js"
   ],
-  "images": [
-    "favicon.ico"
-  ],
   "main": "browser.js"
 }
