@@ -1,0 +1,331 @@
+
+/**
+ * Base styles.
+ */
+
+html {
+  font: 18px/1.45 "kepler-std", serif;
+  color: #35332e;
+}
+
+pre,
+code {
+  font-family: "inconsolata", monospace;
+}
+
+button {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: .5;
+  -webkit-transition: opacity .1s;
+          transition: opacity .1s;
+}
+
+button:hover {
+  opacity: 1;
+}
+
+textarea {
+  background-color: transparent;
+  border: none;
+  resize: none;
+}
+
+textarea:focus {
+  outline: none;
+}
+
+
+/**
+ * Structure.
+ */
+
+.nav,
+.write,
+.read,
+.toolbar {
+  -webkit-transition: -webkit-transform .3s, right .3s, left .3s, opacity .3s;
+          transition:         transform .3s, right .3s, left .3s, opacity .3s;
+}
+
+.nav,
+.write,
+.read {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.nav {
+  width: 20em;
+  -webkit-transform: translateX(-20em);
+          transform: translateX(-20em);
+}
+
+.write {
+  left: 0;
+  right: 60%;
+}
+
+.read {
+  right: 0;
+  left: 40%;
+}
+
+.write .wrap,
+.read .wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 6em 0;
+  -moz-box-sizing: border-box;
+       box-sizing: border-box;
+  -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+          mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+}
+
+.write .wrap::-webkit-scrollbar,
+.read .wrap::-webkit-scrollbar {
+  display: none;
+}
+
+form,
+article {
+  max-width: 32em;
+  margin: 0 auto;
+}
+
+form {
+  position: relative;
+  height: 100%;
+}
+
+textarea {
+  width: 100%;
+  min-height: 50em;
+}
+
+.toolbar {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.toolbar .wrap {
+  position: absolute;
+  padding: .75em;
+  -webkit-transition: padding .3s, right .3s, left .3s;
+          transition: padding .3s, right .3s, left .3s;
+}
+
+.toolbar .wrap:first-child {
+  left: 0;
+  right: 60%;
+}
+
+.toolbar .wrap:last-child {
+  left: 40%;
+  right: 0;
+}
+
+.nav-button,
+.add-button,
+.read-button {
+  float: left;
+}
+
+.write-button,
+.email-button,
+.copy-button {
+  float: right;
+}
+
+
+/**
+ * Appearance.
+ */
+
+body {
+  background-color: #ede5d5;
+}
+
+button {
+  color: #c1b08e;
+}
+
+.read {
+  background-color: white;
+}
+
+.read::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: 30px;
+  background: url(images/read-shadow.png) top right repeat-y;
+}
+
+textarea {
+  font-size: .85em;
+  font-family: "inconsolata", monospace;
+  line-height: 1.2;
+  opacity: .7;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+}
+
+textarea:focus {
+  opacity: 1;
+}
+
+
+/**
+ * Prose.
+ */
+
+
+pre .comment {
+  opacity: .5em;
+}
+
+pre .constant,
+pre .storage,
+pre .tag,
+pre .keyword:not(.operator),
+pre .selector,
+pre .string:not(.value),
+pre .regexp,
+pre .function {
+  color: #91b65b;
+}
+
+
+/**
+ * Normal state.
+ */
+
+body::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -0.5em;
+  margin-left: -0.5em;
+  font-size: 3em;
+  color: #c1b08e;
+  opacity: 0;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+  -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+}
+
+
+/**
+ * Navigating state.
+ */
+
+body.navigating .nav-button {
+  opacity: 1;
+}
+
+
+/**
+ * Writing and reading states.
+ */
+
+body.writing .toolbar .wrap:first-child,
+body.reading .toolbar .wrap:first-child {
+  right: 50%;
+  padding-right: 0;
+}
+
+body.writing .toolbar .wrap:last-child,
+body.reading .toolbar .wrap:last-child {
+  left: 50%;
+  padding-left: 0;
+}
+
+
+/**
+ * Writing state.
+ */
+
+body.writing .write {
+  right: 0;
+}
+
+body.writing .read {
+  -webkit-transform: translateX(100%);
+          transform: translateX(100%);
+}
+
+body.writing .write-button {
+  opacity: 1;
+}
+
+
+/**
+ * Reading state.
+ */
+
+body.reading .write {
+  -webkit-transform: translateX(-100%);
+          transform: translateX(-100%);
+}
+
+body.reading .read {
+  left: 0;
+}
+
+body.reading .read-button {
+  opacity: 1;
+}
+
+
+/**
+ * Loading state.
+ */
+
+body.loading::before {
+  opacity: .5;
+}
+
+body.loading .write,
+body.loading .toolbar {
+  opacity: 0;
+}
+
+body.loading .read {
+  -webkit-transform: translateX(100%);
+          transform: translateX(100%);
+}
+
+
+/**
+ * Spinning animation.
+ */
+
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg) }
+  to   { -webkit-transform: rotate(360deg) }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
+}
+
+
+

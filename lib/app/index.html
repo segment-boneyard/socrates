@@ -14,22 +14,37 @@
     if (location.host === 'socrates.io') analytics.load('984duyw'); // prod only
   </script>
 </head>
-<body>
-  <nav>
+<body class="loading ss-loading">
+  <nav class="nav">
     <input text="search">
   </nav>
 
-  <section class="write">
-    <button title="Your Documents" class="nav-button ss-rows"></button>
-    <button title="New Document" class="add-button ss-plus"></button>
-    <button title="Write Mode" class="write-button ss-write"></button>
-    <textarea></textarea>
-  </section>
+  <menu type="toolbar" class="toolbar">
+    <div class="wrap">
+      <button class="nav-button   ss-rows"   title="Your Documents (Ctrl + Alt + O)"></button>
+      <button class="add-button   ss-plus"   title="New Document (Ctrl + Alt + N)"></button>
+      <button class="write-button ss-write"  title="Write Mode (Ctrl + Alt + ⇽)"></button>
+    </div>
+    <div class="wrap">
+      <button class="email-button ss-send"   title="Email Document"></button>
+      <button class="copy-button  ss-attach" title="Copy HTML"></button>
+      <button class="read-button  ss-view"   title="Read Mode (Ctrl + Alt + ⇾)"></button>
+    </div>
+  </menu>
 
-  <section class="read">
-    <button title="Read Mode" class="read-button ss-view"></button>
-    <article></article>
-  </section>
+  <div class="write">
+    <div class="wrap">
+      <form>
+        <textarea></textarea>
+      </form>
+    </div>
+  </div>
+
+  <div class="read">
+    <div class="wrap">
+      <article></article>
+    </div>
+  </div>
 
   <script src="https://static.firebase.com/v0/firebase.js"></script>
   <script src="build.js"></script>
