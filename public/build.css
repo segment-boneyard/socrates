@@ -553,7 +553,6 @@ button:hover {
   left: 0;
   overflow-y: scroll;
   overflow-x: hidden;
-  padding: 6em 0;
   -moz-box-sizing: border-box;
        box-sizing: border-box;
   -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
@@ -561,19 +560,30 @@ button:hover {
 }
 
 .write .wrap::-webkit-scrollbar,
-.read .wrap::-webkit-scrollbar {
+.read .wrap::-webkit-scrollbar,
+.input::-webkit-scrollbar {
   display: none;
+}
+
+form,
+.output {
+  max-width: 32em;
+  margin: 0 auto;
 }
 
 .input,
 .output {
-  max-width: 32em;
-  margin: 0 auto;
-  padding: 0 1em;
+  padding: 6em 1em;
+}
+
+form {
+  position: relative;
+  height: 100%;
 }
 
 .input {
-  min-height: 100%;
+  height: 100%;
+  width: 100%;
 }
 
 .toolbar {
@@ -646,6 +656,7 @@ button + button {
 }
 
 .input {
+  font-family: "inconsolata", monospace;
   font-size: .85em;
   line-height: 1.2;
   opacity: .7;
@@ -660,6 +671,14 @@ button + button {
 .input:empty::before {
   content: 'Start writing here...';
   opacity: .5;
+}
+
+.input::-webkit-input-placeholder {
+  color: #ab976f;
+}
+
+.input:-moz-placeholder {
+  color: #ab976f;
 }
 
 

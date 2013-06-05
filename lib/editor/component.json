@@ -4,8 +4,8 @@
     "segmentio/dom": "*",
     "component/moment": "*",
     "component/throttle": "*",
+    "component/value": "*",
     "matthewmueller/debounce": "*",
-    "matthewmueller/grow": "*",
     "segmentio/marked": "*",
     "timoxley/async-compose": "*"
   },
