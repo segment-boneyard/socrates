@@ -1,8 +1,8 @@
 build: components
-	component build --out ./public --copy # no symlinks for heroku
+	component build --use component-html --out ./public --copy # no symlinks for heroku
 
 build-dev: components-dev
-	component build --out ./public --copy --dev
+	component build --use component-html --out ./public --copy --dev
 
 clean:
 	rm -fr components public

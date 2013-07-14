@@ -2,23 +2,30 @@
   "name": "app",
   "dependencies": {
     "segmentio/dom": "*",
+    "component/domify": "*",
     "component/emitter": "*",
+    "component/keyname": "*",
     "component/menu": "*",
     "component/mousetrap": "*",
+    "component/reactive": "*",
     "component/value": "*",
     "ianstormtaylor/reset": "*",
-    "segmentio/bindAll": "*",
+    "segmentio/bind-all": "*",
     "segmentio/mathjax": "*",
     "segmentio/rainbow": "*"
   },
   "local": [
     "editor",
-    "menu"
+    "menu",
+    "menu-item-view"
   ],
   "scripts": [
     "index.js",
     "filters/mathjax.js",
     "filters/rainbow.js"
+  ],
+  "templates": [
+    "template.html"
   ],
   "styles": [
     "index.css"

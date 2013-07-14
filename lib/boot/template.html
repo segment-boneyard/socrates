@@ -14,41 +14,7 @@
     if (location.host === 'socrates.io') analytics.load('984duyw'); // prod only
   </script>
 </head>
-<body class="loading ss-loading">
-  <div class="write">
-    <div class="wrap">
-      <form>
-        <textarea class="input" placeholder="Start writing here&hellip;"></textarea>
-      </form>
-    </div>
-  </div>
-
-  <div class="read">
-    <div class="wrap">
-      <article class="output"></article>
-    </div>
-  </div>
-
-  <menu type="toolbar" class="toolbar">
-    <div class="wrap">
-      <button class="nav-button   ss-rows"   title="Your Documents (Ctrl + Alt + O)"></button>
-      <button class="add-button   ss-plus"   title="New Document (Ctrl + Alt + N)"></button>
-      <button class="write-button ss-write"  title="Write Mode (Ctrl + Alt + ⇽)"></button>
-    </div>
-    <div class="wrap">
-      <button class="read-button  ss-view"   title="Read Mode (Ctrl + Alt + ⇾)"></button>
-      <button class="email-button ss-send"   title="Email Document"></button>
-      <button class="copy-button  ss-attach" title="Copy HTML"></button>
-    </div>
-  </menu>
-
-  <nav class="nav">
-    <form>
-      <input class="search" type="search" placeholder="Filter the list&hellip;">
-      <i class="ss-search"></i>
-    </form>
-  </nav>
-
+<body>
   <script src="https://static.firebase.com/v0/firebase.js"></script>
   <script src="build.js"></script>
   <script>require('boot');</script>

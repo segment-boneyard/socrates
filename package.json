@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "express": "~3.1.0",
-    "hbs": "~2.3.0"
+    "hbs": "~2.3.0",
+    "component-html": "~0.0.1"
   }
 }

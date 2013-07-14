@@ -1,0 +1,13 @@
+{
+  "name": "menu-item-view",
+  "dependencies": {
+    "component/domify": "*",
+    "component/reactive": "*"
+  },
+  "scripts": [
+    "index.js"
+  ],
+  "templates": [
+    "template.html"
+  ]
+}

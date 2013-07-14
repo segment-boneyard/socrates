@@ -33,6 +33,9 @@
 
 
 
+
+
+
 /**
  * -----
  * Fixes
@@ -465,7 +468,6 @@ img {
 
 
 
-
 /**
  * Base styles.
  */
@@ -473,6 +475,7 @@ img {
 html {
   font: 18px/1.45 "freight-sans-pro", sans-serif;
   color: #35332e;
+  overflow: hidden;
 }
 
 pre,
@@ -516,7 +519,13 @@ button:hover {
  * Structure.
  */
 
-body,
+.app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.app,
 .nav,
 .write,
 .read,
@@ -534,19 +543,19 @@ body,
 }
 
 .nav {
-  width: 20em;
+  width: 55%;
   right: 100%;
 }
 
 .write {
   left: 0;
-  right: 60%;
+  right: 55%;
 }
 
 .read {
   z-index: 1;
   right: 0;
-  left: 40%;
+  left: 45%;
 }
 
 .write .wrap,
@@ -592,11 +601,11 @@ body,
 
 .toolbar .wrap:first-child {
   left: 0;
-  right: 60%;
+  right: 55%;
 }
 
 .toolbar .wrap:last-child {
-  left: 40%;
+  left: 45%;
   right: 0;
 }
 
@@ -640,7 +649,7 @@ button + button {
   right: 100%;
   bottom: 0;
   width: 30px;
-  background: url("app/images/read-shadow.png") top right repeat-y;
+  background: url(".//app/./images/read-shadow.png") top right repeat-y;
 }
 
 .input {
@@ -695,10 +704,62 @@ button + button {
   padding: .9em 1em .9em 2.5em;
   -moz-box-sizing: border-box;
        box-sizing: border-box;
+  color: white;
+}
+
+.nav input:focus {
+  outline: 0;
+  background-color: #201e1a;
+}
+
+.nav ul {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.nav ul::-webkit-scrollbar {
+  display: none;
 }
 
 .nav li {
+  position: relative;
+}
+
+.nav li:hover,
+.nav li.selected {
+  background-color: #201e1a;
+}
+
+.nav li.hidden {
+  display: none;
+}
+
+.nav li a {
+  cursor: pointer;
+}
+
+.nav li a:first-child {
+  display: block;
   padding: .35em 1em .35em 2.5em;
+  -webkit-transition: background-color .3s;
+          transition: background-color .3s;
+}
+
+.nav li a:last-child {
+  position: absolute;
+  right: 2.5em;
+  top: .55em;
+  opacity: .3;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+}
+
+.nav li a:last-child:hover {
+  opacity: 1;
 }
 
 
@@ -740,7 +801,7 @@ pre .function {
  * Normal state.
  */
 
-body::before {
+.app::before {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -760,12 +821,12 @@ body::before {
  * Navigating state.
  */
 
-body.navigating {
-  -webkit-transform: translateX(20em);
-          transform: translateX(20em);
+.app.navigating {
+  -webkit-transform: translateX(55%);
+          transform: translateX(55%);
 }
 
-body.navigating .nav-button {
+.app.navigating .nav-button {
   opacity: 1;
 }
 
@@ -774,14 +835,14 @@ body.navigating .nav-button {
  * Writing and reading states.
  */
 
-body.writing .toolbar .wrap:first-child,
-body.reading .toolbar .wrap:first-child {
+.app.writing .toolbar .wrap:first-child,
+.app.reading .toolbar .wrap:first-child {
   right: 50%;
   padding-right: .375em;
 }
 
-body.writing .toolbar .wrap:last-child,
-body.reading .toolbar .wrap:last-child {
+.app.writing .toolbar .wrap:last-child,
+.app.reading .toolbar .wrap:last-child {
   left: 50%;
   padding-left: .375em;
 }
@@ -791,16 +852,16 @@ body.reading .toolbar .wrap:last-child {
  * Writing state.
  */
 
-body.writing .write {
+.app.writing .write {
   right: 0;
 }
 
-body.writing .read {
-  -webkit-transform: translateX(100%);
-          transform: translateX(100%);
+.app.writing .read {
+  -webkit-transform: translateX(110%);
+          transform: translateX(110%);
 }
 
-body.writing .write-button {
+.app.writing .write-button {
   opacity: 1;
 }
 
@@ -809,16 +870,16 @@ body.writing .write-button {
  * Reading state.
  */
 
-body.reading .write {
-  -webkit-transform: translateX(-100%);
-          transform: translateX(-100%);
+.app.reading .write {
+  -webkit-transform: translateX(-110%);
+          transform: translateX(-110%);
 }
 
-body.reading .read {
+.app.reading .read {
   left: 0;
 }
 
-body.reading .read-button {
+.app.reading .read-button {
   opacity: 1;
 }
 
@@ -827,18 +888,18 @@ body.reading .read-button {
  * Loading state.
  */
 
-body.loading::before {
+.app.loading::before {
   opacity: .5;
 }
 
-body.loading .write,
-body.loading .toolbar {
+.app.loading .write,
+.app.loading .toolbar {
   opacity: 0;
 }
 
-body.loading .read {
-  -webkit-transform: translateX(100%);
-          transform: translateX(100%);
+.app.loading .read {
+  -webkit-transform: translateX(110%);
+          transform: translateX(110%);
 }
 
 
@@ -862,7 +923,7 @@ body.loading .read {
  */
 
 /* This is a crappy magic number that makes the indicator dead centered.*/
-body .loading::before {
+.app .loading::before {
   line-height: 1.26;
 }
 
@@ -883,4 +944,9 @@ body .loading::before {
   margin: 0;
   height: 100%;
   width: 100%;
+}
+
+/* The nav's ul needs to scroll, and we aren't using flexbox yet. */
+.nav ul {
+  top: 55px;
 }

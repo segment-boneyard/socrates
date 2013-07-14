@@ -1,0 +1,37 @@
+<div class="app loading ss-loading">
+  <div class="write">
+    <div class="wrap">
+      <form>
+        <textarea class="input" placeholder="Start writing here&hellip;"></textarea>
+      </form>
+    </div>
+  </div>
+
+  <div class="read">
+    <div class="wrap">
+      <article class="output"></article>
+    </div>
+  </div>
+
+  <menu type="toolbar" class="toolbar">
+    <div class="wrap">
+      <button class="nav-button ss-rows" on-click="onNav" title="Your Documents (Ctrl + Alt + O)"></button>
+      <button class="add-button ss-plus" on-click="onAdd" title="New Document (Ctrl + Alt + N)"></button>
+      <button class="write-button ss-write" on-click="onWrite" title="Write Mode (Ctrl + Alt + ⇽)"></button>
+    </div>
+    <div class="wrap">
+      <button class="read-button ss-view" on-click="onRead" title="Read Mode (Ctrl + Alt + ⇾)"></button>
+    </div>
+  </menu>
+
+  <nav class="nav">
+    <form>
+      <input class="search"
+             type="search"
+             placeholder="Filter the list&hellip;"
+             on-keyup="onSearch">
+      <i class="ss-search"></i>
+    </form>
+    <menu data-replace="createMenu"></menu>
+  </nav>
+</div>

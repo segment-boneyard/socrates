@@ -1,14 +1,13 @@
 {
   "name": "menu",
   "dependencies": {
-    "component/bind": "*",
-    "component/dom": "*",
-    "component/emitter": "*",
+    "segmentio/dom": "*",
     "component/events": "*",
-    "component/reactive": "*",
-    "component/type": "*",
-    "yields/prevent": "*",
-    "yields/stop": "*"
+    "component/find": "*",
+    "component/inherit": "*",
+    "component/keyname": "*",
+    "segmentio/list": "*",
+    "yields/prevent": "*"
   },
   "scripts": [
     "index.js"

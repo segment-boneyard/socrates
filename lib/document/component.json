@@ -1,11 +1,11 @@
 {
   "name": "document",
   "dependencies": {
+    "matthewmueller/uid": "*",
     "segmentio/model": "*",
-    "matthewmueller/uid": "*"
+    "segmentio/model-defaults": "*"
   },
   "local": [
-    "model-defaults",
     "model-firebase"
   ],
   "scripts": [
