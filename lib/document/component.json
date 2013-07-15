@@ -3,11 +3,9 @@
   "dependencies": {
     "matthewmueller/uid": "*",
     "segmentio/model": "*",
-    "segmentio/model-defaults": "*"
+    "segmentio/model-defaults": "*",
+    "segmentio/model-firebase": "*"
   },
-  "local": [
-    "model-firebase"
-  ],
   "scripts": [
     "index.js"
   ]

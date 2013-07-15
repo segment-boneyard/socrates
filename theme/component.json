@@ -1,0 +1,12 @@
+{
+  "name": "theme",
+  "dependencies": {
+    "ianstormtaylor/reset": "*"
+  },
+  "local": [
+    "theme-base",
+    "theme-app",
+    "theme-editor",
+    "theme-nav"
+  ]
+}

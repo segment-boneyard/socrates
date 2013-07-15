@@ -1,7 +1,9 @@
 {
   "name": "editor",
   "dependencies": {
-    "segmentio/dom": "*",
+    "component/dom": "*",
+    "component/domify": "*",
+    "component/event": "*",
     "component/moment": "*",
     "component/throttle": "*",
     "component/value": "*",

@@ -5,7 +5,7 @@ build-dev: components-dev
 	component build --use component-html --out ./public --copy --dev
 
 clean:
-	rm -fr components public
+	rm -fr components build public
 
 components: component.json
 	component install

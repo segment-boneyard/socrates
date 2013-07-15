@@ -1,0 +1,93 @@
+
+/**
+ * Nav.
+ */
+
+.nav {
+  background-color: #2d2b26;
+  color: #7e7c76;
+}
+
+.nav form {
+  position: relative;
+}
+
+.nav i {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+}
+
+.nav input {
+  display: block;
+  width: 100%;
+  padding: .9em 1em .9em 2.5em;
+  -moz-box-sizing: border-box;
+       box-sizing: border-box;
+  color: white;
+}
+
+.nav input:focus {
+  outline: 0;
+  background-color: #201e1a;
+}
+
+.nav ul {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.nav ul::-webkit-scrollbar {
+  display: none;
+}
+
+.nav li {
+  position: relative;
+}
+
+.nav li:hover,
+.nav li.selected {
+  background-color: #201e1a;
+}
+
+.nav li.hidden {
+  display: none;
+}
+
+.nav li a {
+  cursor: pointer;
+}
+
+.nav li a:first-child {
+  display: block;
+  padding: .35em 1em .35em 2.5em;
+  -webkit-transition: background-color .3s;
+          transition: background-color .3s;
+}
+
+.nav li a:last-child {
+  position: absolute;
+  right: 2.5em;
+  top: .55em;
+  opacity: .3;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+}
+
+.nav li a:last-child:hover {
+  opacity: 1;
+}
+
+
+/**
+ * HACKs.
+ */
+
+/* The nav's ul needs to scroll, and we aren't using flexbox yet. */
+.nav ul {
+  top: 55px;
+}

@@ -4,6 +4,6 @@
   "private": true,
   "version": "2.0.0",
   "license": "MIT",
-  "paths": ["lib"],
-  "local": ["boot"]
+  "paths": [".", "lib", "theme"],
+  "local": ["boot", "theme"]
 }

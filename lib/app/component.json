@@ -4,20 +4,15 @@
     "segmentio/dom": "*",
     "component/domify": "*",
     "component/emitter": "*",
-    "component/keyname": "*",
-    "component/menu": "*",
     "component/mousetrap": "*",
     "component/reactive": "*",
-    "component/value": "*",
-    "ianstormtaylor/reset": "*",
-    "segmentio/bind-all": "*",
     "segmentio/mathjax": "*",
+    "segmentio/menu": "*",
     "segmentio/rainbow": "*"
   },
   "local": [
     "editor",
-    "menu",
-    "menu-item-view"
+    "nav"
   ],
   "scripts": [
     "index.js",
@@ -25,12 +20,6 @@
     "filters/rainbow.js"
   ],
   "templates": [
-    "template.html"
-  ],
-  "styles": [
-    "index.css"
-  ],
-  "images": [
-    "images/read-shadow.png"
+    "index.html"
   ]
 }

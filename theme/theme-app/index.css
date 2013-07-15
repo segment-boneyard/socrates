@@ -1,0 +1,290 @@
+
+/**
+ * App.
+ */
+
+.app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #ede5d5;
+}
+
+
+/**
+ * Transitionable sections.
+ */
+
+.app,
+.nav,
+.write,
+.read,
+.toolbar {
+  transition: all .3s;
+}
+
+.nav,
+.write,
+.read {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+
+/**
+ * Nav section.
+ */
+
+.nav {
+  width: 55%;
+  right: 100%;
+}
+
+
+/**
+ * Write section.
+ */
+
+.write {
+  left: 0;
+  right: 55%;
+}
+
+
+/**
+ * Read section.
+ */
+
+.read {
+  z-index: 1;
+  right: 0;
+  left: 45%;
+  background-color: white;
+}
+
+.read::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: 30px;
+  background: url(images/read-shadow.png) top right repeat-y;
+}
+
+
+/**
+ * Invisible scrolling.
+ */
+
+.write .wrap,
+.read .wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+}
+
+.write .wrap::-webkit-scrollbar,
+.read .wrap::-webkit-scrollbar {
+  display: none;
+}
+
+
+/**
+ * Toolbar.
+ */
+
+.toolbar {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.toolbar .wrap {
+  position: absolute;
+  padding: 1em;
+  transition: padding .3s, right .3s, left .3s;
+}
+
+.toolbar .wrap:first-child {
+  left: 0;
+  right: 55%;
+}
+
+.toolbar .wrap:last-child {
+  left: 45%;
+  right: 0;
+}
+
+.toolbar button {
+  color: #c1b08e;
+}
+
+.toolbar button + button {
+  margin-left: 1em;
+}
+
+.nav-button,
+.add-button,
+.read-button {
+  float: left;
+}
+
+.write-button,
+.email-button,
+.copy-button {
+  float: right;
+}
+
+
+/**
+ * Normal state.
+ */
+
+.app::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -0.5em;
+  margin-left: -0.5em;
+  font-size: 3em;
+  color: #c1b08e;
+  opacity: 0;
+  transition: opacity .3s;
+  animation: spin 2s linear infinite;
+}
+
+
+/**
+ * Navigating state.
+ */
+
+.app.navigating {
+  transform: translateX(55%);
+}
+
+.app.navigating .nav-button {
+  opacity: 1;
+}
+
+
+/**
+ * Writing and reading states.
+ */
+
+.app.writing .toolbar .wrap:first-child,
+.app.reading .toolbar .wrap:first-child {
+  right: 50%;
+  padding-right: .375em;
+}
+
+.app.writing .toolbar .wrap:last-child,
+.app.reading .toolbar .wrap:last-child {
+  left: 50%;
+  padding-left: .375em;
+}
+
+
+/**
+ * Writing state.
+ */
+
+.app.writing .write {
+  right: 0;
+}
+
+.app.writing .read {
+  transform: translateX(110%);
+}
+
+.app.writing .write-button {
+  opacity: 1;
+}
+
+
+/**
+ * Reading state.
+ */
+
+.app.reading .write {
+  transform: translateX(-110%);
+}
+
+.app.reading .read {
+  left: 0;
+}
+
+.app.reading .read-button {
+  opacity: 1;
+}
+
+
+/**
+ * Loading state.
+ */
+
+.app.loading::before {
+  opacity: .5;
+}
+
+.app.loading .write,
+.app.loading .toolbar {
+  opacity: 0;
+}
+
+.app.loading .read {
+  transform: translateX(110%);
+}
+
+
+/**
+ * Spinning animation.
+ */
+
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg) }
+  to   { -webkit-transform: rotate(360deg) }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
+}
+
+
+/**
+ * HACKs.
+ */
+
+/* This is a crappy magic number that makes the indicator dead centered.*/
+.app .loading::before {
+  line-height: 1.26;
+}
+
+/* Textarea's don't act like normal block elements, so we wrap it in a form. */
+.write form {
+  max-width: 32em;
+  margin: 0 auto;
+  position: relative;
+  height: 100%;
+}
+
+.write textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.write textarea {
+  max-width: none;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}

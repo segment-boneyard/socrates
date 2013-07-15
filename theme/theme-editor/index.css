@@ -1,0 +1,40 @@
+
+/**
+ * Editor.
+ */
+
+.input,
+.output {
+  max-width: 32em;
+  margin: 0 auto;
+  padding: 6em 1em;
+}
+
+
+/**
+ * Input.
+ */
+
+.input {
+  font-family: "inconsolata", monospace;
+  font-size: .85em;
+  line-height: 1.2;
+  opacity: .7;
+  transition: opacity .3s;
+}
+
+.input:focus {
+  opacity: 1;
+}
+
+.input:empty::before {
+  content: 'Start writing here...';
+  opacity: .5;
+}
+
+.input::-webkit-input-placeholder {
+  color: #ab976f;
+}
+.input:-moz-placeholder {
+  color: #ab976f;
+}

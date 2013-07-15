@@ -1,0 +1,81 @@
+
+/**
+ * Base styles.
+ */
+
+html {
+  font: 18px/1.45 "freight-sans-pro", sans-serif;
+  color: #35332e;
+  overflow: hidden;
+}
+
+pre,
+code {
+  font-family: "inconsolata", monospace;
+}
+
+input {
+  background: transparent;
+  border: none;
+}
+
+button {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity .1s;
+}
+
+button:hover {
+  opacity: 1;
+}
+
+input,
+textarea {
+  background-color: transparent;
+  border: none;
+  resize: none;
+}
+
+input,
+textarea:focus {
+  outline: none;
+}
+
+
+/**
+ * Prose.
+ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+
+h1,
+h2 {
+  font-family: "ff-angie-pro", "freight-sans-prop", sans-serif;
+}
+
+pre .comment {
+  opacity: .5em;
+}
+
+pre .constant,
+pre .storage,
+pre .tag,
+pre .keyword:not(.operator),
+pre .selector,
+pre .string:not(.value),
+pre .regexp,
+pre .function {
+  color: #91b65b;
+}

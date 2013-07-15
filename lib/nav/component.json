@@ -1,0 +1,19 @@
+{
+  "name": "nav",
+  "dependencies": {
+    "component/keyname": "*",
+    "component/value": "*",
+    "segmentio/menu": "*",
+    "segmentio/view": "*",
+    "yields/prevent": "*",
+    "yields/stop": "*"
+  },
+  "scripts": [
+    "index.js",
+    "item.js"
+  ],
+  "templates": [
+    "index.html",
+    "item.html"
+  ]
+}

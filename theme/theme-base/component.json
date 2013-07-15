@@ -1,0 +1,6 @@
+{
+  "name": "theme-base",
+  "styles": [
+    "index.css"
+  ]
+}
