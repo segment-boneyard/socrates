@@ -125,11 +125,11 @@
   right: 0;
 }
 
-.toolbar button {
+.toolbar .button {
   color: #c1b08e;
 }
 
-.toolbar button + button {
+.toolbar .button + .button {
   margin-left: 1em;
 }
 

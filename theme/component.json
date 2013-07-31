@@ -5,7 +5,9 @@
   },
   "local": [
     "theme-base",
+
     "theme-app",
+    "theme-button",
     "theme-editor",
     "theme-nav"
   ]

@@ -3,7 +3,9 @@
   "dependencies": {
     "segmentio/collection": "*",
     "component/each": "*",
-    "component/router": "*"
+    "ianstormtaylor/loading": "*",
+    "ianstormtaylor/router": "*",
+    "matthewmueller/uid": "*"
   },
   "local": [
     "app",

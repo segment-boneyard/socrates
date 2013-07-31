@@ -15,12 +15,26 @@
 
   <menu type="toolbar" class="toolbar">
     <div class="wrap">
-      <button class="nav-button ss-rows" on-click="onNav" title="Your Documents (Ctrl + Alt + O)"></button>
-      <button class="add-button ss-plus" on-click="onAdd" title="New Document (Ctrl + Alt + N)"></button>
-      <button class="write-button ss-write" on-click="onWrite" title="Write Mode (Ctrl + Alt + ⇽)"></button>
+
+      <a title="Your Documents (Ctrl + Alt + O)"
+         class="nav-button button ss-rows"
+         on-click="onNav"></a>
+
+      <a href="/"
+         title="New Document (Ctrl + Alt + N)"
+         class="add-button button ss-plus"></a>
+
+      <a title="Write Mode (Ctrl + Alt + ⇽)"
+         class="write-button button ss-write"
+         on-click="onWrite"></a>
+
     </div>
     <div class="wrap">
-      <button class="read-button ss-view" on-click="onRead" title="Read Mode (Ctrl + Alt + ⇾)"></button>
+
+      <a title="Read Mode (Ctrl + Alt + ⇾)"
+         class="read-button button ss-view"
+         on-click="onRead"></a>
+
     </div>
   </menu>
 

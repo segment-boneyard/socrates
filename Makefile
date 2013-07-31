@@ -13,7 +13,7 @@ components: component.json
 components-dev: component.json
 	component install --dev
 
-test:
+test: build
 	foreman start
 
-.PHONY: test
+.PHONY: clean test
