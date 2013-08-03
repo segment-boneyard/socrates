@@ -11,6 +11,7 @@
     "segmentio/rainbow": "*"
   },
   "local": [
+    "documents",
     "editor",
     "nav"
   ],

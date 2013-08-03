@@ -1,16 +1,13 @@
 {
   "name": "boot",
   "dependencies": {
-    "segmentio/collection": "*",
-    "component/each": "*",
     "ianstormtaylor/loading": "*",
     "ianstormtaylor/router": "*",
     "matthewmueller/uid": "*"
   },
   "local": [
     "app",
-    "bookmarks",
-    "document"
+    "documents"
   ],
   "scripts": [
     "browser.js"

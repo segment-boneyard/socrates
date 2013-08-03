@@ -1,0 +1,15 @@
+{
+  "name": "documents",
+  "dependencies": {
+    "component/each": "*",
+    "segmentio/collection": "*",
+    "timoxley/next-tick": "*",
+    "yields/store": "*"
+  },
+  "local": [
+    "document"
+  ],
+  "scripts": [
+    "index.js"
+  ]
+}

@@ -6,6 +6,9 @@
     "segmentio/menu": "*",
     "segmentio/view": "*"
   },
+  "local": [
+    "documents"
+  ],
   "scripts": [
     "index.js",
     "item.js"

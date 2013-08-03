@@ -204,1251 +204,6 @@ require.register("component-indexof/index.js", Function("exports, require, modul
   return -1;\n\
 };//@ sourceURL=component-indexof/index.js"
 ));
-require.register("component-emitter/index.js", Function("exports, require, module",
-"\n\
-/**\n\
- * Module dependencies.\n\
- */\n\
-\n\
-var index = require('indexof');\n\
-\n\
-/**\n\
- * Expose `Emitter`.\n\
- */\n\
-\n\
-module.exports = Emitter;\n\
-\n\
-/**\n\
- * Initialize a new `Emitter`.\n\
- *\n\
- * @api public\n\
- */\n\
-\n\
-function Emitter(obj) {\n\
-  if (obj) return mixin(obj);\n\
-};\n\
-\n\
-/**\n\
- * Mixin the emitter properties.\n\
- *\n\
- * @param {Object} obj\n\
- * @return {Object}\n\
- * @api private\n\
- */\n\
-\n\
-function mixin(obj) {\n\
-  for (var key in Emitter.prototype) {\n\
-    obj[key] = Emitter.prototype[key];\n\
-  }\n\
-  return obj;\n\
-}\n\
-\n\
-/**\n\
- * Listen on the given `event` with `fn`.\n\
- *\n\
- * @param {String} event\n\
- * @param {Function} fn\n\
- * @return {Emitter}\n\
- * @api public\n\
- */\n\
-\n\
-Emitter.prototype.on = function(event, fn){\n\
-  this._callbacks = this._callbacks || {};\n\
-  (this._callbacks[event] = this._callbacks[event] || [])\n\
-    .push(fn);\n\
-  return this;\n\
-};\n\
-\n\
-/**\n\
- * Adds an `event` listener that will be invoked a single\n\
- * time then automatically removed.\n\
- *\n\
- * @param {String} event\n\
- * @param {Function} fn\n\
- * @return {Emitter}\n\
- * @api public\n\
- */\n\
-\n\
-Emitter.prototype.once = function(event, fn){\n\
-  var self = this;\n\
-  this._callbacks = this._callbacks || {};\n\
-\n\
-  function on() {\n\
-    self.off(event, on);\n\
-    fn.apply(this, arguments);\n\
-  }\n\
-\n\
-  fn._off = on;\n\
-  this.on(event, on);\n\
-  return this;\n\
-};\n\
-\n\
-/**\n\
- * Remove the given callback for `event` or all\n\
- * registered callbacks.\n\
- *\n\
- * @param {String} event\n\
- * @param {Function} fn\n\
- * @return {Emitter}\n\
- * @api public\n\
- */\n\
-\n\
-Emitter.prototype.off =\n\
-Emitter.prototype.removeListener =\n\
-Emitter.prototype.removeAllListeners = function(event, fn){\n\
-  this._callbacks = this._callbacks || {};\n\
-\n\
-  // all\n\
-  if (0 == arguments.length) {\n\
-    this._callbacks = {};\n\
-    return this;\n\
-  }\n\
-\n\
-  // specific event\n\
-  var callbacks = this._callbacks[event];\n\
-  if (!callbacks) return this;\n\
-\n\
-  // remove all handlers\n\
-  if (1 == arguments.length) {\n\
-    delete this._callbacks[event];\n\
-    return this;\n\
-  }\n\
-\n\
-  // remove specific handler\n\
-  var i = index(callbacks, fn._off || fn);\n\
-  if (~i) callbacks.splice(i, 1);\n\
-  return this;\n\
-};\n\
-\n\
-/**\n\
- * Emit `event` with the given args.\n\
- *\n\
- * @param {String} event\n\
- * @param {Mixed} ...\n\
- * @return {Emitter}\n\
- */\n\
-\n\
-Emitter.prototype.emit = function(event){\n\
-  this._callbacks = this._callbacks || {};\n\
-  var args = [].slice.call(arguments, 1)\n\
-    , callbacks = this._callbacks[event];\n\
-\n\
-  if (callbacks) {\n\
-    callbacks = callbacks.slice(0);\n\
-    for (var i = 0, len = callbacks.length; i < len; ++i) {\n\
-      callbacks[i].apply(this, args);\n\
-    }\n\
-  }\n\
-\n\
-  return this;\n\
-};\n\
-\n\
-/**\n\
- * Return array of callbacks for `event`.\n\
- *\n\
- * @param {String} event\n\
- * @return {Array}\n\
- * @api public\n\
- */\n\
-\n\
-Emitter.prototype.listeners = function(event){\n\
-  this._callbacks = this._callbacks || {};\n\
-  return this._callbacks[event] || [];\n\
-};\n\
-\n\
-/**\n\
- * Check if this emitter has `event` handlers.\n\
- *\n\
- * @param {String} event\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-Emitter.prototype.hasListeners = function(event){\n\
-  return !! this.listeners(event).length;\n\
-};\n\
-//@ sourceURL=component-emitter/index.js"
-));
-require.register("component-to-function/index.js", Function("exports, require, module",
-"\n\
-/**\n\
- * Expose `toFunction()`.\n\
- */\n\
-\n\
-module.exports = toFunction;\n\
-\n\
-/**\n\
- * Convert `obj` to a `Function`.\n\
- *\n\
- * @param {Mixed} obj\n\
- * @return {Function}\n\
- * @api private\n\
- */\n\
-\n\
-function toFunction(obj) {\n\
-  switch ({}.toString.call(obj)) {\n\
-    case '[object Object]':\n\
-      return objectToFunction(obj);\n\
-    case '[object Function]':\n\
-      return obj;\n\
-    case '[object String]':\n\
-      return stringToFunction(obj);\n\
-    case '[object RegExp]':\n\
-      return regexpToFunction(obj);\n\
-    default:\n\
-      return defaultToFunction(obj);\n\
-  }\n\
-}\n\
-\n\
-/**\n\
- * Default to strict equality.\n\
- *\n\
- * @param {Mixed} val\n\
- * @return {Function}\n\
- * @api private\n\
- */\n\
-\n\
-function defaultToFunction(val) {\n\
-  return function(obj){\n\
-    return val === obj;\n\
-  }\n\
-}\n\
-\n\
-/**\n\
- * Convert `re` to a function.\n\
- *\n\
- * @param {RegExp} re\n\
- * @return {Function}\n\
- * @api private\n\
- */\n\
-\n\
-function regexpToFunction(re) {\n\
-  return function(obj){\n\
-    return re.test(obj);\n\
-  }\n\
-}\n\
-\n\
-/**\n\
- * Convert property `str` to a function.\n\
- *\n\
- * @param {String} str\n\
- * @return {Function}\n\
- * @api private\n\
- */\n\
-\n\
-function stringToFunction(str) {\n\
-  // immediate such as \"> 20\"\n\
-  if (/^ *\\W+/.test(str)) return new Function('_', 'return _ ' + str);\n\
-\n\
-  // properties such as \"name.first\" or \"age > 18\"\n\
-  return new Function('_', 'return _.' + str);\n\
-}\n\
-\n\
-/**\n\
- * Convert `object` to a function.\n\
- *\n\
- * @param {Object} object\n\
- * @return {Function}\n\
- * @api private\n\
- */\n\
-\n\
-function objectToFunction(obj) {\n\
-  var match = {}\n\
-  for (var key in obj) {\n\
-    match[key] = typeof obj[key] === 'string'\n\
-      ? defaultToFunction(obj[key])\n\
-      : toFunction(obj[key])\n\
-  }\n\
-  return function(val){\n\
-    if (typeof val !== 'object') return false;\n\
-    for (var key in match) {\n\
-      if (!(key in val)) return false;\n\
-      if (!match[key](val[key])) return false;\n\
-    }\n\
-    return true;\n\
-  }\n\
-}\n\
-//@ sourceURL=component-to-function/index.js"
-));
-require.register("component-enumerable/index.js", Function("exports, require, module",
-"\n\
-/**\n\
- * Module dependencies.\n\
- */\n\
-\n\
-var toFunction = require('to-function')\n\
-  , proto = {};\n\
-\n\
-/**\n\
- * Expose `Enumerable`.\n\
- */\n\
-\n\
-module.exports = Enumerable;\n\
-\n\
-/**\n\
- * Mixin to `obj`.\n\
- *\n\
- *    var Enumerable = require('enumerable');\n\
- *    Enumerable(Something.prototype);\n\
- *\n\
- * @param {Object} obj\n\
- * @return {Object} obj\n\
- */\n\
-\n\
-function mixin(obj){\n\
-  for (var key in proto) obj[key] = proto[key];\n\
-  obj.__iterate__ = obj.__iterate__ || defaultIterator;\n\
-  return obj;\n\
-}\n\
-\n\
-/**\n\
- * Initialize a new `Enumerable` with the given `obj`.\n\
- *\n\
- * @param {Object} obj\n\
- * @api private\n\
- */\n\
-\n\
-function Enumerable(obj) {\n\
-  if (!(this instanceof Enumerable)) {\n\
-    if (Array.isArray(obj)) return new Enumerable(obj);\n\
-    return mixin(obj);\n\
-  }\n\
-  this.obj = obj;\n\
-}\n\
-\n\
-/*!\n\
- * Default iterator utilizing `.length` and subscripts.\n\
- */\n\
-\n\
-function defaultIterator() {\n\
-  var self = this;\n\
-  return {\n\
-    length: function(){ return self.length },\n\
-    get: function(i){ return self[i] }\n\
-  }\n\
-}\n\
-\n\
-/**\n\
- * Return a string representation of this enumerable.\n\
- *\n\
- *    [Enumerable [1,2,3]]\n\
- *\n\
- * @return {String}\n\
- * @api public\n\
- */\n\
-\n\
-Enumerable.prototype.inspect =\n\
-Enumerable.prototype.toString = function(){\n\
-  return '[Enumerable ' + JSON.stringify(this.obj) + ']';\n\
-};\n\
-\n\
-/**\n\
- * Iterate enumerable.\n\
- *\n\
- * @return {Object}\n\
- * @api private\n\
- */\n\
-\n\
-Enumerable.prototype.__iterate__ = function(){\n\
-  var obj = this.obj;\n\
-  obj.__iterate__ = obj.__iterate__ || defaultIterator;\n\
-  return obj.__iterate__();\n\
-};\n\
-\n\
-/**\n\
- * Iterate each value and invoke `fn(val, i)`.\n\
- *\n\
- *    users.each(function(val, i){\n\
- *\n\
- *    })\n\
- *\n\
- * @param {Function} fn\n\
- * @return {Object} self\n\
- * @api public\n\
- */\n\
-\n\
-proto.forEach =\n\
-proto.each = function(fn){\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    fn(vals.get(i), i);\n\
-  }\n\
-  return this;\n\
-};\n\
-\n\
-/**\n\
- * Map each return value from `fn(val, i)`.\n\
- *\n\
- * Passing a callback function:\n\
- *\n\
- *    users.map(function(user){\n\
- *      return user.name.first\n\
- *    })\n\
- *\n\
- * Passing a property string:\n\
- *\n\
- *    users.map('name.first')\n\
- *\n\
- * @param {Function} fn\n\
- * @return {Enumerable}\n\
- * @api public\n\
- */\n\
-\n\
-proto.map = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  var arr = [];\n\
-  for (var i = 0; i < len; ++i) {\n\
-    arr.push(fn(vals.get(i), i));\n\
-  }\n\
-  return new Enumerable(arr);\n\
-};\n\
-\n\
-/**\n\
- * Select all values that return a truthy value of `fn(val, i)`.\n\
- *\n\
- *    users.select(function(user){\n\
- *      return user.age > 20\n\
- *    })\n\
- *\n\
- *  With a property:\n\
- *\n\
- *    items.select('complete')\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Enumerable}\n\
- * @api public\n\
- */\n\
-\n\
-proto.filter =\n\
-proto.select = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var val;\n\
-  var arr = [];\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (fn(val, i)) arr.push(val);\n\
-  }\n\
-  return new Enumerable(arr);\n\
-};\n\
-\n\
-/**\n\
- * Select all unique values.\n\
- *\n\
- *    nums.unique()\n\
- *\n\
- * @return {Enumerable}\n\
- * @api public\n\
- */\n\
-\n\
-proto.unique = function(){\n\
-  var val;\n\
-  var arr = [];\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (~arr.indexOf(val)) continue;\n\
-    arr.push(val);\n\
-  }\n\
-  return new Enumerable(arr);\n\
-};\n\
-\n\
-/**\n\
- * Reject all values that return a truthy value of `fn(val, i)`.\n\
- *\n\
- * Rejecting using a callback:\n\
- *\n\
- *    users.reject(function(user){\n\
- *      return user.age < 20\n\
- *    })\n\
- *\n\
- * Rejecting with a property:\n\
- *\n\
- *    items.reject('complete')\n\
- *\n\
- * Rejecting values via `==`:\n\
- *\n\
- *    data.reject(null)\n\
- *    users.reject(tobi)\n\
- *\n\
- * @param {Function|String|Mixed} fn\n\
- * @return {Enumerable}\n\
- * @api public\n\
- */\n\
-\n\
-proto.reject = function(fn){\n\
-  var val;\n\
-  var arr = [];\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  if ('string' == typeof fn) fn = toFunction(fn);\n\
-\n\
-  if (fn) {\n\
-    for (var i = 0; i < len; ++i) {\n\
-      val = vals.get(i);\n\
-      if (!fn(val, i)) arr.push(val);\n\
-    }\n\
-  } else {\n\
-    for (var i = 0; i < len; ++i) {\n\
-      val = vals.get(i);\n\
-      if (val != fn) arr.push(val);\n\
-    }\n\
-  }\n\
-\n\
-  return new Enumerable(arr);\n\
-};\n\
-\n\
-/**\n\
- * Reject `null` and `undefined`.\n\
- *\n\
- *    [1, null, 5, undefined].compact()\n\
- *    // => [1,5]\n\
- *\n\
- * @return {Enumerable}\n\
- * @api public\n\
- */\n\
-\n\
-\n\
-proto.compact = function(){\n\
-  return this.reject(null);\n\
-};\n\
-\n\
-/**\n\
- * Return the first value when `fn(val, i)` is truthy,\n\
- * otherwise return `undefined`.\n\
- *\n\
- *    users.find(function(user){\n\
- *      return user.role == 'admin'\n\
- *    })\n\
- *\n\
- * With a property string:\n\
- *\n\
- *    users.find('age > 20')\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.find = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (fn(val, i)) return val;\n\
-  }\n\
-};\n\
-\n\
-/**\n\
- * Return the last value when `fn(val, i)` is truthy,\n\
- * otherwise return `undefined`.\n\
- *\n\
- *    users.findLast(function(user){\n\
- *      return user.role == 'admin'\n\
- *    })\n\
- *\n\
- * @param {Function} fn\n\
- * @return {Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.findLast = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = len - 1; i > -1; --i) {\n\
-    val = vals.get(i);\n\
-    if (fn(val, i)) return val;\n\
-  }\n\
-};\n\
-\n\
-/**\n\
- * Assert that all invocations of `fn(val, i)` are truthy.\n\
- *\n\
- * For example ensuring that all pets are ferrets:\n\
- *\n\
- *    pets.all(function(pet){\n\
- *      return pet.species == 'ferret'\n\
- *    })\n\
- *\n\
- *    users.all('admin')\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-proto.all =\n\
-proto.every = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (!fn(val, i)) return false;\n\
-  }\n\
-  return true;\n\
-};\n\
-\n\
-/**\n\
- * Assert that none of the invocations of `fn(val, i)` are truthy.\n\
- *\n\
- * For example ensuring that no pets are admins:\n\
- *\n\
- *    pets.none(function(p){ return p.admin })\n\
- *    pets.none('admin')\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-proto.none = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (fn(val, i)) return false;\n\
-  }\n\
-  return true;\n\
-};\n\
-\n\
-/**\n\
- * Assert that at least one invocation of `fn(val, i)` is truthy.\n\
- *\n\
- * For example checking to see if any pets are ferrets:\n\
- *\n\
- *    pets.any(function(pet){\n\
- *      return pet.species == 'ferret'\n\
- *    })\n\
- *\n\
- * @param {Function} fn\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-proto.any = function(fn){\n\
-  fn = toFunction(fn);\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (fn(val, i)) return true;\n\
-  }\n\
-  return false;\n\
-};\n\
-\n\
-/**\n\
- * Count the number of times `fn(val, i)` returns true.\n\
- *\n\
- *    var n = pets.count(function(pet){\n\
- *      return pet.species == 'ferret'\n\
- *    })\n\
- *\n\
- * @param {Function} fn\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-proto.count = function(fn){\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  var n = 0;\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (fn(val, i)) ++n;\n\
-  }\n\
-  return n;\n\
-};\n\
-\n\
-/**\n\
- * Determine the indexof `obj` or return `-1`.\n\
- *\n\
- * @param {Mixed} obj\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-proto.indexOf = function(obj){\n\
-  var val;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    val = vals.get(i);\n\
-    if (val === obj) return i;\n\
-  }\n\
-  return -1;\n\
-};\n\
-\n\
-/**\n\
- * Check if `obj` is present in this enumerable.\n\
- *\n\
- * @param {Mixed} obj\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-proto.has = function(obj){\n\
-  return !! ~this.indexOf(obj);\n\
-};\n\
-\n\
-/**\n\
- * Reduce with `fn(accumulator, val, i)` using\n\
- * optional `init` value defaulting to the first\n\
- * enumerable value.\n\
- *\n\
- * @param {Function} fn\n\
- * @param {Mixed} [val]\n\
- * @return {Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.reduce = function(fn, init){\n\
-  var val;\n\
-  var i = 0;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  val = null == init\n\
-    ? vals.get(i++)\n\
-    : init;\n\
-\n\
-  for (; i < len; ++i) {\n\
-    val = fn(val, vals.get(i), i);\n\
-  }\n\
-\n\
-  return val;\n\
-};\n\
-\n\
-/**\n\
- * Determine the max value.\n\
- *\n\
- * With a callback function:\n\
- *\n\
- *    pets.max(function(pet){\n\
- *      return pet.age\n\
- *    })\n\
- *\n\
- * With property strings:\n\
- *\n\
- *    pets.max('age')\n\
- *\n\
- * With immediate values:\n\
- *\n\
- *    nums.max()\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-proto.max = function(fn){\n\
-  var val;\n\
-  var n = 0;\n\
-  var max = -Infinity;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  if (fn) {\n\
-    fn = toFunction(fn);\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n = fn(vals.get(i), i);\n\
-      max = n > max ? n : max;\n\
-    }\n\
-  } else {\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n = vals.get(i);\n\
-      max = n > max ? n : max;\n\
-    }\n\
-  }\n\
-\n\
-  return max;\n\
-};\n\
-\n\
-/**\n\
- * Determine the min value.\n\
- *\n\
- * With a callback function:\n\
- *\n\
- *    pets.min(function(pet){\n\
- *      return pet.age\n\
- *    })\n\
- *\n\
- * With property strings:\n\
- *\n\
- *    pets.min('age')\n\
- *\n\
- * With immediate values:\n\
- *\n\
- *    nums.min()\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-proto.min = function(fn){\n\
-  var val;\n\
-  var n = 0;\n\
-  var min = Infinity;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  if (fn) {\n\
-    fn = toFunction(fn);\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n = fn(vals.get(i), i);\n\
-      min = n < min ? n : min;\n\
-    }\n\
-  } else {\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n = vals.get(i);\n\
-      min = n < min ? n : min;\n\
-    }\n\
-  }\n\
-\n\
-  return min;\n\
-};\n\
-\n\
-/**\n\
- * Determine the sum.\n\
- *\n\
- * With a callback function:\n\
- *\n\
- *    pets.sum(function(pet){\n\
- *      return pet.age\n\
- *    })\n\
- *\n\
- * With property strings:\n\
- *\n\
- *    pets.sum('age')\n\
- *\n\
- * With immediate values:\n\
- *\n\
- *    nums.sum()\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-proto.sum = function(fn){\n\
-  var ret;\n\
-  var n = 0;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  if (fn) {\n\
-    fn = toFunction(fn);\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n += fn(vals.get(i), i);\n\
-    }\n\
-  } else {\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n += vals.get(i);\n\
-    }\n\
-  }\n\
-\n\
-  return n;\n\
-};\n\
-\n\
-/**\n\
- * Determine the average value.\n\
- *\n\
- * With a callback function:\n\
- *\n\
- *    pets.avg(function(pet){\n\
- *      return pet.age\n\
- *    })\n\
- *\n\
- * With property strings:\n\
- *\n\
- *    pets.avg('age')\n\
- *\n\
- * With immediate values:\n\
- *\n\
- *    nums.avg()\n\
- *\n\
- * @param {Function|String} fn\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-proto.avg =\n\
-proto.mean = function(fn){\n\
-  var ret;\n\
-  var n = 0;\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  if (fn) {\n\
-    fn = toFunction(fn);\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n += fn(vals.get(i), i);\n\
-    }\n\
-  } else {\n\
-    for (var i = 0; i < len; ++i) {\n\
-      n += vals.get(i);\n\
-    }\n\
-  }\n\
-\n\
-  return n / len;\n\
-};\n\
-\n\
-/**\n\
- * Return the first value, or first `n` values.\n\
- *\n\
- * @param {Number|Function} [n]\n\
- * @return {Array|Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.first = function(n){\n\
-  if ('function' == typeof n) return this.find(n);\n\
-  var vals = this.__iterate__();\n\
-\n\
-  if (n) {\n\
-    var len = Math.min(n, vals.length());\n\
-    var arr = new Array(len);\n\
-    for (var i = 0; i < len; ++i) {\n\
-      arr[i] = vals.get(i);\n\
-    }\n\
-    return arr;\n\
-  }\n\
-\n\
-  return vals.get(0);\n\
-};\n\
-\n\
-/**\n\
- * Return the last value, or last `n` values.\n\
- *\n\
- * @param {Number|Function} [n]\n\
- * @return {Array|Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.last = function(n){\n\
-  if ('function' == typeof n) return this.findLast(n);\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  if (n) {\n\
-    var i = Math.max(0, len - n);\n\
-    var arr = [];\n\
-    for (; i < len; ++i) {\n\
-      arr.push(vals.get(i));\n\
-    }\n\
-    return arr;\n\
-  }\n\
-\n\
-  return vals.get(len - 1);\n\
-};\n\
-\n\
-/**\n\
- * Return values in groups of `n`.\n\
- *\n\
- * @param {Number} n\n\
- * @return {Enumerable}\n\
- * @api public\n\
- */\n\
-\n\
-proto.inGroupsOf = function(n){\n\
-  var arr = [];\n\
-  var group = [];\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-\n\
-  for (var i = 0; i < len; ++i) {\n\
-    group.push(vals.get(i));\n\
-    if ((i + 1) % n == 0) {\n\
-      arr.push(group);\n\
-      group = [];\n\
-    }\n\
-  }\n\
-\n\
-  if (group.length) arr.push(group);\n\
-\n\
-  return new Enumerable(arr);\n\
-};\n\
-\n\
-/**\n\
- * Return the value at the given index.\n\
- *\n\
- * @param {Number} i\n\
- * @return {Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.at = function(i){\n\
-  return this.__iterate__().get(i);\n\
-};\n\
-\n\
-/**\n\
- * Return a regular `Array`.\n\
- *\n\
- * @return {Array}\n\
- * @api public\n\
- */\n\
-\n\
-proto.toJSON =\n\
-proto.array = function(){\n\
-  var arr = [];\n\
-  var vals = this.__iterate__();\n\
-  var len = vals.length();\n\
-  for (var i = 0; i < len; ++i) {\n\
-    arr.push(vals.get(i));\n\
-  }\n\
-  return arr;\n\
-};\n\
-\n\
-/**\n\
- * Return the enumerable value.\n\
- *\n\
- * @return {Mixed}\n\
- * @api public\n\
- */\n\
-\n\
-proto.value = function(){\n\
-  return this.obj;\n\
-};\n\
-\n\
-/**\n\
- * Mixin enumerable.\n\
- */\n\
-\n\
-mixin(Enumerable.prototype);\n\
-//@ sourceURL=component-enumerable/index.js"
-));
-require.register("segmentio-collection/index.js", Function("exports, require, module",
-"\n\
-/**\n\
- * Module dependencies.\n\
- */\n\
-\n\
-var Emitter = require('emitter')\n\
-  , Enumerable = require('enumerable');\n\
-\n\
-/**\n\
- * Expose `Collection`.\n\
- */\n\
-\n\
-module.exports = Collection;\n\
-\n\
-/**\n\
- * Initialize a new collection with the given `models`.\n\
- *\n\
- * @param {Array} models\n\
- * @api public\n\
- */\n\
-\n\
-function Collection(models) {\n\
-  this.models = models || [];\n\
-}\n\
-\n\
-/**\n\
- * Mixin emitter.\n\
- */\n\
-\n\
-Emitter(Collection.prototype);\n\
-\n\
-/**\n\
- * Mixin enumerable.\n\
- */\n\
-\n\
-Enumerable(Collection.prototype);\n\
-\n\
-/**\n\
- * Iterator implementation.\n\
- */\n\
-\n\
-Collection.prototype.__iterate__ = function(){\n\
-  var self = this;\n\
-  return {\n\
-    length: function(){ return self.length() },\n\
-    get: function(i){ return self.models[i] }\n\
-  }\n\
-};\n\
-\n\
-/**\n\
- * Return the collection length.\n\
- *\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-Collection.prototype.length = function(){\n\
-  return this.models.length;\n\
-};\n\
-\n\
-/**\n\
- * Add `model` to the collection and return the index.\n\
- *\n\
- * @param {Object} model\n\
- * @return {Number}\n\
- * @api public\n\
- */\n\
-\n\
-Collection.prototype.add =\n\
-Collection.prototype.push = function(model){\n\
-  var length = this.models.push(model);\n\
-  this.emit('add', model);\n\
-  return length;\n\
-};\n\
-\n\
-/**\n\
- * Remove `model` from the collection, returning `true` when present,\n\
- * otherwise `false`.\n\
- *\n\
- * @param {Object} model\n\
- * @api public\n\
- */\n\
-\n\
-Collection.prototype.remove = function(model){\n\
-  var i = this.indexOf(model);\n\
-  if (~i) {\n\
-    this.models.splice(i, 1);\n\
-    this.emit('remove', model);\n\
-  }\n\
-  return !! ~i;\n\
-};\n\
-//@ sourceURL=segmentio-collection/index.js"
-));
-require.register("component-type/index.js", Function("exports, require, module",
-"\n\
-/**\n\
- * toString ref.\n\
- */\n\
-\n\
-var toString = Object.prototype.toString;\n\
-\n\
-/**\n\
- * Return the type of `val`.\n\
- *\n\
- * @param {Mixed} val\n\
- * @return {String}\n\
- * @api public\n\
- */\n\
-\n\
-module.exports = function(val){\n\
-  switch (toString.call(val)) {\n\
-    case '[object Function]': return 'function';\n\
-    case '[object Date]': return 'date';\n\
-    case '[object RegExp]': return 'regexp';\n\
-    case '[object Arguments]': return 'arguments';\n\
-    case '[object Array]': return 'array';\n\
-    case '[object String]': return 'string';\n\
-  }\n\
-\n\
-  if (val === null) return 'null';\n\
-  if (val === undefined) return 'undefined';\n\
-  if (val && val.nodeType === 1) return 'element';\n\
-  if (val === Object(val)) return 'object';\n\
-\n\
-  return typeof val;\n\
-};\n\
-//@ sourceURL=component-type/index.js"
-));
-require.register("component-each/index.js", Function("exports, require, module",
-"\n\
-/**\n\
- * Module dependencies.\n\
- */\n\
-\n\
-var toFunction = require('to-function');\n\
-var type;\n\
-\n\
-try {\n\
-  type = require('type-component');\n\
-} catch (e) {\n\
-  type = require('type');\n\
-}\n\
-\n\
-/**\n\
- * HOP reference.\n\
- */\n\
-\n\
-var has = Object.prototype.hasOwnProperty;\n\
-\n\
-/**\n\
- * Iterate the given `obj` and invoke `fn(val, i)`.\n\
- *\n\
- * @param {String|Array|Object} obj\n\
- * @param {Function} fn\n\
- * @api public\n\
- */\n\
-\n\
-module.exports = function(obj, fn){\n\
-  fn = toFunction(fn);\n\
-  switch (type(obj)) {\n\
-    case 'array':\n\
-      return array(obj, fn);\n\
-    case 'object':\n\
-      if ('number' == typeof obj.length) return array(obj, fn);\n\
-      return object(obj, fn);\n\
-    case 'string':\n\
-      return string(obj, fn);\n\
-  }\n\
-};\n\
-\n\
-/**\n\
- * Iterate string chars.\n\
- *\n\
- * @param {String} obj\n\
- * @param {Function} fn\n\
- * @api private\n\
- */\n\
-\n\
-function string(obj, fn) {\n\
-  for (var i = 0; i < obj.length; ++i) {\n\
-    fn(obj.charAt(i), i);\n\
-  }\n\
-}\n\
-\n\
-/**\n\
- * Iterate object keys.\n\
- *\n\
- * @param {Object} obj\n\
- * @param {Function} fn\n\
- * @api private\n\
- */\n\
-\n\
-function object(obj, fn) {\n\
-  for (var key in obj) {\n\
-    if (has.call(obj, key)) {\n\
-      fn(key, obj[key]);\n\
-    }\n\
-  }\n\
-}\n\
-\n\
-/**\n\
- * Iterate array-ish.\n\
- *\n\
- * @param {Array|Object} obj\n\
- * @param {Function} fn\n\
- * @api private\n\
- */\n\
-\n\
-function array(obj, fn) {\n\
-  for (var i = 0; i < obj.length; ++i) {\n\
-    fn(obj[i], i);\n\
-  }\n\
-}\n\
-//@ sourceURL=component-each/index.js"
-));
 require.register("component-classes/index.js", Function("exports, require, module",
 "/**\n\
  * Module dependencies.\n\
@@ -1759,7 +514,8 @@ exports.unbind = function(el, type, fn, capture){\n\
 //@ sourceURL=component-event/index.js"
 ));
 require.register("component-delegate/index.js", Function("exports, require, module",
-"/**\n\
+"\n\
+/**\n\
  * Module dependencies.\n\
  */\n\
 \n\
@@ -1782,8 +538,9 @@ var matches = require('matches-selector')\n\
 \n\
 exports.bind = function(el, selector, type, fn, capture){\n\
   return event.bind(el, type, function(e){\n\
-    if (matches(e.target || e.srcElement, selector)) fn.call(el, e);\n\
+    if (matches(e.target, selector)) fn(e);\n\
   }, capture);\n\
+  return callback;\n\
 };\n\
 \n\
 /**\n\
@@ -2394,6 +1151,41 @@ function uid(len) {\n\
   return Math.random().toString(35).substr(2, len);\n\
 }\n\
 //@ sourceURL=matthewmueller-uid/index.js"
+));
+require.register("component-type/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * toString ref.\n\
+ */\n\
+\n\
+var toString = Object.prototype.toString;\n\
+\n\
+/**\n\
+ * Return the type of `val`.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(val){\n\
+  switch (toString.call(val)) {\n\
+    case '[object Function]': return 'function';\n\
+    case '[object Date]': return 'date';\n\
+    case '[object RegExp]': return 'regexp';\n\
+    case '[object Arguments]': return 'arguments';\n\
+    case '[object Array]': return 'array';\n\
+    case '[object String]': return 'string';\n\
+  }\n\
+\n\
+  if (val === null) return 'null';\n\
+  if (val === undefined) return 'undefined';\n\
+  if (val && val.nodeType === 1) return 'element';\n\
+  if (val === Object(val)) return 'object';\n\
+\n\
+  return typeof val;\n\
+};\n\
+//@ sourceURL=component-type/index.js"
 ));
 require.register("component-css/index.js", Function("exports, require, module",
 "\n\
@@ -3425,6 +2217,171 @@ function parse(html) {\n\
   return fragment;\n\
 }\n\
 //@ sourceURL=component-domify/index.js"
+));
+require.register("component-emitter/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var index = require('indexof');\n\
+\n\
+/**\n\
+ * Expose `Emitter`.\n\
+ */\n\
+\n\
+module.exports = Emitter;\n\
+\n\
+/**\n\
+ * Initialize a new `Emitter`.\n\
+ *\n\
+ * @api public\n\
+ */\n\
+\n\
+function Emitter(obj) {\n\
+  if (obj) return mixin(obj);\n\
+};\n\
+\n\
+/**\n\
+ * Mixin the emitter properties.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+function mixin(obj) {\n\
+  for (var key in Emitter.prototype) {\n\
+    obj[key] = Emitter.prototype[key];\n\
+  }\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Listen on the given `event` with `fn`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.on = function(event, fn){\n\
+  this._callbacks = this._callbacks || {};\n\
+  (this._callbacks[event] = this._callbacks[event] || [])\n\
+    .push(fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Adds an `event` listener that will be invoked a single\n\
+ * time then automatically removed.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.once = function(event, fn){\n\
+  var self = this;\n\
+  this._callbacks = this._callbacks || {};\n\
+\n\
+  function on() {\n\
+    self.off(event, on);\n\
+    fn.apply(this, arguments);\n\
+  }\n\
+\n\
+  fn._off = on;\n\
+  this.on(event, on);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove the given callback for `event` or all\n\
+ * registered callbacks.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.off =\n\
+Emitter.prototype.removeListener =\n\
+Emitter.prototype.removeAllListeners = function(event, fn){\n\
+  this._callbacks = this._callbacks || {};\n\
+\n\
+  // all\n\
+  if (0 == arguments.length) {\n\
+    this._callbacks = {};\n\
+    return this;\n\
+  }\n\
+\n\
+  // specific event\n\
+  var callbacks = this._callbacks[event];\n\
+  if (!callbacks) return this;\n\
+\n\
+  // remove all handlers\n\
+  if (1 == arguments.length) {\n\
+    delete this._callbacks[event];\n\
+    return this;\n\
+  }\n\
+\n\
+  // remove specific handler\n\
+  var i = index(callbacks, fn._off || fn);\n\
+  if (~i) callbacks.splice(i, 1);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Emit `event` with the given args.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Mixed} ...\n\
+ * @return {Emitter}\n\
+ */\n\
+\n\
+Emitter.prototype.emit = function(event){\n\
+  this._callbacks = this._callbacks || {};\n\
+  var args = [].slice.call(arguments, 1)\n\
+    , callbacks = this._callbacks[event];\n\
+\n\
+  if (callbacks) {\n\
+    callbacks = callbacks.slice(0);\n\
+    for (var i = 0, len = callbacks.length; i < len; ++i) {\n\
+      callbacks[i].apply(this, args);\n\
+    }\n\
+  }\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Return array of callbacks for `event`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.listeners = function(event){\n\
+  this._callbacks = this._callbacks || {};\n\
+  return this._callbacks[event] || [];\n\
+};\n\
+\n\
+/**\n\
+ * Check if this emitter has `event` handlers.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.hasListeners = function(event){\n\
+  return !! this.listeners(event).length;\n\
+};\n\
+//@ sourceURL=component-emitter/index.js"
 ));
 require.register("component-mousetrap/index.js", Function("exports, require, module",
 "/**\n\
@@ -7351,6 +6308,194 @@ module.exports = function(obj, fn){\n\
   }\n\
 };\n\
 //@ sourceURL=component-bind/index.js"
+));
+require.register("component-to-function/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Expose `toFunction()`.\n\
+ */\n\
+\n\
+module.exports = toFunction;\n\
+\n\
+/**\n\
+ * Convert `obj` to a `Function`.\n\
+ *\n\
+ * @param {Mixed} obj\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function toFunction(obj) {\n\
+  switch ({}.toString.call(obj)) {\n\
+    case '[object Object]':\n\
+      return objectToFunction(obj);\n\
+    case '[object Function]':\n\
+      return obj;\n\
+    case '[object String]':\n\
+      return stringToFunction(obj);\n\
+    case '[object RegExp]':\n\
+      return regexpToFunction(obj);\n\
+    default:\n\
+      return defaultToFunction(obj);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Default to strict equality.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function defaultToFunction(val) {\n\
+  return function(obj){\n\
+    return val === obj;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Convert `re` to a function.\n\
+ *\n\
+ * @param {RegExp} re\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function regexpToFunction(re) {\n\
+  return function(obj){\n\
+    return re.test(obj);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Convert property `str` to a function.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function stringToFunction(str) {\n\
+  // immediate such as \"> 20\"\n\
+  if (/^ *\\W+/.test(str)) return new Function('_', 'return _ ' + str);\n\
+\n\
+  // properties such as \"name.first\" or \"age > 18\"\n\
+  return new Function('_', 'return _.' + str);\n\
+}\n\
+\n\
+/**\n\
+ * Convert `object` to a function.\n\
+ *\n\
+ * @param {Object} object\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function objectToFunction(obj) {\n\
+  var match = {}\n\
+  for (var key in obj) {\n\
+    match[key] = typeof obj[key] === 'string'\n\
+      ? defaultToFunction(obj[key])\n\
+      : toFunction(obj[key])\n\
+  }\n\
+  return function(val){\n\
+    if (typeof val !== 'object') return false;\n\
+    for (var key in match) {\n\
+      if (!(key in val)) return false;\n\
+      if (!match[key](val[key])) return false;\n\
+    }\n\
+    return true;\n\
+  }\n\
+}\n\
+//@ sourceURL=component-to-function/index.js"
+));
+require.register("component-each/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var toFunction = require('to-function');\n\
+var type;\n\
+\n\
+try {\n\
+  type = require('type-component');\n\
+} catch (e) {\n\
+  type = require('type');\n\
+}\n\
+\n\
+/**\n\
+ * HOP reference.\n\
+ */\n\
+\n\
+var has = Object.prototype.hasOwnProperty;\n\
+\n\
+/**\n\
+ * Iterate the given `obj` and invoke `fn(val, i)`.\n\
+ *\n\
+ * @param {String|Array|Object} obj\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(obj, fn){\n\
+  fn = toFunction(fn);\n\
+  switch (type(obj)) {\n\
+    case 'array':\n\
+      return array(obj, fn);\n\
+    case 'object':\n\
+      if ('number' == typeof obj.length) return array(obj, fn);\n\
+      return object(obj, fn);\n\
+    case 'string':\n\
+      return string(obj, fn);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Iterate string chars.\n\
+ *\n\
+ * @param {String} obj\n\
+ * @param {Function} fn\n\
+ * @api private\n\
+ */\n\
+\n\
+function string(obj, fn) {\n\
+  for (var i = 0; i < obj.length; ++i) {\n\
+    fn(obj.charAt(i), i);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Iterate object keys.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {Function} fn\n\
+ * @api private\n\
+ */\n\
+\n\
+function object(obj, fn) {\n\
+  for (var key in obj) {\n\
+    if (has.call(obj, key)) {\n\
+      fn(key, obj[key]);\n\
+    }\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Iterate array-ish.\n\
+ *\n\
+ * @param {Array|Object} obj\n\
+ * @param {Function} fn\n\
+ * @api private\n\
+ */\n\
+\n\
+function array(obj, fn) {\n\
+  for (var i = 0; i < obj.length; ++i) {\n\
+    fn(obj[i], i);\n\
+  }\n\
+}\n\
+//@ sourceURL=component-each/index.js"
 ));
 require.register("segmentio-emitter/index.js", Function("exports, require, module",
 "\n\
@@ -14431,9 +13576,8 @@ Nav.prototype.onSearch = function (e) {\n\
 ));
 require.register("nav/item.js", Function("exports, require, module",
 "\n\
-var template = require('./item.html')\n\
-  , stop = require('stop')\n\
-  , prevent = require('prevent')\n\
+var documents = require('documents')\n\
+  , template = require('./item.html')\n\
   , view = require('view');\n\
 \n\
 \n\
@@ -14449,14 +13593,19 @@ var MenuItemView = module.exports = view(template);\n\
  */\n\
 \n\
 MenuItemView.prototype.onClickDelete = function (e) {\n\
-  prevent(e);\n\
-  stop(e);\n\
-  this.menu.remove(this.model.primary());\n\
+  e.preventDefault();\n\
+  e.stopPropagation();\n\
+\n\
+  documents.get(this.model.primary(), function (err, doc) {\n\
+    if (err) throw err;\n\
+    documents.remove(doc);\n\
+  });\n\
 };//@ sourceURL=nav/item.js"
 ));
 require.register("app/index.js", Function("exports, require, module",
 "\n\
-var dom = require('dom')\n\
+var documents = require('documents')\n\
+  , dom = require('dom')\n\
   , domify = require('domify')\n\
   , Editor = require('editor')\n\
   , Emitter = require('emitter')\n\
@@ -14512,23 +13661,9 @@ Emitter(App.prototype);\n\
  */\n\
 \n\
 App.prototype.load = function (doc) {\n\
-  var editor = this.editor = new Editor(doc);\n\
+  var editor = new Editor(doc);\n\
   dom('.input', this.el).replace(editor.input);\n\
   dom('.output', this.el).replace(editor.output);\n\
-  return this;\n\
-};\n\
-\n\
-\n\
-/**\n\
- * Add a document to the app.\n\
- *\n\
- * @param {Document} doc\n\
- * @return {App}\n\
- */\n\
-\n\
-App.prototype.add = function (doc) {\n\
-  this.nav.add(doc);\n\
-  this.emit('add', doc);\n\
   return this;\n\
 };\n\
 \n\
@@ -14578,12 +13713,13 @@ App.prototype.navigating = function (value) {\n\
  */\n\
 \n\
 App.prototype.replaceNav = function () {\n\
-  var self = this;\n\
-  this.nav = new Nav()\n\
-    .on('remove', function (doc) {\n\
-      self.emit('remove', doc);\n\
-    });\n\
-  return this.nav.el;\n\
+  var nav = new Nav();\n\
+\n\
+  documents\n\
+    .on('add', nav.add.bind(nav))\n\
+    .on('remove', nav.remove.bind(nav));\n\
+\n\
+  return nav.el;\n\
 };\n\
 \n\
 App.prototype.onNav = function (e) {\n\
@@ -14685,196 +13821,862 @@ module.exports = function (Editor) {\n\
   });\n\
 };//@ sourceURL=app/filters/rainbow.js"
 ));
-require.register("component-set/index.js", Function("exports, require, module",
+require.register("component-enumerable/index.js", Function("exports, require, module",
 "\n\
 /**\n\
- * Expose `Set`.\n\
+ * Module dependencies.\n\
  */\n\
 \n\
-module.exports = Set;\n\
+var toFunction = require('to-function')\n\
+  , proto = {};\n\
 \n\
 /**\n\
- * Initialize a new `Set` with optional `vals`\n\
- *\n\
- * @param {Array} vals\n\
- * @api public\n\
+ * Expose `Enumerable`.\n\
  */\n\
 \n\
-function Set(vals) {\n\
-  if (!(this instanceof Set)) return new Set(vals);\n\
-  this.vals = [];\n\
-  if (vals) {\n\
-    for (var i = 0; i < vals.length; ++i) {\n\
-      this.add(vals[i]);\n\
-    }\n\
+module.exports = Enumerable;\n\
+\n\
+/**\n\
+ * Mixin to `obj`.\n\
+ *\n\
+ *    var Enumerable = require('enumerable');\n\
+ *    Enumerable(Something.prototype);\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Object} obj\n\
+ */\n\
+\n\
+function mixin(obj){\n\
+  for (var key in proto) obj[key] = proto[key];\n\
+  obj.__iterate__ = obj.__iterate__ || defaultIterator;\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Initialize a new `Enumerable` with the given `obj`.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @api private\n\
+ */\n\
+\n\
+function Enumerable(obj) {\n\
+  if (!(this instanceof Enumerable)) {\n\
+    if (Array.isArray(obj)) return new Enumerable(obj);\n\
+    return mixin(obj);\n\
+  }\n\
+  this.obj = obj;\n\
+}\n\
+\n\
+/*!\n\
+ * Default iterator utilizing `.length` and subscripts.\n\
+ */\n\
+\n\
+function defaultIterator() {\n\
+  var self = this;\n\
+  return {\n\
+    length: function(){ return self.length },\n\
+    get: function(i){ return self[i] }\n\
   }\n\
 }\n\
 \n\
 /**\n\
- * Add `val`.\n\
+ * Return a string representation of this enumerable.\n\
  *\n\
- * @param {Mixed} val\n\
+ *    [Enumerable [1,2,3]]\n\
+ *\n\
+ * @return {String}\n\
  * @api public\n\
  */\n\
 \n\
-Set.prototype.add = function(val){\n\
-  if (this.has(val)) return;\n\
-  this.vals.push(val);\n\
+Enumerable.prototype.inspect =\n\
+Enumerable.prototype.toString = function(){\n\
+  return '[Enumerable ' + JSON.stringify(this.obj) + ']';\n\
 };\n\
 \n\
 /**\n\
- * Check if this set has `val`.\n\
+ * Iterate enumerable.\n\
  *\n\
- * @param {Mixed} val\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-Set.prototype.has = function(val){\n\
-  return !! ~this.indexOf(val);\n\
-};\n\
-\n\
-/**\n\
- * Return the indexof `val`.\n\
- *\n\
- * @param {Mixed} val\n\
- * @return {Number}\n\
+ * @return {Object}\n\
  * @api private\n\
  */\n\
 \n\
-Set.prototype.indexOf = function(val){\n\
-  for (var i = 0, len = this.vals.length; i < len; ++i) {\n\
-    var obj = this.vals[i];\n\
-    if (obj.equals && obj.equals(val)) return i;\n\
-    if (obj == val) return i;\n\
-  }\n\
-  return -1;\n\
+Enumerable.prototype.__iterate__ = function(){\n\
+  var obj = this.obj;\n\
+  obj.__iterate__ = obj.__iterate__ || defaultIterator;\n\
+  return obj.__iterate__();\n\
 };\n\
 \n\
 /**\n\
- * Iterate each member and invoke `fn(val)`.\n\
+ * Iterate each value and invoke `fn(val, i)`.\n\
+ *\n\
+ *    users.each(function(val, i){\n\
+ *\n\
+ *    })\n\
  *\n\
  * @param {Function} fn\n\
- * @return {Set}\n\
+ * @return {Object} self\n\
  * @api public\n\
  */\n\
 \n\
-Set.prototype.each = function(fn){\n\
-  for (var i = 0; i < this.vals.length; ++i) {\n\
-    fn(this.vals[i]);\n\
+proto.forEach =\n\
+proto.each = function(fn){\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    fn(vals.get(i), i);\n\
   }\n\
   return this;\n\
 };\n\
 \n\
 /**\n\
- * Return the values as an array.\n\
+ * Map each return value from `fn(val, i)`.\n\
+ *\n\
+ * Passing a callback function:\n\
+ *\n\
+ *    users.map(function(user){\n\
+ *      return user.name.first\n\
+ *    })\n\
+ *\n\
+ * Passing a property string:\n\
+ *\n\
+ *    users.map('name.first')\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.map = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  var arr = [];\n\
+  for (var i = 0; i < len; ++i) {\n\
+    arr.push(fn(vals.get(i), i));\n\
+  }\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Select all values that return a truthy value of `fn(val, i)`.\n\
+ *\n\
+ *    users.select(function(user){\n\
+ *      return user.age > 20\n\
+ *    })\n\
+ *\n\
+ *  With a property:\n\
+ *\n\
+ *    items.select('complete')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.filter =\n\
+proto.select = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) arr.push(val);\n\
+  }\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Select all unique values.\n\
+ *\n\
+ *    nums.unique()\n\
+ *\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.unique = function(){\n\
+  var val;\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (~arr.indexOf(val)) continue;\n\
+    arr.push(val);\n\
+  }\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Reject all values that return a truthy value of `fn(val, i)`.\n\
+ *\n\
+ * Rejecting using a callback:\n\
+ *\n\
+ *    users.reject(function(user){\n\
+ *      return user.age < 20\n\
+ *    })\n\
+ *\n\
+ * Rejecting with a property:\n\
+ *\n\
+ *    items.reject('complete')\n\
+ *\n\
+ * Rejecting values via `==`:\n\
+ *\n\
+ *    data.reject(null)\n\
+ *    users.reject(tobi)\n\
+ *\n\
+ * @param {Function|String|Mixed} fn\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.reject = function(fn){\n\
+  var val;\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if ('string' == typeof fn) fn = toFunction(fn);\n\
+\n\
+  if (fn) {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      val = vals.get(i);\n\
+      if (!fn(val, i)) arr.push(val);\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      val = vals.get(i);\n\
+      if (val != fn) arr.push(val);\n\
+    }\n\
+  }\n\
+\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Reject `null` and `undefined`.\n\
+ *\n\
+ *    [1, null, 5, undefined].compact()\n\
+ *    // => [1,5]\n\
+ *\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+\n\
+proto.compact = function(){\n\
+  return this.reject(null);\n\
+};\n\
+\n\
+/**\n\
+ * Return the first value when `fn(val, i)` is truthy,\n\
+ * otherwise return `undefined`.\n\
+ *\n\
+ *    users.find(function(user){\n\
+ *      return user.role == 'admin'\n\
+ *    })\n\
+ *\n\
+ * With a property string:\n\
+ *\n\
+ *    users.find('age > 20')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.find = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return val;\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Return the last value when `fn(val, i)` is truthy,\n\
+ * otherwise return `undefined`.\n\
+ *\n\
+ *    users.findLast(function(user){\n\
+ *      return user.role == 'admin'\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.findLast = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = len - 1; i > -1; --i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return val;\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Assert that all invocations of `fn(val, i)` are truthy.\n\
+ *\n\
+ * For example ensuring that all pets are ferrets:\n\
+ *\n\
+ *    pets.all(function(pet){\n\
+ *      return pet.species == 'ferret'\n\
+ *    })\n\
+ *\n\
+ *    users.all('admin')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.all =\n\
+proto.every = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (!fn(val, i)) return false;\n\
+  }\n\
+  return true;\n\
+};\n\
+\n\
+/**\n\
+ * Assert that none of the invocations of `fn(val, i)` are truthy.\n\
+ *\n\
+ * For example ensuring that no pets are admins:\n\
+ *\n\
+ *    pets.none(function(p){ return p.admin })\n\
+ *    pets.none('admin')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.none = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return false;\n\
+  }\n\
+  return true;\n\
+};\n\
+\n\
+/**\n\
+ * Assert that at least one invocation of `fn(val, i)` is truthy.\n\
+ *\n\
+ * For example checking to see if any pets are ferrets:\n\
+ *\n\
+ *    pets.any(function(pet){\n\
+ *      return pet.species == 'ferret'\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.any = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return true;\n\
+  }\n\
+  return false;\n\
+};\n\
+\n\
+/**\n\
+ * Count the number of times `fn(val, i)` returns true.\n\
+ *\n\
+ *    var n = pets.count(function(pet){\n\
+ *      return pet.species == 'ferret'\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.count = function(fn){\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  var n = 0;\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) ++n;\n\
+  }\n\
+  return n;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the indexof `obj` or return `-1`.\n\
+ *\n\
+ * @param {Mixed} obj\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.indexOf = function(obj){\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (val === obj) return i;\n\
+  }\n\
+  return -1;\n\
+};\n\
+\n\
+/**\n\
+ * Check if `obj` is present in this enumerable.\n\
+ *\n\
+ * @param {Mixed} obj\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.has = function(obj){\n\
+  return !! ~this.indexOf(obj);\n\
+};\n\
+\n\
+/**\n\
+ * Reduce with `fn(accumulator, val, i)` using\n\
+ * optional `init` value defaulting to the first\n\
+ * enumerable value.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @param {Mixed} [val]\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.reduce = function(fn, init){\n\
+  var val;\n\
+  var i = 0;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  val = null == init\n\
+    ? vals.get(i++)\n\
+    : init;\n\
+\n\
+  for (; i < len; ++i) {\n\
+    val = fn(val, vals.get(i), i);\n\
+  }\n\
+\n\
+  return val;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the max value.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.max(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.max('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.max()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.max = function(fn){\n\
+  var val;\n\
+  var n = 0;\n\
+  var max = -Infinity;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = fn(vals.get(i), i);\n\
+      max = n > max ? n : max;\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = vals.get(i);\n\
+      max = n > max ? n : max;\n\
+    }\n\
+  }\n\
+\n\
+  return max;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the min value.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.min(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.min('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.min()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.min = function(fn){\n\
+  var val;\n\
+  var n = 0;\n\
+  var min = Infinity;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = fn(vals.get(i), i);\n\
+      min = n < min ? n : min;\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = vals.get(i);\n\
+      min = n < min ? n : min;\n\
+    }\n\
+  }\n\
+\n\
+  return min;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the sum.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.sum(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.sum('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.sum()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.sum = function(fn){\n\
+  var ret;\n\
+  var n = 0;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += fn(vals.get(i), i);\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += vals.get(i);\n\
+    }\n\
+  }\n\
+\n\
+  return n;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the average value.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.avg(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.avg('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.avg()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.avg =\n\
+proto.mean = function(fn){\n\
+  var ret;\n\
+  var n = 0;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += fn(vals.get(i), i);\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += vals.get(i);\n\
+    }\n\
+  }\n\
+\n\
+  return n / len;\n\
+};\n\
+\n\
+/**\n\
+ * Return the first value, or first `n` values.\n\
+ *\n\
+ * @param {Number|Function} [n]\n\
+ * @return {Array|Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.first = function(n){\n\
+  if ('function' == typeof n) return this.find(n);\n\
+  var vals = this.__iterate__();\n\
+\n\
+  if (n) {\n\
+    var len = Math.min(n, vals.length());\n\
+    var arr = new Array(len);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      arr[i] = vals.get(i);\n\
+    }\n\
+    return arr;\n\
+  }\n\
+\n\
+  return vals.get(0);\n\
+};\n\
+\n\
+/**\n\
+ * Return the last value, or last `n` values.\n\
+ *\n\
+ * @param {Number|Function} [n]\n\
+ * @return {Array|Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.last = function(n){\n\
+  if ('function' == typeof n) return this.findLast(n);\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (n) {\n\
+    var i = Math.max(0, len - n);\n\
+    var arr = [];\n\
+    for (; i < len; ++i) {\n\
+      arr.push(vals.get(i));\n\
+    }\n\
+    return arr;\n\
+  }\n\
+\n\
+  return vals.get(len - 1);\n\
+};\n\
+\n\
+/**\n\
+ * Return values in groups of `n`.\n\
+ *\n\
+ * @param {Number} n\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.inGroupsOf = function(n){\n\
+  var arr = [];\n\
+  var group = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  for (var i = 0; i < len; ++i) {\n\
+    group.push(vals.get(i));\n\
+    if ((i + 1) % n == 0) {\n\
+      arr.push(group);\n\
+      group = [];\n\
+    }\n\
+  }\n\
+\n\
+  if (group.length) arr.push(group);\n\
+\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Return the value at the given index.\n\
+ *\n\
+ * @param {Number} i\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.at = function(i){\n\
+  return this.__iterate__().get(i);\n\
+};\n\
+\n\
+/**\n\
+ * Return a regular `Array`.\n\
  *\n\
  * @return {Array}\n\
  * @api public\n\
  */\n\
 \n\
-Set.prototype.values =\n\
-Set.prototype.array =\n\
-Set.prototype.members =\n\
-Set.prototype.toJSON = function(){\n\
-  return this.vals;\n\
+proto.toJSON =\n\
+proto.array = function(){\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    arr.push(vals.get(i));\n\
+  }\n\
+  return arr;\n\
 };\n\
 \n\
 /**\n\
- * Return the set size.\n\
+ * Return the enumerable value.\n\
+ *\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.value = function(){\n\
+  return this.obj;\n\
+};\n\
+\n\
+/**\n\
+ * Mixin enumerable.\n\
+ */\n\
+\n\
+mixin(Enumerable.prototype);\n\
+//@ sourceURL=component-enumerable/index.js"
+));
+require.register("segmentio-collection/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var Emitter = require('emitter')\n\
+  , Enumerable = require('enumerable');\n\
+\n\
+/**\n\
+ * Expose `Collection`.\n\
+ */\n\
+\n\
+module.exports = Collection;\n\
+\n\
+/**\n\
+ * Initialize a new collection with the given `models`.\n\
+ *\n\
+ * @param {Array} models\n\
+ * @api public\n\
+ */\n\
+\n\
+function Collection(models) {\n\
+  this.models = models || [];\n\
+}\n\
+\n\
+/**\n\
+ * Mixin emitter.\n\
+ */\n\
+\n\
+Emitter(Collection.prototype);\n\
+\n\
+/**\n\
+ * Mixin enumerable.\n\
+ */\n\
+\n\
+Enumerable(Collection.prototype);\n\
+\n\
+/**\n\
+ * Iterator implementation.\n\
+ */\n\
+\n\
+Collection.prototype.__iterate__ = function(){\n\
+  var self = this;\n\
+  return {\n\
+    length: function(){ return self.length() },\n\
+    get: function(i){ return self.models[i] }\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Return the collection length.\n\
  *\n\
  * @return {Number}\n\
  * @api public\n\
  */\n\
 \n\
-Set.prototype.size = function(){\n\
-  return this.vals.length;\n\
+Collection.prototype.length = function(){\n\
+  return this.models.length;\n\
 };\n\
 \n\
 /**\n\
- * Empty the set and return old values.\n\
+ * Add `model` to the collection and return the index.\n\
  *\n\
- * @return {Array}\n\
+ * @param {Object} model\n\
+ * @return {Number}\n\
  * @api public\n\
  */\n\
 \n\
-Set.prototype.clear = function(){\n\
-  var old = this.vals;\n\
-  this.vals = [];\n\
-  return old;\n\
+Collection.prototype.add =\n\
+Collection.prototype.push = function(model){\n\
+  var length = this.models.push(model);\n\
+  this.emit('add', model);\n\
+  return length;\n\
 };\n\
 \n\
 /**\n\
- * Remove `val`, returning __true__ when present, otherwise __false__.\n\
+ * Remove `model` from the collection, returning `true` when present,\n\
+ * otherwise `false`.\n\
  *\n\
- * @param {Mixed} val\n\
- * @return {Mixed}\n\
+ * @param {Object} model\n\
  * @api public\n\
  */\n\
 \n\
-Set.prototype.remove = function(val){\n\
-  var i = this.indexOf(val);\n\
-  if (~i) this.vals.splice(i, 1);\n\
+Collection.prototype.remove = function(model){\n\
+  var i = this.indexOf(model);\n\
+  if (~i) {\n\
+    this.models.splice(i, 1);\n\
+    this.emit('remove', model);\n\
+  }\n\
   return !! ~i;\n\
 };\n\
-\n\
-/**\n\
- * Perform a union on `set`.\n\
- *\n\
- * @param {Set} set\n\
- * @return {Set} new set\n\
- * @api public\n\
- */\n\
-\n\
-Set.prototype.union = function(set){\n\
-  var ret = new Set;\n\
-  var a = this.vals;\n\
-  var b = set.vals;\n\
-  for (var i = 0; i < a.length; ++i) ret.add(a[i]);\n\
-  for (var i = 0; i < b.length; ++i) ret.add(b[i]);\n\
-  return ret;\n\
-};\n\
-\n\
-/**\n\
- * Perform an intersection on `set`.\n\
- *\n\
- * @param {Set} set\n\
- * @return {Set} new set\n\
- * @api public\n\
- */\n\
-\n\
-Set.prototype.intersect = function(set){\n\
-  var ret = new Set;\n\
-  var a = this.vals;\n\
-  var b = set.vals;\n\
-\n\
-  for (var i = 0; i < a.length; ++i) {\n\
-    if (set.has(a[i])) {\n\
-      ret.add(a[i]);\n\
-    }\n\
-  }\n\
-\n\
-  for (var i = 0; i < b.length; ++i) {\n\
-    if (this.has(b[i])) {\n\
-      ret.add(b[i]);\n\
-    }\n\
-  }\n\
-\n\
-  return ret;\n\
-};\n\
-\n\
-/**\n\
- * Check if the set is empty.\n\
- *\n\
- * @return {Boolean}\n\
- * @api public\n\
- */\n\
-\n\
-Set.prototype.isEmpty = function(){\n\
-  return 0 == this.vals.length;\n\
-};\n\
-\n\
-//@ sourceURL=component-set/index.js"
+//@ sourceURL=segmentio-collection/index.js"
 ));
 require.register("yields-unserialize/index.js", Function("exports, require, module",
 "\n\
@@ -14983,86 +14785,6 @@ function all(){\n\
   return ret;\n\
 }\n\
 //@ sourceURL=yields-store/index.js"
-));
-require.register("bookmarks/index.js", Function("exports, require, module",
-"\n\
-var each = require('each')\n\
-  , Set = require('set')\n\
-  , store = require('store');\n\
-\n\
-\n\
-/**\n\
- * Create a set of bookmarks from local storage.\n\
- */\n\
-\n\
-var KEY = 'bookmarks';\n\
-var set = new Set(store(KEY));\n\
-\n\
-\n\
-\n\
-/**\n\
- * Exports.\n\
- */\n\
-\n\
-module.exports = all;\n\
-module.exports.add = add;\n\
-module.exports.remove = remove;\n\
-\n\
-\n\
-/**\n\
- * Get all bookmarks.\n\
- */\n\
-\n\
-function all () {\n\
-  return set.values();\n\
-}\n\
-\n\
-\n\
-/**\n\
- * Add a bookmark.\n\
- *\n\
- * @param {String} id  The ID of the bookmark to add.\n\
- */\n\
-\n\
-function add (id) {\n\
-  set.add(id);\n\
-  save();\n\
-}\n\
-\n\
-\n\
-/**\n\
- * Remove a bookmark.\n\
- *\n\
- * @param {String} id  The ID of the bookmark to remove.\n\
- */\n\
-\n\
-function remove (id) {\n\
-  set.remove(id);\n\
-  save();\n\
-}\n\
-\n\
-\n\
-/**\n\
- * Save the current bookmarks set.\n\
- */\n\
-\n\
-function save () {\n\
-  store(KEY, set.values());\n\
-}\n\
-\n\
-\n\
-/**\n\
- * BACKWARDS COMPATIBILITY: Bookmarks used to be stored under\n\
- * `socrates.bookmarks` and as a comma-separated string. So convert them to the\n\
- * new system gracefully.\n\
- */\n\
-\n\
-var OLD_KEY = 'socrates.bookmarks';\n\
-\n\
-if (store(OLD_KEY)) {\n\
-  each(store(OLD_KEY).split(','), add);\n\
-  store(OLD_KEY, null);\n\
-}//@ sourceURL=bookmarks/index.js"
 ));
 require.register("component-clone/index.js", Function("exports, require, module",
 "\n\
@@ -17029,13 +16751,107 @@ var Document = module.exports = model('document')\n\
   .attr('title', { default : '' })\n\
   .attr('body', { default : '' });//@ sourceURL=document/index.js"
 ));
+require.register("documents/index.js", Function("exports, require, module",
+"\n\
+var Collection = require('collection')\n\
+  , Document = require('document')\n\
+  , each = require('each')\n\
+  , next = require('next-tick')\n\
+  , store = require('store');\n\
+\n\
+\n\
+/**\n\
+ * Define our local storage key.\n\
+ */\n\
+\n\
+var STORE = 'bookmarks';\n\
+\n\
+\n\
+/**\n\
+ * Create a documents collection.\n\
+ */\n\
+\n\
+var documents = new Collection();\n\
+\n\
+\n\
+/**\n\
+ * Get a document, saving it to documents.\n\
+ *\n\
+ * @param {String} id\n\
+ * @param {Function} callback(err, doc)\n\
+ */\n\
+\n\
+exports.get = function (id, callback) {\n\
+  Document.get(id, function (err, doc) {\n\
+    if (!doc) {\n\
+      doc = new Document();\n\
+      doc.save(); // persist it\n\
+      window.analytics.track('Created New Document', { id: doc.primary() });\n\
+    }\n\
+    exports.add(doc);\n\
+    callback && callback(null, doc);\n\
+  });\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Add a document to documents.\n\
+ *\n\
+ * @param {Object} doc\n\
+ */\n\
+\n\
+exports.add = function (doc) {\n\
+  if (documents.has(doc)) return;\n\
+  documents.add(doc);\n\
+  exports.save();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Remove a document from documents.\n\
+ *\n\
+ * @param {String} doc\n\
+ */\n\
+\n\
+exports.remove = function (doc) {\n\
+  if (!documents.has(doc)) return;\n\
+  documents.remove(doc);\n\
+  exports.save();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Save documents to local storage.\n\
+ */\n\
+\n\
+exports.save = function () {\n\
+  var ids = documents.map('.primary()');\n\
+  store('documents', ids);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Load our documents from the saved bookmarks.\n\
+ */\n\
+\n\
+exports.load = function () {\n\
+  // BACKWARDS COMPATIBILITY: bookmarks used to be stored under\n\
+  // `socrates.bookmarks` as a comma-separate string. Convert them gracefully.\n\
+  var OLD_STORE = 'socrates.bookmarks';\n\
+  if (store(OLD_STORE)) {\n\
+    store(STORE, store(OLD_STORE).split(','));\n\
+    store(OLD_STORE, null);\n\
+  }\n\
+\n\
+  each(store(STORE), exports.get);\n\
+};\n\
+\n\
+//@ sourceURL=documents/index.js"
+));
 require.register("boot/browser.js", Function("exports, require, module",
 "\n\
 var App = require('app')\n\
-  , bookmarks = require('bookmarks')\n\
-  , Collection = require('collection')\n\
-  , Document = require('document')\n\
-  , each = require('each')\n\
+  , documents = require('documents')\n\
   , loading = require('loading')\n\
   , Router = require('router')\n\
   , uid = require('uid');\n\
@@ -17045,56 +16861,25 @@ var App = require('app')\n\
  * App.\n\
  */\n\
 \n\
-var app = new App()\n\
-\n\
-  .on('remove', function (document) {\n\
-    documents.remove(document);\n\
-  });\n\
-\n\
+var app = new App();\n\
 document.body.appendChild(app.el);\n\
-\n\
-\n\
-/**\n\
- * Documents. Update app and bookmarks when documents change.\n\
- */\n\
-\n\
-var documents = new Collection()\n\
-\n\
-  .on('add', function (doc) {\n\
-    var id = doc.primary();\n\
-    bookmarks.add(id);\n\
-    app.add(doc);\n\
-  })\n\
-\n\
-  .on('remove', function (doc) {\n\
-    var id = doc.primary();\n\
-    bookmarks.remove(id);\n\
-  });\n\
 \n\
 \n\
 /**\n\
  * Router.\n\
  */\n\
 \n\
-var router = new Router();\n\
-\n\
-router.on('/', function (next) {\n\
-  router.go('/' + uid());\n\
-});\n\
-\n\
-router.on('/:document/:state?', begin, doc, state, end);\n\
-\n\
-router.listen();\n\
+var router = new Router()\n\
+  .on('/', function () { router.go('/' + uid()); })\n\
+  .on('/:document/:state?', begin, doc, state, end)\n\
+  .listen();\n\
 \n\
 \n\
 /**\n\
- * Finally, get the bookmarked documents from Firebase after already requesting\n\
- * the currently active document.\n\
+ * Load documents from Firebase.\n\
  */\n\
 \n\
-each(bookmarks(), function (id) {\n\
-  get(id);\n\
-});\n\
+documents.load();\n\
 \n\
 \n\
 /**\n\
@@ -17131,7 +16916,7 @@ function end (context, next) {\n\
  */\n\
 \n\
 function doc (context, next) {\n\
-  get(context.document, function (err, doc) {\n\
+  documents.get(context.document, function (err, doc) {\n\
     if (err) throw err;\n\
     app.load(doc);\n\
     window.analytics.track('Viewed Document', { id: doc.primary() });\n\
@@ -17151,36 +16936,6 @@ function state (context, next) {\n\
   var state = context.state;\n\
   if (state) app[state]();\n\
   next();\n\
-}\n\
-\n\
-\n\
-/**\n\
- * Retrieve a document.\n\
- *\n\
- * @param {String} id\n\
- * @param {Function} callback(err, doc)\n\
- */\n\
-\n\
-function get (id, callback) {\n\
-  Document.get(id, function (err, doc) {\n\
-    if (!doc) doc = create();\n\
-    if (!documents.has(doc)) documents.add(doc);\n\
-    callback && callback(null, doc);\n\
-  });\n\
-}\n\
-\n\
-\n\
-/**\n\
- * Create a new document.\n\
- *\n\
- * @return {Document}\n\
- */\n\
-\n\
-function create () {\n\
-  var doc = new Document();\n\
-  doc.save(); // save to persist the defaults to Firebase\n\
-  window.analytics.track('Created New Document', { id: doc.primary() });\n\
-  return doc;\n\
 }//@ sourceURL=boot/browser.js"
 ));
 
@@ -17308,18 +17063,6 @@ require.register("app/index.html", Function("exports, require, module",
 require.alias("boot/browser.js", "socrates/deps/boot/browser.js");
 require.alias("boot/browser.js", "socrates/deps/boot/index.js");
 require.alias("boot/browser.js", "boot/index.js");
-require.alias("segmentio-collection/index.js", "boot/deps/collection/index.js");
-require.alias("component-emitter/index.js", "segmentio-collection/deps/emitter/index.js");
-require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
-
-require.alias("component-enumerable/index.js", "segmentio-collection/deps/enumerable/index.js");
-require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
-
-require.alias("component-each/index.js", "boot/deps/each/index.js");
-require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
-
-require.alias("component-type/index.js", "component-each/deps/type/index.js");
-
 require.alias("ianstormtaylor-loading/index.js", "boot/deps/loading/index.js");
 require.alias("component-classes/index.js", "ianstormtaylor-loading/deps/classes/index.js");
 require.alias("component-indexof/index.js", "component-classes/deps/indexof/index.js");
@@ -17559,6 +17302,90 @@ require.alias("segmentio-rainbow/js/language/scheme.js", "app/deps/rainbow/js/la
 require.alias("segmentio-rainbow/js/language/shell.js", "app/deps/rainbow/js/language/shell.js");
 require.alias("segmentio-rainbow/js/language/smalltalk.js", "app/deps/rainbow/js/language/smalltalk.js");
 
+require.alias("documents/index.js", "app/deps/documents/index.js");
+require.alias("component-each/index.js", "documents/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("segmentio-collection/index.js", "documents/deps/collection/index.js");
+require.alias("component-emitter/index.js", "segmentio-collection/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("component-enumerable/index.js", "segmentio-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("timoxley-next-tick/index.js", "documents/deps/next-tick/index.js");
+
+require.alias("yields-store/index.js", "documents/deps/store/index.js");
+require.alias("component-each/index.js", "yields-store/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-type/index.js", "yields-store/deps/type/index.js");
+
+require.alias("yields-unserialize/index.js", "yields-store/deps/unserialize/index.js");
+
+require.alias("document/index.js", "documents/deps/document/index.js");
+require.alias("matthewmueller-uid/index.js", "document/deps/uid/index.js");
+
+require.alias("segmentio-model/lib/index.js", "document/deps/model/lib/index.js");
+require.alias("segmentio-model/lib/static.js", "document/deps/model/lib/static.js");
+require.alias("segmentio-model/lib/proto.js", "document/deps/model/lib/proto.js");
+require.alias("segmentio-model/lib/index.js", "document/deps/model/index.js");
+require.alias("component-clone/index.js", "segmentio-model/deps/clone/index.js");
+require.alias("component-type/index.js", "component-clone/deps/type/index.js");
+
+require.alias("component-each/index.js", "segmentio-model/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-emitter/index.js", "segmentio-model/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("component-collection/index.js", "segmentio-model/deps/collection/index.js");
+require.alias("component-enumerable/index.js", "component-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("visionmedia-superagent/lib/client.js", "segmentio-model/deps/superagent/lib/client.js");
+require.alias("visionmedia-superagent/lib/client.js", "segmentio-model/deps/superagent/index.js");
+require.alias("component-emitter/index.js", "visionmedia-superagent/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("RedVentures-reduce/index.js", "visionmedia-superagent/deps/reduce/index.js");
+
+require.alias("visionmedia-superagent/lib/client.js", "visionmedia-superagent/index.js");
+require.alias("segmentio-model/lib/index.js", "segmentio-model/index.js");
+require.alias("segmentio-model-defaults/index.js", "document/deps/model-defaults/index.js");
+require.alias("component-clone/index.js", "segmentio-model-defaults/deps/clone/index.js");
+require.alias("component-type/index.js", "component-clone/deps/type/index.js");
+
+require.alias("component-each/index.js", "segmentio-model-defaults/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-type/index.js", "segmentio-model-defaults/deps/type/index.js");
+
+require.alias("segmentio-model-firebase/index.js", "document/deps/model-firebase/index.js");
+require.alias("segmentio-model-firebase/statics.js", "document/deps/model-firebase/statics.js");
+require.alias("segmentio-model-firebase/protos.js", "document/deps/model-firebase/protos.js");
+require.alias("component-collection/index.js", "segmentio-model-firebase/deps/collection/index.js");
+require.alias("component-enumerable/index.js", "component-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("segmentio-model-memoize/index.js", "document/deps/model-memoize/index.js");
+require.alias("component-each/index.js", "segmentio-model-memoize/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-type/index.js", "segmentio-model-memoize/deps/type/index.js");
+
+require.alias("component-bind/index.js", "segmentio-model-memoize/deps/bind/index.js");
+
 require.alias("editor/index.js", "app/deps/editor/index.js");
 require.alias("component-dom/index.js", "editor/deps/dom/index.js");
 require.alias("component-type/index.js", "component-dom/deps/type/index.js");
@@ -17778,19 +17605,22 @@ require.alias("ianstormtaylor-reactive/lib/index.js", "ianstormtaylor-reactive/i
 require.alias("component-type/index.js", "segmentio-view/deps/type/index.js");
 
 require.alias("segmentio-view/lib/index.js", "segmentio-view/index.js");
-require.alias("yields-prevent/index.js", "nav/deps/prevent/index.js");
-
-require.alias("yields-stop/index.js", "nav/deps/stop/index.js");
-
-require.alias("bookmarks/index.js", "boot/deps/bookmarks/index.js");
-require.alias("component-each/index.js", "bookmarks/deps/each/index.js");
+require.alias("documents/index.js", "nav/deps/documents/index.js");
+require.alias("component-each/index.js", "documents/deps/each/index.js");
 require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
 
 require.alias("component-type/index.js", "component-each/deps/type/index.js");
 
-require.alias("component-set/index.js", "bookmarks/deps/set/index.js");
+require.alias("segmentio-collection/index.js", "documents/deps/collection/index.js");
+require.alias("component-emitter/index.js", "segmentio-collection/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
 
-require.alias("yields-store/index.js", "bookmarks/deps/store/index.js");
+require.alias("component-enumerable/index.js", "segmentio-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("timoxley-next-tick/index.js", "documents/deps/next-tick/index.js");
+
+require.alias("yields-store/index.js", "documents/deps/store/index.js");
 require.alias("component-each/index.js", "yields-store/deps/each/index.js");
 require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
 
@@ -17800,7 +17630,91 @@ require.alias("component-type/index.js", "yields-store/deps/type/index.js");
 
 require.alias("yields-unserialize/index.js", "yields-store/deps/unserialize/index.js");
 
-require.alias("document/index.js", "boot/deps/document/index.js");
+require.alias("document/index.js", "documents/deps/document/index.js");
+require.alias("matthewmueller-uid/index.js", "document/deps/uid/index.js");
+
+require.alias("segmentio-model/lib/index.js", "document/deps/model/lib/index.js");
+require.alias("segmentio-model/lib/static.js", "document/deps/model/lib/static.js");
+require.alias("segmentio-model/lib/proto.js", "document/deps/model/lib/proto.js");
+require.alias("segmentio-model/lib/index.js", "document/deps/model/index.js");
+require.alias("component-clone/index.js", "segmentio-model/deps/clone/index.js");
+require.alias("component-type/index.js", "component-clone/deps/type/index.js");
+
+require.alias("component-each/index.js", "segmentio-model/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-emitter/index.js", "segmentio-model/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("component-collection/index.js", "segmentio-model/deps/collection/index.js");
+require.alias("component-enumerable/index.js", "component-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("visionmedia-superagent/lib/client.js", "segmentio-model/deps/superagent/lib/client.js");
+require.alias("visionmedia-superagent/lib/client.js", "segmentio-model/deps/superagent/index.js");
+require.alias("component-emitter/index.js", "visionmedia-superagent/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("RedVentures-reduce/index.js", "visionmedia-superagent/deps/reduce/index.js");
+
+require.alias("visionmedia-superagent/lib/client.js", "visionmedia-superagent/index.js");
+require.alias("segmentio-model/lib/index.js", "segmentio-model/index.js");
+require.alias("segmentio-model-defaults/index.js", "document/deps/model-defaults/index.js");
+require.alias("component-clone/index.js", "segmentio-model-defaults/deps/clone/index.js");
+require.alias("component-type/index.js", "component-clone/deps/type/index.js");
+
+require.alias("component-each/index.js", "segmentio-model-defaults/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-type/index.js", "segmentio-model-defaults/deps/type/index.js");
+
+require.alias("segmentio-model-firebase/index.js", "document/deps/model-firebase/index.js");
+require.alias("segmentio-model-firebase/statics.js", "document/deps/model-firebase/statics.js");
+require.alias("segmentio-model-firebase/protos.js", "document/deps/model-firebase/protos.js");
+require.alias("component-collection/index.js", "segmentio-model-firebase/deps/collection/index.js");
+require.alias("component-enumerable/index.js", "component-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("segmentio-model-memoize/index.js", "document/deps/model-memoize/index.js");
+require.alias("component-each/index.js", "segmentio-model-memoize/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-type/index.js", "segmentio-model-memoize/deps/type/index.js");
+
+require.alias("component-bind/index.js", "segmentio-model-memoize/deps/bind/index.js");
+
+require.alias("documents/index.js", "boot/deps/documents/index.js");
+require.alias("component-each/index.js", "documents/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("segmentio-collection/index.js", "documents/deps/collection/index.js");
+require.alias("component-emitter/index.js", "segmentio-collection/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("component-enumerable/index.js", "segmentio-collection/deps/enumerable/index.js");
+require.alias("component-to-function/index.js", "component-enumerable/deps/to-function/index.js");
+
+require.alias("timoxley-next-tick/index.js", "documents/deps/next-tick/index.js");
+
+require.alias("yields-store/index.js", "documents/deps/store/index.js");
+require.alias("component-each/index.js", "yields-store/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
+
+require.alias("component-type/index.js", "yields-store/deps/type/index.js");
+
+require.alias("yields-unserialize/index.js", "yields-store/deps/unserialize/index.js");
+
+require.alias("document/index.js", "documents/deps/document/index.js");
 require.alias("matthewmueller-uid/index.js", "document/deps/uid/index.js");
 
 require.alias("segmentio-model/lib/index.js", "document/deps/model/lib/index.js");
