@@ -502,6 +502,7 @@ pre .function {
 .write,
 .read,
 .toolbar {
+  -webkit-transition: all .3s;
   transition: all .3s;
 }
 
@@ -552,7 +553,7 @@ pre .function {
   right: 100%;
   bottom: 0;
   width: 30px;
-  background: url("theme-app/./images/read-shadow.png") top right repeat-y;
+  background: url(".//theme-app/./images/read-shadow.png") top right repeat-y;
 }
 
 
@@ -569,6 +570,7 @@ pre .function {
   left: 0;
   overflow-y: scroll;
   overflow-x: hidden;
+  -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
   mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
 }
 
@@ -594,6 +596,7 @@ pre .function {
 .toolbar .wrap {
   position: absolute;
   padding: 1em;
+  -webkit-transition: padding .3s, right .3s, left .3s;
   transition: padding .3s, right .3s, left .3s;
 }
 
@@ -641,7 +644,9 @@ pre .function {
   font-size: 3em;
   color: #c1b08e;
   opacity: 0;
+  -webkit-transition: opacity .3s;
   transition: opacity .3s;
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
@@ -651,6 +656,7 @@ pre .function {
  */
 
 .app.navigating {
+  -webkit-transform: translateX(55%);
   transform: translateX(55%);
 }
 
@@ -685,6 +691,7 @@ pre .function {
 }
 
 .app.writing .read {
+  -webkit-transform: translateX(110%);
   transform: translateX(110%);
 }
 
@@ -698,6 +705,7 @@ pre .function {
  */
 
 .app.reading .write {
+  -webkit-transform: translateX(-110%);
   transform: translateX(-110%);
 }
 
@@ -724,6 +732,7 @@ pre .function {
 }
 
 .app.loading .read {
+  -webkit-transform: translateX(110%);
   transform: translateX(110%);
 }
 
@@ -855,14 +864,14 @@ pre .function {
   -moz-box-sizing: border-box;
        box-sizing: border-box;
   color: white;
+  background-color: #201e1a;
 }
 
 .nav input:focus {
   outline: 0;
-  background-color: #201e1a;
 }
 
-.nav ul {
+.nav menu {
   position: absolute;
   left: 0;
   right: 0;
@@ -871,7 +880,7 @@ pre .function {
   overflow-y: auto;
 }
 
-.nav ul::-webkit-scrollbar {
+.nav menu::-webkit-scrollbar {
   display: none;
 }
 
@@ -881,7 +890,8 @@ pre .function {
 
 .nav li:hover,
 .nav li.selected {
-  background-color: #201e1a;
+  background-color: #3c3a35;
+  color: #ede5d5;
 }
 
 .nav li.hidden {
@@ -918,6 +928,6 @@ pre .function {
  */
 
 /* The nav's ul needs to scroll, and we aren't using flexbox yet. */
-.nav ul {
+.nav menu {
   top: 55px;
 }

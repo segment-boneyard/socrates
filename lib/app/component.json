@@ -5,7 +5,7 @@
     "component/domify": "*",
     "component/emitter": "*",
     "component/mousetrap": "*",
-    "component/reactive": "*",
+    "ianstormtaylor/reactive": "*",
     "segmentio/mathjax": "*",
     "segmentio/menu": "*",
     "segmentio/rainbow": "*"

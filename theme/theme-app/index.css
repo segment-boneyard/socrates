@@ -20,6 +20,7 @@
 .write,
 .read,
 .toolbar {
+  -webkit-transition: all .3s;
   transition: all .3s;
 }
 
@@ -87,6 +88,7 @@
   left: 0;
   overflow-y: scroll;
   overflow-x: hidden;
+  -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
   mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
 }
 
@@ -112,6 +114,7 @@
 .toolbar .wrap {
   position: absolute;
   padding: 1em;
+  -webkit-transition: padding .3s, right .3s, left .3s;
   transition: padding .3s, right .3s, left .3s;
 }
 
@@ -159,7 +162,9 @@
   font-size: 3em;
   color: #c1b08e;
   opacity: 0;
+  -webkit-transition: opacity .3s;
   transition: opacity .3s;
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
@@ -169,6 +174,7 @@
  */
 
 .app.navigating {
+  -webkit-transform: translateX(55%);
   transform: translateX(55%);
 }
 
@@ -203,6 +209,7 @@
 }
 
 .app.writing .read {
+  -webkit-transform: translateX(110%);
   transform: translateX(110%);
 }
 
@@ -216,6 +223,7 @@
  */
 
 .app.reading .write {
+  -webkit-transform: translateX(-110%);
   transform: translateX(-110%);
 }
 
@@ -242,6 +250,7 @@
 }
 
 .app.loading .read {
+  -webkit-transform: translateX(110%);
   transform: translateX(110%);
 }
 

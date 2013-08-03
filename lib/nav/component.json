@@ -4,9 +4,7 @@
     "component/keyname": "*",
     "component/value": "*",
     "segmentio/menu": "*",
-    "segmentio/view": "*",
-    "yields/prevent": "*",
-    "yields/stop": "*"
+    "segmentio/view": "*"
   },
   "scripts": [
     "index.js",
