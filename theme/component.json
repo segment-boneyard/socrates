@@ -4,11 +4,9 @@
     "ianstormtaylor/reset": "*"
   },
   "local": [
-    "theme-base",
-
-    "theme-app",
-    "theme-button",
+    "theme-boot",
     "theme-editor",
+    "theme-menu",
     "theme-nav"
   ]
 }

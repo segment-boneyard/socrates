@@ -1,13 +1,15 @@
 {
   "name": "boot",
   "dependencies": {
-    "ianstormtaylor/loading": "*",
+    "component/classes": "*",
+    "component/event": "*",
     "ianstormtaylor/router": "*",
     "matthewmueller/uid": "*"
   },
   "local": [
-    "app",
-    "documents"
+    "documents",
+    "editor",
+    "nav"
   ],
   "scripts": [
     "browser.js"

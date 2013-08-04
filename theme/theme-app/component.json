@@ -1,9 +1,0 @@
-{
-  "name": "theme-app",
-  "styles": [
-    "index.css"
-  ],
-  "images": [
-    "images/read-shadow.png"
-  ]
-}

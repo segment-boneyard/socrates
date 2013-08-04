@@ -4,17 +4,28 @@
   <title>Socrates</title>
   <meta name="description" content="Write and read beautiful Markdown with whoever you want, in realtime!">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="shortcut icon" href="app/favicon.ico">
+  <link rel="shortcut icon" href="boot/favicon.ico">
   <link rel="stylesheet" href="build.css">
   <link rel="stylesheet" href="//cdn.symbolset.com/642033f5ccb39687fae4ddd32935734073a661fd/symbolset.css">
   <script src="http://use.typekit.net/rkl7tni.js"></script>
   <script>try{Typekit.load();}catch(e){}</script>
   <script>
     var analytics=analytics||[];(function(){var e=["identify","track","trackLink","trackForm","trackClick","trackSubmit","page","pageview","ab","alias","ready","group"],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"===document.location.protocol?"https://":"http://")+"d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/"+e+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};
-    if (location.host === 'socrates.io') analytics.load('984duyw'); // prod only
+    if (location.host === 'socrates.io') analytics.load('984duyw');
   </script>
 </head>
 <body>
+  <menu class="main-menu menu">
+    <li class="main-menu-item menu-item">
+      <a title="Your Documents (Ctrl + Alt + O)"
+         class="main-menu-item-link menu-item-link main-menu-nav-button button ss-rows"></a>
+    </li>
+    <li class="main-menu-item menu-item">
+      <a href="/"
+         title="New Document (Ctrl + Alt + N)"
+         class="main-menu-item-link menu-item-link main-menu-add-button button ss-plus"></a>
+    </li>
+  </menu>
   <script src="https://static.firebase.com/v0/firebase.js"></script>
   <script src="build.js"></script>
   <script>require('boot');</script>

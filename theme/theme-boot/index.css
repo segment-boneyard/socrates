@@ -1,0 +1,115 @@
+
+/**
+ * Body.
+ */
+
+body {
+  font: 18px/1.45 "freight-sans-pro", sans-serif;
+  color: #35332e;
+  overflow: hidden;
+  -webkit-transition: all .3s;
+          transition: all .3s;
+}
+
+
+/**
+ * Editor.
+ */
+
+.editor {
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+
+/**
+ * Nav.
+ */
+
+.nav {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: 55%;
+  -webkit-transition: all .3s;
+          transition: all .3s;
+}
+
+
+/**
+ * Main menu.
+ */
+
+.main-menu {
+  position: absolute;
+  z-index: 1;
+  top: 1em;
+  left: 1em;
+}
+
+.main-menu .menu-item {
+  display: inline-block;
+  margin-right: 1em;
+}
+
+
+/**
+ * Navigating state.
+ */
+
+body.navigating {
+  -webkit-transform: translateX(55%);
+          transform: translateX(55%);
+}
+
+body.navigating .main-menu-nav-button {
+  opacity: 1;
+}
+
+
+/**
+ * Loading state.
+ */
+
+body::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -0.5em;
+  margin-left: -0.5em;
+  font-size: 3em;
+  color: #c1b08e;
+  opacity: 0;
+  -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
+}
+
+body.loading::before {
+  opacity: .5;
+  line-height: 1.26; /* HACK: crappy magic number to keep indicator aligned */
+}
+
+body.loading .editor {
+  opacity: 0;
+}
+
+
+/**
+ * Spinning animation.
+ */
+
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg) }
+  to   { -webkit-transform: rotate(360deg) }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
+}

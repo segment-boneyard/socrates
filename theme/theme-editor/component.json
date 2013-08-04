@@ -1,6 +1,10 @@
 {
   "name": "theme-editor",
   "styles": [
-    "index.css"
+    "index.css",
+    "prose.css"
+  ],
+  "images": [
+    "images/read-shadow.png"
   ]
 }

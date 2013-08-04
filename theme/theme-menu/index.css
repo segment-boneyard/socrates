@@ -1,0 +1,22 @@
+
+/**
+ * Menu.
+ *
+ * .menu
+ *   .menu-item
+ *     .menu-item-link
+ *   ...
+ */
+
+.menu-item-link {
+  text-decoration: none;
+  cursor: pointer;
+  opacity: .5;
+  color: #c1b08e;
+  -webkit-transition: opacity .1s;
+          transition: opacity .1s;
+}
+
+.menu-item-link:hover {
+  opacity: 1;
+}

@@ -1,40 +1,198 @@
 
 /**
  * Editor.
+ *
+ * div.editor
+ *   div.editor-write
+ *     textarea.editor-input
+ *   div.editor-read
+ *     article.editor-output
+ *   menu.editor-menu
+ *     li.editor-menu-item
+ *     li.editor-menu-item
  */
 
-.input,
-.output {
+.editor {
+  position: relative;
+  background-color: #ede5d5;
+  overflow: hidden;
+}
+
+
+/**
+ * Write + Read.
+ */
+
+.editor-write,
+.editor-read {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  -webkit-transition: all .3s;
+          transition: all .3s;
+}
+
+.editor-input,
+.editor-output {
   max-width: 32em;
   margin: 0 auto;
   padding: 6em 1em;
 }
 
+.editor-input,
+.editor-output {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+          mask: linear-gradient(rgba(0,0,0,0) 1%, white 8%, white 92%, rgba(0,0,0,0) 99%);
+}
+
+.editor-input::-webkit-scrollbar,
+.editor-output::-webkit-scrollbar {
+  display: none;
+}
+
 
 /**
- * Input.
+ * Write.
  */
 
-.input {
+.editor-write {
+  left: 0;
+  right: 55%;
+}
+
+.editor-input {
+  background-color: transparent;
+  border: none;
+  resize: none;
   font-family: "inconsolata", monospace;
   font-size: .85em;
   line-height: 1.2;
   opacity: .7;
-  transition: opacity .3s;
+  -webkit-transition: opacity .3s;
+          transition: opacity .3s;
 }
 
-.input:focus {
+.editor-input:focus {
+  outline: none;
   opacity: 1;
 }
 
-.input:empty::before {
-  content: 'Start writing here...';
-  opacity: .5;
+.editor-input::-webkit-input-placeholder {
+  color: #ab976f;
+}
+.editor-input:-moz-placeholder {
+  color: #ab976f;
 }
 
-.input::-webkit-input-placeholder {
-  color: #ab976f;
+
+/**
+ * Read.
+ */
+
+.editor-read {
+  z-index: 1;
+  right: 0;
+  left: 45%;
+  background-color: white;
 }
-.input:-moz-placeholder {
-  color: #ab976f;
+
+.editor-read::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: 30px;
+  background: url(images/read-shadow.png) top right repeat-y;
+}
+
+
+/**
+ * Menu.
+ */
+
+.editor-menu {
+  position: absolute;
+  width: 0;
+  top: 1em;
+  left: 45%;
+  z-index: 1;
+  -webkit-transition: left .3s;
+          transition: left .3s;
+}
+
+.editor-menu-item-link {
+  position: absolute;
+  top: 0;
+  -webkit-transition: left .3s, right .3s;
+          transition: left .3s, right .3s;
+}
+
+.editor-write-button {
+  right: 1em;
+}
+
+.editor-read-button {
+  left: 1em;
+}
+
+
+/**
+ * Writing state.
+ */
+
+.editor.writing .editor-write {
+  right: 0;
+}
+
+.editor.writing .editor-read {
+  -webkit-transform: translateX(110%);
+          transform: translateX(110%);
+}
+
+.editor.writing .editor-menu {
+  left: 50%;
+}
+
+.editor.writing .editor-write-button {
+  right: .5em;
+  opacity: 1;
+}
+
+.editor.writing .editor-read-button {
+  left: .5em;
+}
+
+
+/**
+ * Reading state.
+ */
+
+.editor.reading .editor-read {
+  left: 0;
+}
+
+.editor.reading .editor-write {
+  -webkit-transition: translateX(-110%);
+          transition: translateX(-110%);
+}
+
+.editor.reading .editor-menu {
+  left: 50%;
+}
+
+.editor.reading .editor-read-button {
+  left: .5em;
+  opacity: 1;
+}
+
+.editor.reading .editor-write-button {
+  right: .5em;
 }

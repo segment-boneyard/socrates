@@ -2,8 +2,8 @@
   "name": "documents",
   "dependencies": {
     "component/each": "*",
+    "component/set": "*",
     "segmentio/collection": "*",
-    "timoxley/next-tick": "*",
     "yields/store": "*"
   },
   "local": [

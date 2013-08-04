@@ -1,17 +1,25 @@
 {
   "name": "editor",
   "dependencies": {
+    "component/classes": "*",
     "component/dom": "*",
     "component/domify": "*",
     "component/event": "*",
     "component/moment": "*",
-    "component/throttle": "*",
     "component/value": "*",
     "matthewmueller/debounce": "*",
     "segmentio/marked": "*",
+    "segmentio/mathjax": "*",
+    "segmentio/rainbow": "*",
     "timoxley/async-compose": "*"
   },
   "scripts": [
-    "index.js"
+    "index.js",
+    "filters/index.js",
+    "filters/mathjax.js",
+    "filters/rainbow.js"
+  ],
+  "templates": [
+    "index.html"
   ]
 }

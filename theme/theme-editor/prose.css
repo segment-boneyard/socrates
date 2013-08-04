@@ -1,0 +1,38 @@
+
+/**
+ * Prose styles.
+ */
+
+.editor-output h1,
+.editor-output h2,
+.editor-output h3,
+.editor-output h4,
+.editor-output h5,
+.editor-output h6 {
+  font-weight: 600;
+}
+
+.editor-output h1,
+.editor-output h2 {
+  font-family: "ff-angie-pro", "freight-sans-prop", sans-serif;
+}
+
+.editor-output pre,
+.editor-output code {
+  font-family: "inconsolata", monospace;
+}
+
+.editor-output pre .comment {
+  opacity: .5em;
+}
+
+.editor-output pre .constant,
+.editor-output pre .storage,
+.editor-output pre .tag,
+.editor-output pre .keyword:not(.operator),
+.editor-output pre .selector,
+.editor-output pre .string:not(.value),
+.editor-output pre .regexp,
+.editor-output pre .function {
+  color: #91b65b;
+}

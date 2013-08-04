@@ -1,6 +1,12 @@
 
 /**
  * Nav.
+ *
+ * nav.nav
+ *   form.nav-form
+ *     input.nav-search[type="search"]
+ *     i.nav-search-icon
+ *   menu.nav-menu
  */
 
 .nav {
@@ -8,17 +14,17 @@
   color: #7e7c76;
 }
 
-.nav form {
+
+/**
+ * Form.
+ */
+
+.nav-form {
   position: relative;
 }
 
-.nav i {
-  position: absolute;
-  top: 1em;
-  left: 1em;
-}
-
-.nav input {
+.nav-search {
+  border: none;
   display: block;
   width: 100%;
   padding: .9em 1em .9em 2.5em;
@@ -28,12 +34,24 @@
   background-color: #201e1a;
 }
 
-.nav input:focus {
-  outline: 0;
+.nav-search:focus {
+  outline: none;
 }
 
-.nav menu {
+.nav-search-icon {
   position: absolute;
+  top: 1em;
+  left: 1em;
+}
+
+
+/**
+ * Menu.
+ */
+
+.nav-menu {
+  position: absolute;
+  top: 55px; /* HACK ul needs to scroll, and we aren't using flexbox yet. */
   left: 0;
   right: 0;
   bottom: 0;
@@ -41,36 +59,38 @@
   overflow-y: auto;
 }
 
-.nav menu::-webkit-scrollbar {
+.nav-menu:focus {
+  outline: none;
+}
+
+.nav-menu::-webkit-scrollbar {
   display: none;
 }
 
-.nav li {
+.nav-menu .menu-item {
   position: relative;
+  cursor: pointer;
 }
 
-.nav li:hover,
-.nav li.selected {
+.nav-menu .menu-item:hover,
+.nav-menu .menu-item.focus,
+.nav-menu .menu-item.selected {
   background-color: #3c3a35;
   color: #ede5d5;
 }
 
-.nav li.hidden {
+.nav-menu .menu-item.hidden {
   display: none;
 }
 
-.nav li a {
-  cursor: pointer;
-}
-
-.nav li a:first-child {
+.nav-menu .menu-item-title {
   display: block;
   padding: .35em 1em .35em 2.5em;
   -webkit-transition: background-color .3s;
           transition: background-color .3s;
 }
 
-.nav li a:last-child {
+.nav-menu .menu-item-delete-button {
   position: absolute;
   right: 2.5em;
   top: .55em;
@@ -79,16 +99,6 @@
           transition: opacity .3s;
 }
 
-.nav li a:last-child:hover {
+.nav-menu .menu-item-delete-button:hover {
   opacity: 1;
-}
-
-
-/**
- * HACKs.
- */
-
-/* The nav's ul needs to scroll, and we aren't using flexbox yet. */
-.nav menu {
-  top: 55px;
 }
