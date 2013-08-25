@@ -654,7 +654,7 @@ body.loading .editor {
   right: 100%;
   bottom: 0;
   width: 30px;
-  background: url(".//theme-editor/./images/read-shadow.png") top right repeat-y;
+  background: url("theme-editor/./images/read-shadow.png") top right repeat-y;
 }
 
 
