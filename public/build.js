@@ -195,15680 +195,15821 @@ require.relative = function(parent) {
 
   return localRequire;
 };
-require.register("component-indexof/index.js", function(exports, require, module){
-module.exports = function(arr, obj){
-  if (arr.indexOf) return arr.indexOf(obj);
-  for (var i = 0; i < arr.length; ++i) {
-    if (arr[i] === obj) return i;
-  }
-  return -1;
-};
-});
-require.register("component-classes/index.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var index = require('indexof');
-
-/**
- * Whitespace regexp.
- */
-
-var re = /\s+/;
-
-/**
- * toString reference.
- */
-
-var toString = Object.prototype.toString;
-
-/**
- * Wrap `el` in a `ClassList`.
- *
- * @param {Element} el
- * @return {ClassList}
- * @api public
- */
-
-module.exports = function(el){
-  return new ClassList(el);
-};
-
-/**
- * Initialize a new ClassList for `el`.
- *
- * @param {Element} el
- * @api private
- */
-
-function ClassList(el) {
-  if (!el) throw new Error('A DOM element reference is required');
-  this.el = el;
-  this.list = el.classList;
-}
-
-/**
- * Add class `name` if not already present.
- *
- * @param {String} name
- * @return {ClassList}
- * @api public
- */
-
-ClassList.prototype.add = function(name){
-  // classList
-  if (this.list) {
-    this.list.add(name);
-    return this;
-  }
-
-  // fallback
-  var arr = this.array();
-  var i = index(arr, name);
-  if (!~i) arr.push(name);
-  this.el.className = arr.join(' ');
-  return this;
-};
-
-/**
- * Remove class `name` when present, or
- * pass a regular expression to remove
- * any which match.
- *
- * @param {String|RegExp} name
- * @return {ClassList}
- * @api public
- */
-
-ClassList.prototype.remove = function(name){
-  if ('[object RegExp]' == toString.call(name)) {
-    return this.removeMatching(name);
-  }
-
-  // classList
-  if (this.list) {
-    this.list.remove(name);
-    return this;
-  }
-
-  // fallback
-  var arr = this.array();
-  var i = index(arr, name);
-  if (~i) arr.splice(i, 1);
-  this.el.className = arr.join(' ');
-  return this;
-};
-
-/**
- * Remove all classes matching `re`.
- *
- * @param {RegExp} re
- * @return {ClassList}
- * @api private
- */
-
-ClassList.prototype.removeMatching = function(re){
-  var arr = this.array();
-  for (var i = 0; i < arr.length; i++) {
-    if (re.test(arr[i])) {
-      this.remove(arr[i]);
-    }
-  }
-  return this;
-};
-
-/**
- * Toggle class `name`.
- *
- * @param {String} name
- * @return {ClassList}
- * @api public
- */
-
-ClassList.prototype.toggle = function(name){
-  // classList
-  if (this.list) {
-    this.list.toggle(name);
-    return this;
-  }
-
-  // fallback
-  if (this.has(name)) {
-    this.remove(name);
-  } else {
-    this.add(name);
-  }
-  return this;
-};
-
-/**
- * Return an array of classes.
- *
- * @return {Array}
- * @api public
- */
-
-ClassList.prototype.array = function(){
-  var str = this.el.className.replace(/^\s+|\s+$/g, '');
-  var arr = str.split(re);
-  if ('' === arr[0]) arr.shift();
-  return arr;
-};
-
-/**
- * Check if class `name` is present.
- *
- * @param {String} name
- * @return {ClassList}
- * @api public
- */
-
-ClassList.prototype.has =
-ClassList.prototype.contains = function(name){
-  return this.list
-    ? this.list.contains(name)
-    : !! ~index(this.array(), name);
-};
-
-});
-require.register("component-event/index.js", function(exports, require, module){
-
-/**
- * Bind `el` event `type` to `fn`.
- *
- * @param {Element} el
- * @param {String} type
- * @param {Function} fn
- * @param {Boolean} capture
- * @return {Function}
- * @api public
- */
-
-exports.bind = function(el, type, fn, capture){
-  if (el.addEventListener) {
-    el.addEventListener(type, fn, capture || false);
-  } else {
-    el.attachEvent('on' + type, fn);
-  }
-  return fn;
-};
-
-/**
- * Unbind `el` event `type`'s callback `fn`.
- *
- * @param {Element} el
- * @param {String} type
- * @param {Function} fn
- * @param {Boolean} capture
- * @return {Function}
- * @api public
- */
-
-exports.unbind = function(el, type, fn, capture){
-  if (el.removeEventListener) {
-    el.removeEventListener(type, fn, capture || false);
-  } else {
-    el.detachEvent('on' + type, fn);
-  }
-  return fn;
-};
-
-});
-require.register("component-query/index.js", function(exports, require, module){
-
-function one(selector, el) {
-  return el.querySelector(selector);
-}
-
-exports = module.exports = function(selector, el){
-  el = el || document;
-  return one(selector, el);
-};
-
-exports.all = function(selector, el){
-  el = el || document;
-  return el.querySelectorAll(selector);
-};
-
-exports.engine = function(obj){
-  if (!obj.one) throw new Error('.one callback required');
-  if (!obj.all) throw new Error('.all callback required');
-  one = obj.one;
-  exports.all = obj.all;
-};
-
-});
-require.register("component-matches-selector/index.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var query = require('query');
-
-/**
- * Element prototype.
- */
-
-var proto = Element.prototype;
-
-/**
- * Vendor function.
- */
-
-var vendor = proto.matchesSelector
-  || proto.webkitMatchesSelector
-  || proto.mozMatchesSelector
-  || proto.msMatchesSelector
-  || proto.oMatchesSelector;
-
-/**
- * Expose `match()`.
- */
-
-module.exports = match;
-
-/**
- * Match `el` to `selector`.
- *
- * @param {Element} el
- * @param {String} selector
- * @return {Boolean}
- * @api public
- */
-
-function match(el, selector) {
-  if (vendor) return vendor.call(el, selector);
-  var nodes = query.all(selector, el.parentNode);
-  for (var i = 0; i < nodes.length; ++i) {
-    if (nodes[i] == el) return true;
-  }
-  return false;
-}
-
-});
-require.register("component-delegate/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var matches = require('matches-selector')
-  , event = require('event');
-
-/**
- * Delegate event `type` to `selector`
- * and invoke `fn(e)`. A callback function
- * is returned which may be passed to `.unbind()`.
- *
- * @param {Element} el
- * @param {String} selector
- * @param {String} type
- * @param {Function} fn
- * @param {Boolean} capture
- * @return {Function}
- * @api public
- */
-
-exports.bind = function(el, selector, type, fn, capture){
-  return event.bind(el, type, function(e){
-    if (matches(e.target, selector)) fn(e);
-  }, capture);
-  return callback;
-};
-
-/**
- * Unbind event `type`'s callback `fn`.
- *
- * @param {Element} el
- * @param {String} type
- * @param {Function} fn
- * @param {Boolean} capture
- * @api public
- */
-
-exports.unbind = function(el, type, fn, capture){
-  event.unbind(el, type, fn, capture);
-};
-
-});
-require.register("component-link-delegate/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var delegate = require('delegate');
-var url = require('url');
-
-/**
- * Handle link delegation on `el` or the document,
- * and invoke `fn(e)` when clickable.
- *
- * @param {Element|Function} el or fn
- * @param {Function} [fn]
- * @api public
- */
-
-module.exports = function(el, fn){
-  // default to document
-  if ('function' == typeof el) {
-    fn = el;
-    el = document;
-  }
-
-  delegate.bind(el, 'a', 'click', function(e){
-    if (clickable(e)) fn(e);
-  });
-};
-
-/**
- * Check if `e` is clickable.
- */
-
-function clickable(e) {
-  if (1 != which(e)) return;
-  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-  if (e.defaultPrevented) return;
-
-  // target
-  var el = e.target;
-
-  // check target
-  if (el.target) return;
-
-  // x-origin
-  if (url.isCrossDomain(el.href)) return;
-
-  return true;
-}
-
-/**
- * Event button.
- */
-
-function which(e) {
-  e = e || window.event;
-  return null == e.which
-    ? e.button
-    : e.which;
-}
-
-});
-require.register("component-path-to-regexp/index.js", function(exports, require, module){
-/**
- * Expose `pathtoRegexp`.
- */
-
-module.exports = pathtoRegexp;
-
-/**
- * Normalize the given path string,
- * returning a regular expression.
- *
- * An empty array should be passed,
- * which will contain the placeholder
- * key names. For example "/user/:id" will
- * then contain ["id"].
- *
- * @param  {String|RegExp|Array} path
- * @param  {Array} keys
- * @param  {Object} options
- * @return {RegExp}
- * @api private
- */
-
-function pathtoRegexp(path, keys, options) {
-  options = options || {};
-  var sensitive = options.sensitive;
-  var strict = options.strict;
-  keys = keys || [];
-
-  if (path instanceof RegExp) return path;
-  if (path instanceof Array) path = '(' + path.join('|') + ')';
-
-  path = path
-    .concat(strict ? '' : '/?')
-    .replace(/\/\(/g, '(?:/')
-    .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?(\*)?/g, function(_, slash, format, key, capture, optional, star){
-      keys.push({ name: key, optional: !! optional });
-      slash = slash || '';
-      return ''
-        + (optional ? '' : slash)
-        + '(?:'
-        + (optional ? slash : '')
-        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'
-        + (optional || '')
-        + (star ? '(/*)?' : '');
-    })
-    .replace(/([\/.])/g, '\\$1')
-    .replace(/\*/g, '(.*)');
-
-  return new RegExp('^' + path + '$', sensitive ? '' : 'i');
-};
-
-});
-require.register("component-url/index.js", function(exports, require, module){
-
-/**
- * Parse the given `url`.
- *
- * @param {String} str
- * @return {Object}
- * @api public
- */
-
-exports.parse = function(url){
-  var a = document.createElement('a');
-  a.href = url;
-  return {
-    href: a.href,
-    host: a.host || location.host,
-    port: ('0' === a.port || '' === a.port) ? location.port : a.port,
-    hash: a.hash,
-    hostname: a.hostname || location.hostname,
-    pathname: a.pathname.charAt(0) != '/' ? '/' + a.pathname : a.pathname,
-    protocol: !a.protocol || ':' == a.protocol ? location.protocol : a.protocol,
-    search: a.search,
-    query: a.search.slice(1)
-  };
-};
-
-/**
- * Check if `url` is absolute.
- *
- * @param {String} url
- * @return {Boolean}
- * @api public
- */
-
-exports.isAbsolute = function(url){
-  return 0 == url.indexOf('//') || !!~url.indexOf('://');
-};
-
-/**
- * Check if `url` is relative.
- *
- * @param {String} url
- * @return {Boolean}
- * @api public
- */
-
-exports.isRelative = function(url){
-  return !exports.isAbsolute(url);
-};
-
-/**
- * Check if `url` is cross domain.
- *
- * @param {String} url
- * @return {Boolean}
- * @api public
- */
-
-exports.isCrossDomain = function(url){
-  url = exports.parse(url);
-  return url.hostname !== location.hostname
-    || url.port !== location.port
-    || url.protocol !== location.protocol;
-};
-});
-require.register("ianstormtaylor-history/index.js", function(exports, require, module){
-
-/**
- * Get the current path.
- *
- * @return {String}
- */
-
-exports.path = function () {
-  return window.location.pathname;
-};
-
-
-/**
- * Get the current state.
- *
- * @return {Object}
- */
-
-exports.state = function () {
-  return window.history.state;
-};
-
-
-/**
- * Push a new `url` on to the history.
- *
- * @param {String} url
- * @param {Object} state (optional)
- */
-
-exports.push = function (url, state) {
-  window.history.pushState(state, null, url);
-};
-
-
-/**
- * Replace the current url with a new `url`.
- *
- * @param {String} url
- * @param {Object} state (optional)
- */
-
-exports.replace = function (url, state) {
-  window.history.replaceState(state, null, url);
-};
-
-
-/**
- * Move back in the history, by an optional number of `steps`.
- *
- * @param {Number} steps (optional)
- */
-
-exports.back =
-exports.backward = function (steps) {
-  steps || (steps = 1);
-  window.history.go(-1 * steps);
-};
-
-
-/**
- * Move forward in the history, by an optional number of `steps`.
- *
- * @param {Number} steps (optional)
- */
-
-exports.forward = function (steps) {
-  steps || (steps = 1);
-  window.history.go(steps);
-};
-});
-require.register("yields-prevent/index.js", function(exports, require, module){
-
-/**
- * prevent default on the given `e`.
- * 
- * examples:
- * 
- *      anchor.onclick = prevent;
- *      anchor.onclick = function(e){
- *        if (something) return prevent(e);
- *      };
- * 
- * @param {Event} e
- */
-
-module.exports = function(e){
-  e = e || window.event
-  return e.preventDefault
-    ? e.preventDefault()
-    : e.returnValue = false;
-};
-
-});
-require.register("yields-stop/index.js", function(exports, require, module){
-
-/**
- * stop propagation on the given `e`.
- * 
- * examples:
- * 
- *      anchor.onclick = require('stop');
- *      anchor.onclick = function(e){
- *        if (!some) return require('stop')(e);
- *      };
- * 
- * 
- * @param {Event} e
- */
-
-module.exports = function(e){
-  e = e || window.event;
-  return e.stopPropagation
-    ? e.stopPropagation()
-    : e.cancelBubble = true;
-};
-
-});
-require.register("ianstormtaylor-router/lib/context.js", function(exports, require, module){
-
-
-/**
- * Expose `Context`.
- */
-
-module.exports = Context;
-
-
-/**
- * Initialize a new `Context`.
- *
- * @param {String} path
- * @param {Object} previous (optional)
- */
-
-function Context (path, previous) {
-  this.path = path;
-  this.params = {};
-  this.previous = previous ? previous.params : {};
-}
-});
-require.register("ianstormtaylor-router/lib/index.js", function(exports, require, module){
-
-var Context = require('./context')
-  , history = require('history')
-  , link = require('link-delegate')
-  , prevent = require('prevent')
-  , Route = require('./route')
-  , stop = require('stop')
-  , url = require('url');
-
-
-/**
- * Expose `Router`.
- */
-
-module.exports = exports = Router;
-
-
-/**
- * Expose `Route`.
- */
-
-exports.Route = Route;
-
-
-/**
- * Expose `Context`.
- */
-
-exports.Context = Context;
-
-
-/**
- * Initialize a new `Router`.
- */
-
-function Router () {
-  this.callbacks = [];
-  this.running = false;
-}
-
-
-/**
- * Use the given `plugin`.
- *
- * @param {Function} plugin
- * @return {Router}
- */
-
-Router.use = function (plugin) {
-  plugin(this);
-  return this;
-};
-
-
-/**
- * Attach a route handler.
- *
- * @param {String} path
- * @param {Functions...} fns
- * @return {Router}
- */
-
-Router.prototype.on = function (path) {
-  var route = new Route(path);
-  var fns = Array.prototype.slice.call(arguments, 1);
-  for (var i = 1; i < arguments.length; i++) {
-    this.callbacks.push(route.middleware(arguments[i]));
-  }
-  return this;
-};
-
-
-/**
- * Trigger a route at `path`.
- *
- * @param {String} path
- * @return {Router}
- */
-
-Router.prototype.dispatch = function (path) {
-  var context = this._context = new Context(path, this._context);
-  var callbacks = this.callbacks;
-  var i = 0;
-
-  function next () {
-    var fn = callbacks[i++];
-    if (fn) fn(context, next);
-  }
-
-  next();
-  return this;
-};
-
-
-/**
- * Dispatch a new `path` and push it to the history, or use the current path.
- *
- * @param {String} path (optional)
- * @return {Router}
- */
-
-Router.prototype.go = function (path) {
-  if (!path) {
-    var l = window.location;
-    path = l.pathname;
-    if (l.search) path += l.search;
-  } else {
-    this.push(path);
-  }
-
-  this.dispatch(path);
-  return this;
-};
-
-
-/**
- * Start the router and listen for link clicks relative to an optional `path`.
- * You can optionally set `go` to false to manage the first dispatch yourself.
- *
- * @param {String} path
- * @return {Router}
- */
-
-Router.prototype.listen = function (path, go) {
-  if ('boolean' === typeof path) {
-    go = path;
-    path = null;
-  }
-
-  if (go || go === undefined) this.go();
-
-  var self = this;
-  link(function (e) {
-    var el = e.target;
-    var href = el.href;
-    if (!el.hasAttribute('href') || !routable(href, path)) return;
-    var parsed = url.parse(href);
-    self.go(parsed.pathname);
-    prevent(e);
-    stop(e);
-  });
-
-  return this;
-};
-
-
-/**
- * Push a new `path` to the browsers history.
- *
- * @param {String} path
- * @return {Router}
- */
-
-Router.prototype.push = function (path) {
-  history.push(path);
-  return this;
-};
-
-
-/**
- * Replace the current path in the browsers history.
- *
- * @param {String} path
- * @return {Router}
- */
-
-Router.prototype.replace = function (path) {
-  history.replace(path);
-  return this;
-};
-
-
-/**
- * Check if a given `href` is routable under `path`.
- *
- * @param {String} href
- * @return {Boolean}
- */
-
-function routable (href, path) {
-  if (!path) return true;
-  var parsed = url.parse(href);
-  if (parsed.pathname.indexOf(path) === 0) return true;
-  return false;
-}
-});
-require.register("ianstormtaylor-router/lib/route.js", function(exports, require, module){
-
-var regexp = require('path-to-regexp');
-
-
-/**
- * Expose `Route`.
- */
-
-module.exports = Route;
-
-
-/**
- * Initialize a new `Route` with the given `path`.
- *
- * @param {String} path
- */
-
-function Route (path) {
-  this.path = path;
-  this.keys = [];
-  this.regexp = regexp(path, this.keys);
-}
-
-
-/**
- * Return route middleware with the given `fn`.
- *
- * @param {Function} fn
- * @return {Function}
- */
-
-Route.prototype.middleware = function (fn) {
-  var self = this;
-  return function (context, next) {
-    if (self.match(context.path, context.params)) return fn(context, next);
-    next();
-  };
-};
-
-
-/**
- * Check if the route matches a given `path`, returning false or an object.
- *
- * @param {String} path
- * @return {Boolean|Object}
- */
-
-Route.prototype.match = function (path, params) {
-  var keys = this.keys;
-  var qsIndex = path.indexOf('?');
-  var pathname = ~qsIndex ? path.slice(0, qsIndex) : path;
-  var m = this.regexp.exec(pathname);
-
-  if (!m) return false;
-
-  for (var i = 1, len = m.length; i < len; ++i) {
-    var key = keys[i - 1];
-    var val = 'string' === typeof m[i] ? decodeURIComponent(m[i]) : m[i];
-    params[key.name] = val;
-  }
-  return true;
-};
-});
-require.register("matthewmueller-uid/index.js", function(exports, require, module){
-/**
- * Export `uid`
- */
-
-module.exports = uid;
-
-/**
- * Create a `uid`
- *
- * @param {String} len
- * @return {String} uid
- */
-
-function uid(len) {
-  len = len || 7;
-  return Math.random().toString(35).substr(2, len);
-}
-
-});
-require.register("component-to-function/index.js", function(exports, require, module){
-
-/**
- * Expose `toFunction()`.
- */
-
-module.exports = toFunction;
-
-/**
- * Convert `obj` to a `Function`.
- *
- * @param {Mixed} obj
- * @return {Function}
- * @api private
- */
-
-function toFunction(obj) {
-  switch ({}.toString.call(obj)) {
-    case '[object Object]':
-      return objectToFunction(obj);
-    case '[object Function]':
-      return obj;
-    case '[object String]':
-      return stringToFunction(obj);
-    case '[object RegExp]':
-      return regexpToFunction(obj);
-    default:
-      return defaultToFunction(obj);
-  }
-}
-
-/**
- * Default to strict equality.
- *
- * @param {Mixed} val
- * @return {Function}
- * @api private
- */
-
-function defaultToFunction(val) {
-  return function(obj){
-    return val === obj;
-  }
-}
-
-/**
- * Convert `re` to a function.
- *
- * @param {RegExp} re
- * @return {Function}
- * @api private
- */
-
-function regexpToFunction(re) {
-  return function(obj){
-    return re.test(obj);
-  }
-}
-
-/**
- * Convert property `str` to a function.
- *
- * @param {String} str
- * @return {Function}
- * @api private
- */
-
-function stringToFunction(str) {
-  // immediate such as "> 20"
-  if (/^ *\W+/.test(str)) return new Function('_', 'return _ ' + str);
-
-  // properties such as "name.first" or "age > 18"
-  return new Function('_', 'return _.' + str);
-}
-
-/**
- * Convert `object` to a function.
- *
- * @param {Object} object
- * @return {Function}
- * @api private
- */
-
-function objectToFunction(obj) {
-  var match = {}
-  for (var key in obj) {
-    match[key] = typeof obj[key] === 'string'
-      ? defaultToFunction(obj[key])
-      : toFunction(obj[key])
-  }
-  return function(val){
-    if (typeof val !== 'object') return false;
-    for (var key in match) {
-      if (!(key in val)) return false;
-      if (!match[key](val[key])) return false;
-    }
-    return true;
-  }
-}
-
-});
-require.register("component-type/index.js", function(exports, require, module){
-
-/**
- * toString ref.
- */
-
-var toString = Object.prototype.toString;
-
-/**
- * Return the type of `val`.
- *
- * @param {Mixed} val
- * @return {String}
- * @api public
- */
-
-module.exports = function(val){
-  switch (toString.call(val)) {
-    case '[object Function]': return 'function';
-    case '[object Date]': return 'date';
-    case '[object RegExp]': return 'regexp';
-    case '[object Arguments]': return 'arguments';
-    case '[object Array]': return 'array';
-    case '[object String]': return 'string';
-  }
-
-  if (val === null) return 'null';
-  if (val === undefined) return 'undefined';
-  if (val && val.nodeType === 1) return 'element';
-  if (val === Object(val)) return 'object';
-
-  return typeof val;
-};
-
-});
-require.register("component-each/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var toFunction = require('to-function');
-var type;
-
-try {
-  type = require('type-component');
-} catch (e) {
-  type = require('type');
-}
-
-/**
- * HOP reference.
- */
-
-var has = Object.prototype.hasOwnProperty;
-
-/**
- * Iterate the given `obj` and invoke `fn(val, i)`.
- *
- * @param {String|Array|Object} obj
- * @param {Function} fn
- * @api public
- */
-
-module.exports = function(obj, fn){
-  fn = toFunction(fn);
-  switch (type(obj)) {
-    case 'array':
-      return array(obj, fn);
-    case 'object':
-      if ('number' == typeof obj.length) return array(obj, fn);
-      return object(obj, fn);
-    case 'string':
-      return string(obj, fn);
-  }
-};
-
-/**
- * Iterate string chars.
- *
- * @param {String} obj
- * @param {Function} fn
- * @api private
- */
-
-function string(obj, fn) {
-  for (var i = 0; i < obj.length; ++i) {
-    fn(obj.charAt(i), i);
-  }
-}
-
-/**
- * Iterate object keys.
- *
- * @param {Object} obj
- * @param {Function} fn
- * @api private
- */
-
-function object(obj, fn) {
-  for (var key in obj) {
-    if (has.call(obj, key)) {
-      fn(key, obj[key]);
-    }
-  }
-}
-
-/**
- * Iterate array-ish.
- *
- * @param {Array|Object} obj
- * @param {Function} fn
- * @api private
- */
-
-function array(obj, fn) {
-  for (var i = 0; i < obj.length; ++i) {
-    fn(obj[i], i);
-  }
-}
-
-});
-require.register("component-set/index.js", function(exports, require, module){
-
-/**
- * Expose `Set`.
- */
-
-module.exports = Set;
-
-/**
- * Initialize a new `Set` with optional `vals`
- *
- * @param {Array} vals
- * @api public
- */
-
-function Set(vals) {
-  if (!(this instanceof Set)) return new Set(vals);
-  this.vals = [];
-  if (vals) {
-    for (var i = 0; i < vals.length; ++i) {
-      this.add(vals[i]);
-    }
-  }
-}
-
-/**
- * Add `val`.
- *
- * @param {Mixed} val
- * @api public
- */
-
-Set.prototype.add = function(val){
-  if (this.has(val)) return;
-  this.vals.push(val);
-};
-
-/**
- * Check if this set has `val`.
- *
- * @param {Mixed} val
- * @return {Boolean}
- * @api public
- */
-
-Set.prototype.has = function(val){
-  return !! ~this.indexOf(val);
-};
-
-/**
- * Return the indexof `val`.
- *
- * @param {Mixed} val
- * @return {Number}
- * @api private
- */
-
-Set.prototype.indexOf = function(val){
-  for (var i = 0, len = this.vals.length; i < len; ++i) {
-    var obj = this.vals[i];
-    if (obj.equals && obj.equals(val)) return i;
-    if (obj == val) return i;
-  }
-  return -1;
-};
-
-/**
- * Iterate each member and invoke `fn(val)`.
- *
- * @param {Function} fn
- * @return {Set}
- * @api public
- */
-
-Set.prototype.each = function(fn){
-  for (var i = 0; i < this.vals.length; ++i) {
-    fn(this.vals[i]);
-  }
-  return this;
-};
-
-/**
- * Return the values as an array.
- *
- * @return {Array}
- * @api public
- */
-
-Set.prototype.values =
-Set.prototype.array =
-Set.prototype.members =
-Set.prototype.toJSON = function(){
-  return this.vals;
-};
-
-/**
- * Return the set size.
- *
- * @return {Number}
- * @api public
- */
-
-Set.prototype.size = function(){
-  return this.vals.length;
-};
-
-/**
- * Empty the set and return old values.
- *
- * @return {Array}
- * @api public
- */
-
-Set.prototype.clear = function(){
-  var old = this.vals;
-  this.vals = [];
-  return old;
-};
-
-/**
- * Remove `val`, returning __true__ when present, otherwise __false__.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api public
- */
-
-Set.prototype.remove = function(val){
-  var i = this.indexOf(val);
-  if (~i) this.vals.splice(i, 1);
-  return !! ~i;
-};
-
-/**
- * Perform a union on `set`.
- *
- * @param {Set} set
- * @return {Set} new set
- * @api public
- */
-
-Set.prototype.union = function(set){
-  var ret = new Set;
-  var a = this.vals;
-  var b = set.vals;
-  for (var i = 0; i < a.length; ++i) ret.add(a[i]);
-  for (var i = 0; i < b.length; ++i) ret.add(b[i]);
-  return ret;
-};
-
-/**
- * Perform an intersection on `set`.
- *
- * @param {Set} set
- * @return {Set} new set
- * @api public
- */
-
-Set.prototype.intersect = function(set){
-  var ret = new Set;
-  var a = this.vals;
-  var b = set.vals;
-
-  for (var i = 0; i < a.length; ++i) {
-    if (set.has(a[i])) {
-      ret.add(a[i]);
-    }
-  }
-
-  for (var i = 0; i < b.length; ++i) {
-    if (this.has(b[i])) {
-      ret.add(b[i]);
-    }
-  }
-
-  return ret;
-};
-
-/**
- * Check if the set is empty.
- *
- * @return {Boolean}
- * @api public
- */
-
-Set.prototype.isEmpty = function(){
-  return 0 == this.vals.length;
-};
-
-
-});
-require.register("component-emitter/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var index = require('indexof');
-
-/**
- * Expose `Emitter`.
- */
-
-module.exports = Emitter;
-
-/**
- * Initialize a new `Emitter`.
- *
- * @api public
- */
-
-function Emitter(obj) {
-  if (obj) return mixin(obj);
-};
-
-/**
- * Mixin the emitter properties.
- *
- * @param {Object} obj
- * @return {Object}
- * @api private
- */
-
-function mixin(obj) {
-  for (var key in Emitter.prototype) {
-    obj[key] = Emitter.prototype[key];
-  }
-  return obj;
-}
-
-/**
- * Listen on the given `event` with `fn`.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.on = function(event, fn){
-  this._callbacks = this._callbacks || {};
-  (this._callbacks[event] = this._callbacks[event] || [])
-    .push(fn);
-  return this;
-};
-
-/**
- * Adds an `event` listener that will be invoked a single
- * time then automatically removed.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.once = function(event, fn){
-  var self = this;
-  this._callbacks = this._callbacks || {};
-
-  function on() {
-    self.off(event, on);
-    fn.apply(this, arguments);
-  }
-
-  fn._off = on;
-  this.on(event, on);
-  return this;
-};
-
-/**
- * Remove the given callback for `event` or all
- * registered callbacks.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.off =
-Emitter.prototype.removeListener =
-Emitter.prototype.removeAllListeners = function(event, fn){
-  this._callbacks = this._callbacks || {};
-
-  // all
-  if (0 == arguments.length) {
-    this._callbacks = {};
-    return this;
-  }
-
-  // specific event
-  var callbacks = this._callbacks[event];
-  if (!callbacks) return this;
-
-  // remove all handlers
-  if (1 == arguments.length) {
-    delete this._callbacks[event];
-    return this;
-  }
-
-  // remove specific handler
-  var i = index(callbacks, fn._off || fn);
-  if (~i) callbacks.splice(i, 1);
-  return this;
-};
-
-/**
- * Emit `event` with the given args.
- *
- * @param {String} event
- * @param {Mixed} ...
- * @return {Emitter}
- */
-
-Emitter.prototype.emit = function(event){
-  this._callbacks = this._callbacks || {};
-  var args = [].slice.call(arguments, 1)
-    , callbacks = this._callbacks[event];
-
-  if (callbacks) {
-    callbacks = callbacks.slice(0);
-    for (var i = 0, len = callbacks.length; i < len; ++i) {
-      callbacks[i].apply(this, args);
-    }
-  }
-
-  return this;
-};
-
-/**
- * Return array of callbacks for `event`.
- *
- * @param {String} event
- * @return {Array}
- * @api public
- */
-
-Emitter.prototype.listeners = function(event){
-  this._callbacks = this._callbacks || {};
-  return this._callbacks[event] || [];
-};
-
-/**
- * Check if this emitter has `event` handlers.
- *
- * @param {String} event
- * @return {Boolean}
- * @api public
- */
-
-Emitter.prototype.hasListeners = function(event){
-  return !! this.listeners(event).length;
-};
-
-});
-require.register("component-enumerable/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var toFunction = require('to-function')
-  , proto = {};
-
-/**
- * Expose `Enumerable`.
- */
-
-module.exports = Enumerable;
-
-/**
- * Mixin to `obj`.
- *
- *    var Enumerable = require('enumerable');
- *    Enumerable(Something.prototype);
- *
- * @param {Object} obj
- * @return {Object} obj
- */
-
-function mixin(obj){
-  for (var key in proto) obj[key] = proto[key];
-  obj.__iterate__ = obj.__iterate__ || defaultIterator;
-  return obj;
-}
-
-/**
- * Initialize a new `Enumerable` with the given `obj`.
- *
- * @param {Object} obj
- * @api private
- */
-
-function Enumerable(obj) {
-  if (!(this instanceof Enumerable)) {
-    if (Array.isArray(obj)) return new Enumerable(obj);
-    return mixin(obj);
-  }
-  this.obj = obj;
-}
-
-/*!
- * Default iterator utilizing `.length` and subscripts.
- */
-
-function defaultIterator() {
-  var self = this;
-  return {
-    length: function(){ return self.length },
-    get: function(i){ return self[i] }
-  }
-}
-
-/**
- * Return a string representation of this enumerable.
- *
- *    [Enumerable [1,2,3]]
- *
- * @return {String}
- * @api public
- */
-
-Enumerable.prototype.inspect =
-Enumerable.prototype.toString = function(){
-  return '[Enumerable ' + JSON.stringify(this.obj) + ']';
-};
-
-/**
- * Iterate enumerable.
- *
- * @return {Object}
- * @api private
- */
-
-Enumerable.prototype.__iterate__ = function(){
-  var obj = this.obj;
-  obj.__iterate__ = obj.__iterate__ || defaultIterator;
-  return obj.__iterate__();
-};
-
-/**
- * Iterate each value and invoke `fn(val, i)`.
- *
- *    users.each(function(val, i){
- *
- *    })
- *
- * @param {Function} fn
- * @return {Object} self
- * @api public
- */
-
-proto.forEach =
-proto.each = function(fn){
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    fn(vals.get(i), i);
-  }
-  return this;
-};
-
-/**
- * Map each return value from `fn(val, i)`.
- *
- * Passing a callback function:
- *
- *    users.map(function(user){
- *      return user.name.first
- *    })
- *
- * Passing a property string:
- *
- *    users.map('name.first')
- *
- * @param {Function} fn
- * @return {Enumerable}
- * @api public
- */
-
-proto.map = function(fn){
-  fn = toFunction(fn);
-  var vals = this.__iterate__();
-  var len = vals.length();
-  var arr = [];
-  for (var i = 0; i < len; ++i) {
-    arr.push(fn(vals.get(i), i));
-  }
-  return new Enumerable(arr);
-};
-
-/**
- * Select all values that return a truthy value of `fn(val, i)`.
- *
- *    users.select(function(user){
- *      return user.age > 20
- *    })
- *
- *  With a property:
- *
- *    items.select('complete')
- *
- * @param {Function|String} fn
- * @return {Enumerable}
- * @api public
- */
-
-proto.filter =
-proto.select = function(fn){
-  fn = toFunction(fn);
-  var val;
-  var arr = [];
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (fn(val, i)) arr.push(val);
-  }
-  return new Enumerable(arr);
-};
-
-/**
- * Select all unique values.
- *
- *    nums.unique()
- *
- * @return {Enumerable}
- * @api public
- */
-
-proto.unique = function(){
-  var val;
-  var arr = [];
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (~arr.indexOf(val)) continue;
-    arr.push(val);
-  }
-  return new Enumerable(arr);
-};
-
-/**
- * Reject all values that return a truthy value of `fn(val, i)`.
- *
- * Rejecting using a callback:
- *
- *    users.reject(function(user){
- *      return user.age < 20
- *    })
- *
- * Rejecting with a property:
- *
- *    items.reject('complete')
- *
- * Rejecting values via `==`:
- *
- *    data.reject(null)
- *    users.reject(tobi)
- *
- * @param {Function|String|Mixed} fn
- * @return {Enumerable}
- * @api public
- */
-
-proto.reject = function(fn){
-  var val;
-  var arr = [];
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  if ('string' == typeof fn) fn = toFunction(fn);
-
-  if (fn) {
-    for (var i = 0; i < len; ++i) {
-      val = vals.get(i);
-      if (!fn(val, i)) arr.push(val);
-    }
-  } else {
-    for (var i = 0; i < len; ++i) {
-      val = vals.get(i);
-      if (val != fn) arr.push(val);
-    }
-  }
-
-  return new Enumerable(arr);
-};
-
-/**
- * Reject `null` and `undefined`.
- *
- *    [1, null, 5, undefined].compact()
- *    // => [1,5]
- *
- * @return {Enumerable}
- * @api public
- */
-
-
-proto.compact = function(){
-  return this.reject(null);
-};
-
-/**
- * Return the first value when `fn(val, i)` is truthy,
- * otherwise return `undefined`.
- *
- *    users.find(function(user){
- *      return user.role == 'admin'
- *    })
- *
- * With a property string:
- *
- *    users.find('age > 20')
- *
- * @param {Function|String} fn
- * @return {Mixed}
- * @api public
- */
-
-proto.find = function(fn){
-  fn = toFunction(fn);
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (fn(val, i)) return val;
-  }
-};
-
-/**
- * Return the last value when `fn(val, i)` is truthy,
- * otherwise return `undefined`.
- *
- *    users.findLast(function(user){
- *      return user.role == 'admin'
- *    })
- *
- * @param {Function} fn
- * @return {Mixed}
- * @api public
- */
-
-proto.findLast = function(fn){
-  fn = toFunction(fn);
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = len - 1; i > -1; --i) {
-    val = vals.get(i);
-    if (fn(val, i)) return val;
-  }
-};
-
-/**
- * Assert that all invocations of `fn(val, i)` are truthy.
- *
- * For example ensuring that all pets are ferrets:
- *
- *    pets.all(function(pet){
- *      return pet.species == 'ferret'
- *    })
- *
- *    users.all('admin')
- *
- * @param {Function|String} fn
- * @return {Boolean}
- * @api public
- */
-
-proto.all =
-proto.every = function(fn){
-  fn = toFunction(fn);
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (!fn(val, i)) return false;
-  }
-  return true;
-};
-
-/**
- * Assert that none of the invocations of `fn(val, i)` are truthy.
- *
- * For example ensuring that no pets are admins:
- *
- *    pets.none(function(p){ return p.admin })
- *    pets.none('admin')
- *
- * @param {Function|String} fn
- * @return {Boolean}
- * @api public
- */
-
-proto.none = function(fn){
-  fn = toFunction(fn);
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (fn(val, i)) return false;
-  }
-  return true;
-};
-
-/**
- * Assert that at least one invocation of `fn(val, i)` is truthy.
- *
- * For example checking to see if any pets are ferrets:
- *
- *    pets.any(function(pet){
- *      return pet.species == 'ferret'
- *    })
- *
- * @param {Function} fn
- * @return {Boolean}
- * @api public
- */
-
-proto.any = function(fn){
-  fn = toFunction(fn);
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (fn(val, i)) return true;
-  }
-  return false;
-};
-
-/**
- * Count the number of times `fn(val, i)` returns true.
- *
- *    var n = pets.count(function(pet){
- *      return pet.species == 'ferret'
- *    })
- *
- * @param {Function} fn
- * @return {Number}
- * @api public
- */
-
-proto.count = function(fn){
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  var n = 0;
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (fn(val, i)) ++n;
-  }
-  return n;
-};
-
-/**
- * Determine the indexof `obj` or return `-1`.
- *
- * @param {Mixed} obj
- * @return {Number}
- * @api public
- */
-
-proto.indexOf = function(obj){
-  var val;
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    val = vals.get(i);
-    if (val === obj) return i;
-  }
-  return -1;
-};
-
-/**
- * Check if `obj` is present in this enumerable.
- *
- * @param {Mixed} obj
- * @return {Boolean}
- * @api public
- */
-
-proto.has = function(obj){
-  return !! ~this.indexOf(obj);
-};
-
-/**
- * Reduce with `fn(accumulator, val, i)` using
- * optional `init` value defaulting to the first
- * enumerable value.
- *
- * @param {Function} fn
- * @param {Mixed} [val]
- * @return {Mixed}
- * @api public
- */
-
-proto.reduce = function(fn, init){
-  var val;
-  var i = 0;
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  val = null == init
-    ? vals.get(i++)
-    : init;
-
-  for (; i < len; ++i) {
-    val = fn(val, vals.get(i), i);
-  }
-
-  return val;
-};
-
-/**
- * Determine the max value.
- *
- * With a callback function:
- *
- *    pets.max(function(pet){
- *      return pet.age
- *    })
- *
- * With property strings:
- *
- *    pets.max('age')
- *
- * With immediate values:
- *
- *    nums.max()
- *
- * @param {Function|String} fn
- * @return {Number}
- * @api public
- */
-
-proto.max = function(fn){
-  var val;
-  var n = 0;
-  var max = -Infinity;
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  if (fn) {
-    fn = toFunction(fn);
-    for (var i = 0; i < len; ++i) {
-      n = fn(vals.get(i), i);
-      max = n > max ? n : max;
-    }
-  } else {
-    for (var i = 0; i < len; ++i) {
-      n = vals.get(i);
-      max = n > max ? n : max;
-    }
-  }
-
-  return max;
-};
-
-/**
- * Determine the min value.
- *
- * With a callback function:
- *
- *    pets.min(function(pet){
- *      return pet.age
- *    })
- *
- * With property strings:
- *
- *    pets.min('age')
- *
- * With immediate values:
- *
- *    nums.min()
- *
- * @param {Function|String} fn
- * @return {Number}
- * @api public
- */
-
-proto.min = function(fn){
-  var val;
-  var n = 0;
-  var min = Infinity;
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  if (fn) {
-    fn = toFunction(fn);
-    for (var i = 0; i < len; ++i) {
-      n = fn(vals.get(i), i);
-      min = n < min ? n : min;
-    }
-  } else {
-    for (var i = 0; i < len; ++i) {
-      n = vals.get(i);
-      min = n < min ? n : min;
-    }
-  }
-
-  return min;
-};
-
-/**
- * Determine the sum.
- *
- * With a callback function:
- *
- *    pets.sum(function(pet){
- *      return pet.age
- *    })
- *
- * With property strings:
- *
- *    pets.sum('age')
- *
- * With immediate values:
- *
- *    nums.sum()
- *
- * @param {Function|String} fn
- * @return {Number}
- * @api public
- */
-
-proto.sum = function(fn){
-  var ret;
-  var n = 0;
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  if (fn) {
-    fn = toFunction(fn);
-    for (var i = 0; i < len; ++i) {
-      n += fn(vals.get(i), i);
-    }
-  } else {
-    for (var i = 0; i < len; ++i) {
-      n += vals.get(i);
-    }
-  }
-
-  return n;
-};
-
-/**
- * Determine the average value.
- *
- * With a callback function:
- *
- *    pets.avg(function(pet){
- *      return pet.age
- *    })
- *
- * With property strings:
- *
- *    pets.avg('age')
- *
- * With immediate values:
- *
- *    nums.avg()
- *
- * @param {Function|String} fn
- * @return {Number}
- * @api public
- */
-
-proto.avg =
-proto.mean = function(fn){
-  var ret;
-  var n = 0;
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  if (fn) {
-    fn = toFunction(fn);
-    for (var i = 0; i < len; ++i) {
-      n += fn(vals.get(i), i);
-    }
-  } else {
-    for (var i = 0; i < len; ++i) {
-      n += vals.get(i);
-    }
-  }
-
-  return n / len;
-};
-
-/**
- * Return the first value, or first `n` values.
- *
- * @param {Number|Function} [n]
- * @return {Array|Mixed}
- * @api public
- */
-
-proto.first = function(n){
-  if ('function' == typeof n) return this.find(n);
-  var vals = this.__iterate__();
-
-  if (n) {
-    var len = Math.min(n, vals.length());
-    var arr = new Array(len);
-    for (var i = 0; i < len; ++i) {
-      arr[i] = vals.get(i);
-    }
-    return arr;
-  }
-
-  return vals.get(0);
-};
-
-/**
- * Return the last value, or last `n` values.
- *
- * @param {Number|Function} [n]
- * @return {Array|Mixed}
- * @api public
- */
-
-proto.last = function(n){
-  if ('function' == typeof n) return this.findLast(n);
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  if (n) {
-    var i = Math.max(0, len - n);
-    var arr = [];
-    for (; i < len; ++i) {
-      arr.push(vals.get(i));
-    }
-    return arr;
-  }
-
-  return vals.get(len - 1);
-};
-
-/**
- * Return values in groups of `n`.
- *
- * @param {Number} n
- * @return {Enumerable}
- * @api public
- */
-
-proto.inGroupsOf = function(n){
-  var arr = [];
-  var group = [];
-  var vals = this.__iterate__();
-  var len = vals.length();
-
-  for (var i = 0; i < len; ++i) {
-    group.push(vals.get(i));
-    if ((i + 1) % n == 0) {
-      arr.push(group);
-      group = [];
-    }
-  }
-
-  if (group.length) arr.push(group);
-
-  return new Enumerable(arr);
-};
-
-/**
- * Return the value at the given index.
- *
- * @param {Number} i
- * @return {Mixed}
- * @api public
- */
-
-proto.at = function(i){
-  return this.__iterate__().get(i);
-};
-
-/**
- * Return a regular `Array`.
- *
- * @return {Array}
- * @api public
- */
-
-proto.toJSON =
-proto.array = function(){
-  var arr = [];
-  var vals = this.__iterate__();
-  var len = vals.length();
-  for (var i = 0; i < len; ++i) {
-    arr.push(vals.get(i));
-  }
-  return arr;
-};
-
-/**
- * Return the enumerable value.
- *
- * @return {Mixed}
- * @api public
- */
-
-proto.value = function(){
-  return this.obj;
-};
-
-/**
- * Mixin enumerable.
- */
-
-mixin(Enumerable.prototype);
-
-});
-require.register("segmentio-collection/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var Emitter = require('emitter')
-  , Enumerable = require('enumerable');
-
-/**
- * Expose `Collection`.
- */
-
-module.exports = Collection;
-
-/**
- * Initialize a new collection with the given `models`.
- *
- * @param {Array} models
- * @api public
- */
-
-function Collection(models) {
-  this.models = models || [];
-}
-
-/**
- * Mixin emitter.
- */
-
-Emitter(Collection.prototype);
-
-/**
- * Mixin enumerable.
- */
-
-Enumerable(Collection.prototype);
-
-/**
- * Iterator implementation.
- */
-
-Collection.prototype.__iterate__ = function(){
-  var self = this;
-  return {
-    length: function(){ return self.length() },
-    get: function(i){ return self.models[i] }
-  }
-};
-
-/**
- * Return the collection length.
- *
- * @return {Number}
- * @api public
- */
-
-Collection.prototype.length = function(){
-  return this.models.length;
-};
-
-/**
- * Add `model` to the collection and return the index.
- *
- * @param {Object} model
- * @return {Number}
- * @api public
- */
-
-Collection.prototype.add =
-Collection.prototype.push = function(model){
-  var length = this.models.push(model);
-  this.emit('add', model);
-  return length;
-};
-
-/**
- * Remove `model` from the collection, returning `true` when present,
- * otherwise `false`.
- *
- * @param {Object} model
- * @api public
- */
-
-Collection.prototype.remove = function(model){
-  var i = this.indexOf(model);
-  if (~i) {
-    this.models.splice(i, 1);
-    this.emit('remove', model);
-  }
-  return !! ~i;
-};
-
-});
-require.register("yields-unserialize/index.js", function(exports, require, module){
-
-/**
- * Unserialize the given "stringified" javascript.
- * 
- * @param {String} val
- * @return {Mixed}
- */
-
-module.exports = function(val){
-  try {
-    return JSON.parse(val);
-  } catch (e) {
-    return val || undefined;
-  }
-};
-
-});
-require.register("yields-store/index.js", function(exports, require, module){
-
-/**
- * dependencies.
- */
-
-var each = require('each')
-  , unserialize = require('unserialize')
-  , storage = window.localStorage
-  , type = require('type');
-
-/**
- * Store the given `key` `val`.
- *
- * @param {String} key
- * @param {Mixed} val
- * @return {Mixed}
- */
-
-exports = module.exports = function(key, val){
-  switch (arguments.length) {
-    case 2: return set(key, val);
-    case 0: return all();
-    case 1: return 'object' == type(key)
-      ? each(key, set)
-      : get(key);
-  }
-};
-
-/**
- * supported flag.
- */
-
-exports.supported = !! storage;
-
-/**
- * export methods.
- */
-
-exports.set = set;
-exports.get = get;
-exports.all = all;
-
-/**
- * Set `key` to `val`.
- *
- * @param {String} key
- * @param {Mixed} val
- */
-
-function set(key, val){
-  return null == val
-    ? storage.removeItem(key)
-    : storage.setItem(key, JSON.stringify(val));
-}
-
-/**
- * Get `key`.
- *
- * @param {String} key
- * @return {Mixed}
- */
-
-function get(key){
-  return null == key
-    ? storage.clear()
-    : unserialize(storage.getItem(key));
-}
-
-/**
- * Get all.
- *
- * @return {Object}
- */
-
-function all(){
-  var len = storage.length
-    , ret = {}
-    , key
-    , val;
-
-  for (var i = 0; i < len; ++i) {
-    key = storage.key(i);
-    ret[key] = get(key);
-  }
-
-  return ret;
-}
-
-});
-require.register("component-clone/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var type;
-
-try {
-  type = require('type');
-} catch(e){
-  type = require('type-component');
-}
-
-/**
- * Module exports.
- */
-
-module.exports = clone;
-
-/**
- * Clones objects.
- *
- * @param {Mixed} any object
- * @api public
- */
-
-function clone(obj){
-  switch (type(obj)) {
-    case 'object':
-      var copy = {};
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          copy[key] = clone(obj[key]);
-        }
-      }
-      return copy;
-
-    case 'array':
-      var copy = new Array(obj.length);
-      for (var i = 0, l = obj.length; i < l; i++) {
-        copy[i] = clone(obj[i]);
-      }
-      return copy;
-
-    case 'regexp':
-      // from millermedeiros/amd-utils - MIT
-      var flags = '';
-      flags += obj.multiline ? 'm' : '';
-      flags += obj.global ? 'g' : '';
-      flags += obj.ignoreCase ? 'i' : '';
-      return new RegExp(obj.source, flags);
-
-    case 'date':
-      return new Date(obj.getTime());
-
-    default: // string, number, boolean, …
-      return obj;
-  }
-}
-
-});
-require.register("component-collection/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var Enumerable = require('enumerable');
-
-/**
- * Expose `Collection`.
- */
-
-module.exports = Collection;
-
-/**
- * Initialize a new collection with the given `models`.
- *
- * @param {Array} models
- * @api public
- */
-
-function Collection(models) {
-  this.models = models || [];
-}
-
-/**
- * Mixin enumerable.
- */
-
-Enumerable(Collection.prototype);
-
-/**
- * Iterator implementation.
- */
-
-Collection.prototype.__iterate__ = function(){
-  var self = this;
-  return {
-    length: function(){ return self.length() },
-    get: function(i){ return self.models[i] }
-  }
-};
-
-/**
- * Return the collection length.
- *
- * @return {Number}
- * @api public
- */
-
-Collection.prototype.length = function(){
-  return this.models.length;
-};
-
-/**
- * Add `model` to the collection and return the index.
- *
- * @param {Object} model
- * @return {Number}
- * @api public
- */
-
-Collection.prototype.push = function(model){
-  return this.models.push(model);
-};
-
-});
-require.register("RedVentures-reduce/index.js", function(exports, require, module){
-
-/**
- * Reduce `arr` with `fn`.
- *
- * @param {Array} arr
- * @param {Function} fn
- * @param {Mixed} initial
- *
- * TODO: combatible error handling?
- */
-
-module.exports = function(arr, fn, initial){  
-  var idx = 0;
-  var len = arr.length;
-  var curr = arguments.length == 3
-    ? initial
-    : arr[idx++];
-
-  while (idx < len) {
-    curr = fn.call(null, curr, arr[idx], ++idx, arr);
-  }
-  
-  return curr;
-};
-});
-require.register("visionmedia-superagent/lib/client.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var Emitter = require('emitter');
-var reduce = require('reduce');
-
-/**
- * Root reference for iframes.
- */
-
-var root = 'undefined' == typeof window
-  ? this
-  : window;
-
-/**
- * Noop.
- */
-
-function noop(){};
-
-/**
- * Check if `obj` is a host object,
- * we don't want to serialize these :)
- *
- * TODO: future proof, move to compoent land
- *
- * @param {Object} obj
- * @return {Boolean}
- * @api private
- */
-
-function isHost(obj) {
-  var str = {}.toString.call(obj);
-
-  switch (str) {
-    case '[object File]':
-    case '[object Blob]':
-    case '[object FormData]':
-      return true;
-    default:
-      return false;
-  }
-}
-
-/**
- * Determine XHR.
- */
-
-function getXHR() {
-  if (root.XMLHttpRequest
-    && ('file:' != root.location.protocol || !root.ActiveXObject)) {
-    return new XMLHttpRequest;
-  } else {
-    try { return new ActiveXObject('Microsoft.XMLHTTP'); } catch(e) {}
-    try { return new ActiveXObject('Msxml2.XMLHTTP.6.0'); } catch(e) {}
-    try { return new ActiveXObject('Msxml2.XMLHTTP.3.0'); } catch(e) {}
-    try { return new ActiveXObject('Msxml2.XMLHTTP'); } catch(e) {}
-  }
-  return false;
-}
-
-/**
- * Removes leading and trailing whitespace, added to support IE.
- *
- * @param {String} s
- * @return {String}
- * @api private
- */
-
-var trim = ''.trim
-  ? function(s) { return s.trim(); }
-  : function(s) { return s.replace(/(^\s*|\s*$)/g, ''); };
-
-/**
- * Check if `obj` is an object.
- *
- * @param {Object} obj
- * @return {Boolean}
- * @api private
- */
-
-function isObject(obj) {
-  return obj === Object(obj);
-}
-
-/**
- * Serialize the given `obj`.
- *
- * @param {Object} obj
- * @return {String}
- * @api private
- */
-
-function serialize(obj) {
-  if (!isObject(obj)) return obj;
-  var pairs = [];
-  for (var key in obj) {
-    pairs.push(encodeURIComponent(key)
-      + '=' + encodeURIComponent(obj[key]));
-  }
-  return pairs.join('&');
-}
-
-/**
- * Expose serialization method.
- */
-
- request.serializeObject = serialize;
-
- /**
-  * Parse the given x-www-form-urlencoded `str`.
-  *
-  * @param {String} str
-  * @return {Object}
-  * @api private
-  */
-
-function parseString(str) {
-  var obj = {};
-  var pairs = str.split('&');
-  var parts;
-  var pair;
-
-  for (var i = 0, len = pairs.length; i < len; ++i) {
-    pair = pairs[i];
-    parts = pair.split('=');
-    obj[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
-  }
-
-  return obj;
-}
-
-/**
- * Expose parser.
- */
-
-request.parseString = parseString;
-
-/**
- * Default MIME type map.
- *
- *     superagent.types.xml = 'application/xml';
- *
- */
-
-request.types = {
-  html: 'text/html',
-  json: 'application/json',
-  urlencoded: 'application/x-www-form-urlencoded',
-  'form': 'application/x-www-form-urlencoded',
-  'form-data': 'application/x-www-form-urlencoded'
-};
-
-/**
- * Default serialization map.
- *
- *     superagent.serialize['application/xml'] = function(obj){
- *       return 'generated xml here';
- *     };
- *
- */
-
- request.serialize = {
-   'application/x-www-form-urlencoded': serialize,
-   'application/json': JSON.stringify
- };
-
- /**
-  * Default parsers.
-  *
-  *     superagent.parse['application/xml'] = function(str){
-  *       return { object parsed from str };
-  *     };
-  *
-  */
-
-request.parse = {
-  'application/x-www-form-urlencoded': parseString,
-  'application/json': JSON.parse
-};
-
-/**
- * Parse the given header `str` into
- * an object containing the mapped fields.
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function parseHeader(str) {
-  var lines = str.split(/\r?\n/);
-  var fields = {};
-  var index;
-  var line;
-  var field;
-  var val;
-
-  lines.pop(); // trailing CRLF
-
-  for (var i = 0, len = lines.length; i < len; ++i) {
-    line = lines[i];
-    index = line.indexOf(':');
-    field = line.slice(0, index).toLowerCase();
-    val = trim(line.slice(index + 1));
-    fields[field] = val;
-  }
-
-  return fields;
-}
-
-/**
- * Return the mime type for the given `str`.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-function type(str){
-  return str.split(/ *; */).shift();
-};
-
-/**
- * Return header field parameters.
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function params(str){
-  return reduce(str.split(/ *; */), function(obj, str){
-    var parts = str.split(/ *= */)
-      , key = parts.shift()
-      , val = parts.shift();
-
-    if (key && val) obj[key] = val;
-    return obj;
-  }, {});
-};
-
-/**
- * Initialize a new `Response` with the given `xhr`.
- *
- *  - set flags (.ok, .error, etc)
- *  - parse header
- *
- * Examples:
- *
- *  Aliasing `superagent` as `request` is nice:
- *
- *      request = superagent;
- *
- *  We can use the promise-like API, or pass callbacks:
- *
- *      request.get('/').end(function(res){});
- *      request.get('/', function(res){});
- *
- *  Sending data can be chained:
- *
- *      request
- *        .post('/user')
- *        .send({ name: 'tj' })
- *        .end(function(res){});
- *
- *  Or passed to `.send()`:
- *
- *      request
- *        .post('/user')
- *        .send({ name: 'tj' }, function(res){});
- *
- *  Or passed to `.post()`:
- *
- *      request
- *        .post('/user', { name: 'tj' })
- *        .end(function(res){});
- *
- * Or further reduced to a single call for simple cases:
- *
- *      request
- *        .post('/user', { name: 'tj' }, function(res){});
- *
- * @param {XMLHTTPRequest} xhr
- * @param {Object} options
- * @api private
- */
-
-function Response(req, options) {
-  options = options || {};
-  this.req = req;
-  this.xhr = this.req.xhr;
-  this.text = this.xhr.responseText;
-  this.setStatusProperties(this.xhr.status);
-  this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());
-  // getAllResponseHeaders sometimes falsely returns "" for CORS requests, but
-  // getResponseHeader still works. so we get content-type even if getting
-  // other headers fails.
-  this.header['content-type'] = this.xhr.getResponseHeader('content-type');
-  this.setHeaderProperties(this.header);
-  this.body = this.parseBody(this.text);
-}
-
-/**
- * Get case-insensitive `field` value.
- *
- * @param {String} field
- * @return {String}
- * @api public
- */
-
-Response.prototype.get = function(field){
-  return this.header[field.toLowerCase()];
-};
-
-/**
- * Set header related properties:
- *
- *   - `.type` the content type without params
- *
- * A response of "Content-Type: text/plain; charset=utf-8"
- * will provide you with a `.type` of "text/plain".
- *
- * @param {Object} header
- * @api private
- */
-
-Response.prototype.setHeaderProperties = function(header){
-  // content-type
-  var ct = this.header['content-type'] || '';
-  this.type = type(ct);
-
-  // params
-  var obj = params(ct);
-  for (var key in obj) this[key] = obj[key];
-};
-
-/**
- * Parse the given body `str`.
- *
- * Used for auto-parsing of bodies. Parsers
- * are defined on the `superagent.parse` object.
- *
- * @param {String} str
- * @return {Mixed}
- * @api private
- */
-
-Response.prototype.parseBody = function(str){
-  var parse = request.parse[this.type];
-  return parse
-    ? parse(str)
-    : null;
-};
-
-/**
- * Set flags such as `.ok` based on `status`.
- *
- * For example a 2xx response will give you a `.ok` of __true__
- * whereas 5xx will be __false__ and `.error` will be __true__. The
- * `.clientError` and `.serverError` are also available to be more
- * specific, and `.statusType` is the class of error ranging from 1..5
- * sometimes useful for mapping respond colors etc.
- *
- * "sugar" properties are also defined for common cases. Currently providing:
- *
- *   - .noContent
- *   - .badRequest
- *   - .unauthorized
- *   - .notAcceptable
- *   - .notFound
- *
- * @param {Number} status
- * @api private
- */
-
-Response.prototype.setStatusProperties = function(status){
-  var type = status / 100 | 0;
-
-  // status / class
-  this.status = status;
-  this.statusType = type;
-
-  // basics
-  this.info = 1 == type;
-  this.ok = 2 == type;
-  this.clientError = 4 == type;
-  this.serverError = 5 == type;
-  this.error = (4 == type || 5 == type)
-    ? this.toError()
-    : false;
-
-  // sugar
-  this.accepted = 202 == status;
-  this.noContent = 204 == status || 1223 == status;
-  this.badRequest = 400 == status;
-  this.unauthorized = 401 == status;
-  this.notAcceptable = 406 == status;
-  this.notFound = 404 == status;
-  this.forbidden = 403 == status;
-};
-
-/**
- * Return an `Error` representative of this response.
- *
- * @return {Error}
- * @api public
- */
-
-Response.prototype.toError = function(){
-  var req = this.req;
-  var method = req.method;
-  var path = req.path;
-
-  var msg = 'cannot ' + method + ' ' + path + ' (' + this.status + ')';
-  var err = new Error(msg);
-  err.status = this.status;
-  err.method = method;
-  err.path = path;
-
-  return err;
-};
-
-/**
- * Expose `Response`.
- */
-
-request.Response = Response;
-
-/**
- * Initialize a new `Request` with the given `method` and `url`.
- *
- * @param {String} method
- * @param {String} url
- * @api public
- */
-
-function Request(method, url) {
-  var self = this;
-  Emitter.call(this);
-  this._query = this._query || [];
-  this.method = method;
-  this.url = url;
-  this.header = {};
-  this._header = {};
-  this.on('end', function(){
-    var res = new Response(self);
-    if ('HEAD' == method) res.text = null;
-    self.callback(null, res);
-  });
-}
-
-/**
- * Mixin `Emitter`.
- */
-
-Emitter(Request.prototype);
-
-/**
- * Set timeout to `ms`.
- *
- * @param {Number} ms
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.timeout = function(ms){
-  this._timeout = ms;
-  return this;
-};
-
-/**
- * Clear previous timeout.
- *
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.clearTimeout = function(){
-  this._timeout = 0;
-  clearTimeout(this._timer);
-  return this;
-};
-
-/**
- * Abort the request, and clear potential timeout.
- *
- * @return {Request}
- * @api public
- */
-
-Request.prototype.abort = function(){
-  if (this.aborted) return;
-  this.aborted = true;
-  this.xhr.abort();
-  this.clearTimeout();
-  this.emit('abort');
-  return this;
-};
-
-/**
- * Set header `field` to `val`, or multiple fields with one object.
- *
- * Examples:
- *
- *      req.get('/')
- *        .set('Accept', 'application/json')
- *        .set('X-API-Key', 'foobar')
- *        .end(callback);
- *
- *      req.get('/')
- *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })
- *        .end(callback);
- *
- * @param {String|Object} field
- * @param {String} val
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.set = function(field, val){
-  if (isObject(field)) {
-    for (var key in field) {
-      this.set(key, field[key]);
-    }
-    return this;
-  }
-  this._header[field.toLowerCase()] = val;
-  this.header[field] = val;
-  return this;
-};
-
-/**
- * Get case-insensitive header `field` value.
- *
- * @param {String} field
- * @return {String}
- * @api private
- */
-
-Request.prototype.getHeader = function(field){
-  return this._header[field.toLowerCase()];
-};
-
-/**
- * Set Content-Type to `type`, mapping values from `request.types`.
- *
- * Examples:
- *
- *      superagent.types.xml = 'application/xml';
- *
- *      request.post('/')
- *        .type('xml')
- *        .send(xmlstring)
- *        .end(callback);
- *
- *      request.post('/')
- *        .type('application/xml')
- *        .send(xmlstring)
- *        .end(callback);
- *
- * @param {String} type
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.type = function(type){
-  this.set('Content-Type', request.types[type] || type);
-  return this;
-};
-
-/**
- * Set Authorization field value with `user` and `pass`.
- *
- * @param {String} user
- * @param {String} pass
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.auth = function(user, pass){
-  var str = btoa(user + ':' + pass);
-  this.set('Authorization', 'Basic ' + str);
-  return this;
-};
-
-/**
-* Add query-string `val`.
-*
-* Examples:
-*
-*   request.get('/shoes')
-*     .query('size=10')
-*     .query({ color: 'blue' })
-*
-* @param {Object|String} val
-* @return {Request} for chaining
-* @api public
-*/
-
-Request.prototype.query = function(val){
-  if ('string' != typeof val) val = serialize(val);
-  if (val) this._query.push(val);
-  return this;
-};
-
-/**
- * Send `data`, defaulting the `.type()` to "json" when
- * an object is given.
- *
- * Examples:
- *
- *       // querystring
- *       request.get('/search')
- *         .end(callback)
- *
- *       // multiple data "writes"
- *       request.get('/search')
- *         .send({ search: 'query' })
- *         .send({ range: '1..5' })
- *         .send({ order: 'desc' })
- *         .end(callback)
- *
- *       // manual json
- *       request.post('/user')
- *         .type('json')
- *         .send('{"name":"tj"})
- *         .end(callback)
- *
- *       // auto json
- *       request.post('/user')
- *         .send({ name: 'tj' })
- *         .end(callback)
- *
- *       // manual x-www-form-urlencoded
- *       request.post('/user')
- *         .type('form')
- *         .send('name=tj')
- *         .end(callback)
- *
- *       // auto x-www-form-urlencoded
- *       request.post('/user')
- *         .type('form')
- *         .send({ name: 'tj' })
- *         .end(callback)
- *
- *       // defaults to x-www-form-urlencoded
-  *      request.post('/user')
-  *        .send('name=tobi')
-  *        .send('species=ferret')
-  *        .end(callback)
- *
- * @param {String|Object} data
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.send = function(data){
-  var obj = isObject(data);
-  var type = this.getHeader('Content-Type');
-
-  // merge
-  if (obj && isObject(this._data)) {
-    for (var key in data) {
-      this._data[key] = data[key];
-    }
-  } else if ('string' == typeof data) {
-    if (!type) this.type('form');
-    type = this.getHeader('Content-Type');
-    if ('application/x-www-form-urlencoded' == type) {
-      this._data = this._data
-        ? this._data + '&' + data
-        : data;
-    } else {
-      this._data = (this._data || '') + data;
-    }
-  } else {
-    this._data = data;
-  }
-
-  if (!obj) return this;
-  if (!type) this.type('json');
-  return this;
-};
-
-/**
- * Invoke the callback with `err` and `res`
- * and handle arity check.
- *
- * @param {Error} err
- * @param {Response} res
- * @api private
- */
-
-Request.prototype.callback = function(err, res){
-  var fn = this._callback;
-  if (2 == fn.length) return fn(err, res);
-  if (err) return this.emit('error', err);
-  fn(res);
-};
-
-/**
- * Invoke callback with x-domain error.
- *
- * @api private
- */
-
-Request.prototype.crossDomainError = function(){
-  var err = new Error('Origin is not allowed by Access-Control-Allow-Origin');
-  err.crossDomain = true;
-  this.callback(err);
-};
-
-/**
- * Invoke callback with timeout error.
- *
- * @api private
- */
-
-Request.prototype.timeoutError = function(){
-  var timeout = this._timeout;
-  var err = new Error('timeout of ' + timeout + 'ms exceeded');
-  err.timeout = timeout;
-  this.callback(err);
-};
-
-/**
- * Enable transmission of cookies with x-domain requests.
- *
- * Note that for this to work the origin must not be
- * using "Access-Control-Allow-Origin" with a wildcard,
- * and also must set "Access-Control-Allow-Credentials"
- * to "true".
- *
- * @api public
- */
-
-Request.prototype.withCredentials = function(){
-  this._withCredentials = true;
-  return this;
-};
-
-/**
- * Initiate request, invoking callback `fn(res)`
- * with an instanceof `Response`.
- *
- * @param {Function} fn
- * @return {Request} for chaining
- * @api public
- */
-
-Request.prototype.end = function(fn){
-  var self = this;
-  var xhr = this.xhr = getXHR();
-  var query = this._query.join('&');
-  var timeout = this._timeout;
-  var data = this._data;
-
-  // store callback
-  this._callback = fn || noop;
-
-  // CORS
-  if (this._withCredentials) xhr.withCredentials = true;
-
-  // state change
-  xhr.onreadystatechange = function(){
-    if (4 != xhr.readyState) return;
-    if (0 == xhr.status) {
-      if (self.aborted) return self.timeoutError();
-      return self.crossDomainError();
-    }
-    self.emit('end');
-  };
-
-  // progress
-  if (xhr.upload) {
-    xhr.upload.onprogress = function(e){
-      e.percent = e.loaded / e.total * 100;
-      self.emit('progress', e);
-    };
-  }
-
-  // timeout
-  if (timeout && !this._timer) {
-    this._timer = setTimeout(function(){
-      self.abort();
-    }, timeout);
-  }
-
-  // querystring
-  if (query) {
-    query = request.serializeObject(query);
-    this.url += ~this.url.indexOf('?')
-      ? '&' + query
-      : '?' + query;
-  }
-
-  // initiate request
-  xhr.open(this.method, this.url, true);
-
-  // body
-  if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !isHost(data)) {
-    // serialize stuff
-    var serialize = request.serialize[this.getHeader('Content-Type')];
-    if (serialize) data = serialize(data);
-  }
-
-  // set header fields
-  for (var field in this.header) {
-    if (null == this.header[field]) continue;
-    xhr.setRequestHeader(field, this.header[field]);
-  }
-
-  // send stuff
-  xhr.send(data);
-  return this;
-};
-
-/**
- * Expose `Request`.
- */
-
-request.Request = Request;
-
-/**
- * Issue a request:
- *
- * Examples:
- *
- *    request('GET', '/users').end(callback)
- *    request('/users').end(callback)
- *    request('/users', callback)
- *
- * @param {String} method
- * @param {String|Function} url or callback
- * @return {Request}
- * @api public
- */
-
-function request(method, url) {
-  // callback
-  if ('function' == typeof url) {
-    return new Request('GET', method).end(url);
-  }
-
-  // url first
-  if (1 == arguments.length) {
-    return new Request('GET', method);
-  }
-
-  return new Request(method, url);
-}
-
-/**
- * GET `url` with optional callback `fn(res)`.
- *
- * @param {String} url
- * @param {Mixed|Function} data or fn
- * @param {Function} fn
- * @return {Request}
- * @api public
- */
-
-request.get = function(url, data, fn){
-  var req = request('GET', url);
-  if ('function' == typeof data) fn = data, data = null;
-  if (data) req.query(data);
-  if (fn) req.end(fn);
-  return req;
-};
-
-/**
- * GET `url` with optional callback `fn(res)`.
- *
- * @param {String} url
- * @param {Mixed|Function} data or fn
- * @param {Function} fn
- * @return {Request}
- * @api public
- */
-
-request.head = function(url, data, fn){
-  var req = request('HEAD', url);
-  if ('function' == typeof data) fn = data, data = null;
-  if (data) req.send(data);
-  if (fn) req.end(fn);
-  return req;
-};
-
-/**
- * DELETE `url` with optional callback `fn(res)`.
- *
- * @param {String} url
- * @param {Function} fn
- * @return {Request}
- * @api public
- */
-
-request.del = function(url, fn){
-  var req = request('DELETE', url);
-  if (fn) req.end(fn);
-  return req;
-};
-
-/**
- * PATCH `url` with optional `data` and callback `fn(res)`.
- *
- * @param {String} url
- * @param {Mixed} data
- * @param {Function} fn
- * @return {Request}
- * @api public
- */
-
-request.patch = function(url, data, fn){
-  var req = request('PATCH', url);
-  if ('function' == typeof data) fn = data, data = null;
-  if (data) req.send(data);
-  if (fn) req.end(fn);
-  return req;
-};
-
-/**
- * POST `url` with optional `data` and callback `fn(res)`.
- *
- * @param {String} url
- * @param {Mixed} data
- * @param {Function} fn
- * @return {Request}
- * @api public
- */
-
-request.post = function(url, data, fn){
-  var req = request('POST', url);
-  if ('function' == typeof data) fn = data, data = null;
-  if (data) req.send(data);
-  if (fn) req.end(fn);
-  return req;
-};
-
-/**
- * PUT `url` with optional `data` and callback `fn(res)`.
- *
- * @param {String} url
- * @param {Mixed|Function} data or fn
- * @param {Function} fn
- * @return {Request}
- * @api public
- */
-
-request.put = function(url, data, fn){
-  var req = request('PUT', url);
-  if ('function' == typeof data) fn = data, data = null;
-  if (data) req.send(data);
-  if (fn) req.end(fn);
-  return req;
-};
-
-/**
- * Expose `request`.
- */
-
-module.exports = request;
-
-});
-require.register("segmentio-model/lib/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var proto = require('./proto')
-  , statics = require('./static')
-  , Emitter = require('emitter');
-
-/**
- * Expose `createModel`.
- */
-
-module.exports = createModel;
-
-/**
- * Create a new model constructor with the given `name`.
- *
- * @param {String} name
- * @return {Function}
- * @api public
- */
-
-function createModel(name) {
-  if ('string' != typeof name) throw new TypeError('model name required');
-
-  /**
-   * Initialize a new model with the given `attrs`.
-   *
-   * @param {Object} attrs
-   * @api public
-   */
-
-  function model(attrs) {
-    if (!(this instanceof model)) return new model(attrs);
-    attrs = attrs || {};
-    this._callbacks = {};
-    this.attrs = attrs;
-    this.dirty = attrs;
-    this.model.emit('construct', this, attrs);
-  }
-
-  // mixin emitter
-
-  Emitter(model);
-
-  // statics
-
-  model.modelName = name;
-  model.base = '/' + name.toLowerCase();
-  model.attrs = {};
-  model.validators = [];
-  for (var key in statics) model[key] = statics[key];
-
-  // prototype
-
-  model.prototype = {};
-  model.prototype.model = model;
-  for (var key in proto) model.prototype[key] = proto[key];
-
-  return model;
-}
-
-
-});
-require.register("segmentio-model/lib/static.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var request = require('superagent')
-  , Collection = require('collection')
-  , noop = function(){};
-
-/**
- * Construct a url to the given `path`.
- *
- * Example:
- *
- *    User.url('add')
- *    // => "/users/add"
- *
- * @param {String} path
- * @return {String}
- * @api public
- */
-
-exports.url = function(path){
-  var url = this.base;
-  if (0 == arguments.length) return url;
-  return url + '/' + path;
-};
-
-/**
- * Add validation `fn()`.
- *
- * @param {Function} fn
- * @return {Function} self
- * @api public
- */
-
-exports.validate = function(fn){
-  this.validators.push(fn);
-  return this;
-};
-
-/**
- * Use the given plugin `fn()`.
- *
- * @param {Function} fn
- * @return {Function} self
- * @api public
- */
-
-exports.use = function(fn){
-  fn(this);
-  return this;
-};
-
-/**
- * Define attr with the given `name` and `options`.
- *
- * @param {String} name
- * @param {Object} options
- * @return {Function} self
- * @api public
- */
-
-exports.attr = function(name, options){
-  this.attrs[name] = options || {};
-
-  // implied pk
-  if ('_id' == name || 'id' == name) {
-    this.attrs[name].primaryKey = true;
-    this.primaryKey = name;
-  }
-
-  // getter / setter method
-  this.prototype[name] = function(val){
-    if (0 == arguments.length) return this.attrs[name];
-    var prev = this.attrs[name];
-    this.dirty[name] = val;
-    this.attrs[name] = val;
-    this.model.emit('change', this, name, val, prev);
-    this.model.emit('change ' + name, this, val, prev);
-    this.emit('change', name, val, prev);
-    this.emit('change ' + name, val, prev);
-    return this;
-  };
-
-  return this;
-};
-
-/**
- * Remove all and invoke `fn(err)`.
- *
- * @param {Function} [fn]
- * @api public
- */
-
-exports.removeAll = function(fn){
-  fn = fn || noop;
-  var self = this;
-  var url = this.url('all');
-  request.del(url, function(res){
-    if (res.error) return fn(error(res));
-    fn();
-  });
-};
-
-/**
- * Get all and invoke `fn(err, array)`.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.all = function(fn){
-  var self = this;
-  var url = this.url('all');
-  request.get(url, function(res){
-    if (res.error) return fn(error(res));
-    var col = new Collection;
-    for (var i = 0, len = res.body.length; i < len; ++i) {
-      col.push(new self(res.body[i]));
-    }
-    fn(null, col);
-  });
-};
-
-/**
- * Get `id` and invoke `fn(err, model)`.
- *
- * @param {Mixed} id
- * @param {Function} fn
- * @api public
- */
-
-exports.get = function(id, fn){
-  var self = this;
-  var url = this.url(id);
-  request.get(url, function(res){
-    if (res.error) return fn(error(res));
-    var model = new self(res.body);
-    fn(null, model);
-  });
-};
-
-/**
- * Response error helper.
- *
- * @param {Response} er
- * @return {Error}
- * @api private
- */
-
-function error(res) {
-  return new Error('got ' + res.status + ' response');
-}
-
-});
-require.register("segmentio-model/lib/proto.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var Emitter = require('emitter')
-  , request = require('superagent')
-  , clone = require('clone')
-  , each = require('each')
-  , noop = function(){};
-
-/**
- * Mixin emitter.
- */
-
-Emitter(exports);
-
-/**
- * Register an error `msg` on `attr`.
- *
- * @param {String} attr
- * @param {String} msg
- * @return {Object} self
- * @api public
- */
-
-exports.error = function(attr, msg){
-  this.errors.push({
-    attr: attr,
-    message: msg
-  });
-  return this;
-};
-
-/**
- * Check if this model is new.
- *
- * @return {Boolean}
- * @api public
- */
-
-exports.isNew = function(){
-  var key = this.model.primaryKey;
-  return ! this.has(key);
-};
-
-/**
- * Get / set the primary key.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api public
- */
-
-exports.primary = function(val){
-  var key = this.model.primaryKey;
-  if (0 == arguments.length) return this[key]();
-  return this[key](val);
-};
-
-/**
- * Validate the model and return a boolean.
- *
- * Example:
- *
- *    user.isValid()
- *    // => false
- *
- *    user.errors
- *    // => [{ attr: ..., message: ... }]
- *
- * @return {Boolean}
- * @api public
- */
-
-exports.isValid = function(){
-  this.validate();
-  return 0 == this.errors.length;
-};
-
-/**
- * Return `false` or an object
- * containing the "dirty" attributes.
- *
- * Optionally check for a specific `attr`.
- *
- * @param {String} [attr]
- * @return {Object|Boolean}
- * @api public
- */
-
-exports.changed = function(attr){
-  var dirty = this.dirty;
-  if (Object.keys(dirty).length) {
-    if (attr) return !! dirty[attr];
-    return dirty;
-  }
-  return false;
-};
-
-/**
- * Perform validations.
- *
- * @api private
- */
-
-exports.validate = function(){
-  var self = this;
-  var fns = this.model.validators;
-  this.errors = [];
-  each(fns, function(fn){ fn(self) });
-};
-
-/**
- * Destroy the model and mark it as `.removed`
- * and invoke `fn(err)`.
- *
- * Events:
- *
- *  - `removing` before deletion
- *  - `remove` on deletion
- *
- * @param {Function} [fn]
- * @api public
- */
-
-exports.destroy =
-exports.remove = function(fn){
-  fn = fn || noop;
-  if (this.isNew()) return fn(new Error('not saved'));
-  var self = this;
-  var url = this.url();
-  this.model.emit('removing', this);
-  this.emit('removing');
-  request.del(url, function(res){
-    if (res.error) return fn(error(res));
-    self.removed = true;
-    self.model.emit('remove', self);
-    self.emit('remove');
-    fn();
-  });
-};
-
-/**
- * Save and invoke `fn(err)`.
- *
- * Events:
- *
- *  - `saving` pre-update or save, after validation
- *  - `save` on updates and saves
- *
- * @param {Function} [fn]
- * @api public
- */
-
-exports.save = function(fn){
-  if (!this.isNew()) return this.update(fn);
-  var self = this;
-  var url = this.model.url();
-  fn = fn || noop;
-  if (!this.isValid()) return fn(new Error('validation failed'));
-  this.model.emit('saving', this);
-  this.emit('saving');
-  request.post(url, self, function(res){
-    if (res.error) return fn(error(res));
-    if (res.body) self.primary(res.body.id);
-    self.dirty = {};
-    self.model.emit('save', self);
-    self.emit('save');
-    fn();
-  });
-};
-
-/**
- * Update and invoke `fn(err)`.
- *
- * @param {Function} [fn]
- * @api private
- */
-
-exports.update = function(fn){
-  var self = this;
-  var url = this.url();
-  fn = fn || noop;
-  if (!this.isValid()) return fn(new Error('validation failed'));
-  this.model.emit('saving', this);
-  this.emit('saving');
-  request.put(url, self, function(res){
-    if (res.error) return fn(error(res));
-    self.dirty = {};
-    self.model.emit('save', self);
-    self.emit('save');
-    fn();
-  });
-};
-
-/**
- * Return a url for `path` relative to this model.
- *
- * Example:
- *
- *    var user = new User({ id: 5 });
- *    user.url('edit');
- *    // => "/users/5/edit"
- *
- * @param {String} path
- * @return {String}
- * @api public
- */
-
-exports.url = function(path){
-  var model = this.model;
-  var url = model.base;
-  var id = this.primary();
-  if (0 == arguments.length) return url + '/' + id;
-  return url + '/' + id + '/' + path;
-};
-
-/**
- * Set multiple `attrs`.
- *
- * @param {Object} attrs
- * @return {Object} self
- * @api public
- */
-
-exports.set = function(attrs){
-  for (var key in attrs) {
-    this[key](attrs[key]);
-  }
-  return this;
-};
-
-/**
- * Get `attr` value.
- *
- * @param {String} attr
- * @return {Mixed}
- * @api public
- */
-
-exports.get = function(attr){
-  return this.attrs[attr];
-};
-
-/**
- * Check if `attr` is present (not `null` or `undefined`).
- *
- * @param {String} attr
- * @return {Boolean}
- * @api public
- */
-
-exports.has = function(attr){
-  return null != this.attrs[attr];
-};
-
-/**
- * Return the JSON representation of the model.
- *
- * @return {Object}
- * @api public
- */
-
-exports.toJSON = function(){
-  return clone(this.attrs);
-};
-
-/**
- * Response error helper.
- *
- * @param {Response} er
- * @return {Error}
- * @api private
- */
-
-function error(res) {
-  return new Error('got ' + res.status + ' response');
-}
-});
-require.register("segmentio-model-defaults/index.js", function(exports, require, module){
-
-var clone = require('clone')
-  , each = require('each')
-  , type = require('type');
-
-
-/**
- * Plugin.
- *
- * @param {Function|Object} values  The default values dictionary or the Model.
- */
-
-module.exports = function (values) {
-  if ('object' === type(values)) {
-    return function (Model) {
-      bind(Model, values);
-    };
-  } else {
-    return bind(values);
-  }
-};
-
-
-/**
- * Bind to the model's construct event.
- *
- * @param {Function} Model  The model constructor.
- */
-
-function bind (Model, defaults) {
-  defaults || (defaults = {});
-  Model.on('construct', function (model, attrs) {
-    each(Model.attrs, function (key, options) {
-      var value = undefined != options.default
-        ? options.default
-        : defaults[key];
-
-      if (value !== undefined) apply(model, key, value);
-    });
-  });
-}
-
-
-/**
- * Default a `model` with a `value` for a `key` if it doesn't exist. Use a clone
- * of the value, so that they it's easy to declare objects and arrays without
- * worrying about copying by reference.
- *
- * @param {Model}          model  The model.
- * @param {String}         key    The key to back by a default.
- * @param {Mixed|Function} value  The default value to use.
- */
-
-function apply (model, key, value) {
-  if ('function' === type(value)) value = value();
-  if (!model.attrs[key]) model.attrs[key] = clone(value);
-}
-
-});
-require.register("segmentio-model-firebase/index.js", function(exports, require, module){
-
-var statics = require('./statics')
-  , protos = require('./protos');
-
-
-/**
- * Mixin our plugin.
- */
-
-module.exports = function (url) {
-  return function (Model) {
-    Model.firebase = new window.Firebase(url);
-    for (var key in statics) Model[key] = statics[key];
-    for (var key in protos) Model.prototype[key] = protos[key];
-    Model.on('construct', construct);
-  };
-};
-
-
-/**
- * On construct, start listening for firebase changes.
- */
-
-function construct (model, attrs) {
-  model.firebase().on('value', function (snapshot) {
-    var attrs = snapshot.val();
-    if (attrs) model.set(attrs);
-  });
-}
-});
-require.register("segmentio-model-firebase/statics.js", function(exports, require, module){
-
-var Collection = require('collection')
-  , noop = function(){};
-
-
-/**
- * `url` doesn't apply for firebase.
- */
-
-exports.url = noop;
-
-/**
- * Remove all and invoke `fn(err)`.
- *
- * @param {Function} [fn]
- * @api public
- */
-
-exports.removeAll = function(fn){
-  fn = fn || noop;
-  this.firebase.remove(function (err) {
-    if (err) return fn(err);
-    fn();
-  });
-};
-
-/**
- * Get all and invoke `fn(err, array)`.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.all = function(fn){
-  var self = this;
-  var col = new Collection();
-  this.firebase.once('value', function (snapshot) {
-    snapshot.forEach(function (child) {
-      var attrs = child.val();
-      if (attrs) col.push(new self(attrs));
-    });
-    fn(null, col);
-  });
-};
-
-/**
- * Get `id` and invoke `fn(err, model)`.
- *
- * @param {String} id
- * @param {Function} fn
- * @api public
- */
-
-exports.get = function(id, fn){
-  if (!id) return fn(new Error('no model'));
-  var self = this;
-  this.firebase.child(id).once('value', function (snapshot) {
-    var attrs = snapshot.val();
-    if (!attrs) return fn(new Error('no model'));
-    var model = new self(attrs);
-    fn(null, model);
-  });
-};
-});
-require.register("segmentio-model-firebase/protos.js", function(exports, require, module){
-
-var noop = function(){};
-
-
-/**
- * `url` doesn't apply for firebase.
- */
-
-exports.url = noop;
-
-/**
- * Returns this model's firebase.
- *
- * @return {Firebase} - Your Firebase reference.
- * @api public
- */
-
-exports.firebase = function () {
-  var firebase = this.model.firebase;
-  if (!firebase) throw new Error('no firebase');
-  return firebase.child(this.primary());
-};
-
-/**
- * Destroy the model and mark it as `.removed`
- * and invoke `fn(err)`.
- *
- * @param {Function} [fn] - Callback.
- * @api public
- */
-
-exports.destroy =
-exports.remove = function (fn) {
-  fn = fn || noop;
-  if (this.isNew()) return fn(new Error('not saved'));
-  var firebase = this.firebase();
-  var self = this;
-  this.model.emit('removing', this);
-  this.emit('removing');
-  firebase.remove(function (err) {
-    if (err) return fn(err);
-    self.removed = true;
-    self.model.emit('remove', self);
-    self.emit('remove');
-    fn();
-  });
-};
-
-/**
- * Save and invoke `fn(err)`.
- *
- * @param {Function} [fn] - Callback.
- * @api public
- */
-
-exports.save  = function (fn) {
-  if (!this.isNew()) return this.update(fn);
-  var self = this;
-  var firebase = this.firebase();
-  fn = fn || noop;
-  if (!this.isValid()) return fn(new Error('validation failed'));
-  this.model.emit('saving', this);
-  this.emit('saving');
-  firebase.set(self.attrs, function (err) {
-    if (err) return fn(err);
-    self.dirty = {};
-    self.model.emit('save', self);
-    self.emit('save');
-    fn();
-  });
-};
-
-/**
- * Update and invoke `fn(err)`.
- *
- * @param {Function} [fn] - Callback.
- * @api public
- */
-
-exports.update = function (fn) {
-  var self = this;
-  var firebase = this.firebase();
-  fn = fn || noop;
-  if (!this.isValid()) return fn(new Error('validation failed'));
-  this.model.emit('saving', this);
-  this.emit('saving');
-  firebase.update(self.attrs, function (err) {
-    if (err) return fn(err);
-    self.dirty = {};
-    self.model.emit('save', self);
-    self.emit('save');
-    fn();
-  });
-};
-});
-require.register("component-bind/index.js", function(exports, require, module){
-
-/**
- * Slice reference.
- */
-
-var slice = [].slice;
-
-/**
- * Bind `obj` to `fn`.
- *
- * @param {Object} obj
- * @param {Function|String} fn or string
- * @return {Function}
- * @api public
- */
-
-module.exports = function(obj, fn){
-  if ('string' == typeof fn) fn = obj[fn];
-  if ('function' != typeof fn) throw new Error('bind() requires a function');
-  var args = [].slice.call(arguments, 2);
-  return function(){
-    return fn.apply(obj, args.concat(slice.call(arguments)));
-  }
-};
-
-});
-require.register("segmentio-model-memoize/index.js", function(exports, require, module){
-
-var each = require('each')
-  , type = require('type')
-  , bind = require('bind');
-
-
-/**
- * Plugin.
- *
- * @param {Function|Object} models  The models to warm the cache with or the
- *                                  Model constructor for the plugin.
- */
-
-module.exports = function (models) {
-  // just the plugin
-  if ('function' === type(models)) return new Memoizer(models);
-
-  // warming cache with models
-  return function (Model) {
-    new Memoizer(Model, models);
-  };
-};
-
-
-/**
- * Initialize a new `Memoizer`.
- *
- * @param {Model} Model   The Model constructor to memoize.
- * @param {Array} models  Optional array of models to warm the cache with.
- */
-
-function Memoizer (Model, models) {
-  this.Model = Model;
-  this._get = bind(Model, Model.get);
-  Model.get = bind(this, this.get);
-
-  var cache = this.cache = {};
-  if (models) each(models, function (attrs) {
-    var model = new Model(attrs);
-    cache[model.primary()] = model;
-  });
-}
-
-
-/**
- * Check the cache before getting a model from the server.
- *
- * @param {String}   id        The primary key for the model.
- * @param {Function} callback  Called with `err, model`.
- */
-
-Memoizer.prototype.get = function (id, callback) {
-  var cache = this.cache;
-  if (cache[id]) return callback(null, cache[id]);
-
-  this._get(id, function (err, model) {
-    if (err) return callback(err);
-    cache[model.primary()] = model;
-    callback(null, model);
-  });
-};
-
-});
-require.register("document/index.js", function(exports, require, module){
-
-var defaults = require('model-defaults')
-  , firebase = require('model-firebase')('https://socrates.firebaseio.com/documents/')
-  , memoize = require('model-memoize')
-  , model = require('model')
-  , uid = require('uid');
-
-
-/**
- * Document.
- */
-
-var Document = module.exports = model('document')
-  .use(defaults)
-  .use(firebase)
-  .use(memoize)
-  .attr('id', { default : function () { return uid(); } })
-  .attr('created', { default : function () { return new Date(); } })
-  .attr('title', { default : '' })
-  .attr('body', { default : '' });
-});
-require.register("documents/index.js", function(exports, require, module){
-
-var Collection = require('collection')
-  , Document = require('document')
-  , each = require('each')
-  , Set = require('set')
-  , store = require('store');
-
-
-/**
- * Define our local storage key.
- */
-
-var STORE = 'bookmarks';
-
-
-/**
- * BACKWARDS COMPATIBILITY: bookmarks used to be stored under
- * `socrates.bookmarks` as a comma-separate string. Convert them gracefully.
- */
-
-var OLD_STORE = 'socrates.bookmarks';
-if (store(OLD_STORE)) {
-  store(STORE, store(OLD_STORE).split(','));
-  store(OLD_STORE, null);
-}
-
-
-/**
- * Set.
- */
-
-var bookmarks = new Set(store(STORE));
-
-
-/**
- * Create a documents collection.
- */
-
-var documents = module.exports = exports = new Collection()
-  .on('add', function (doc) {
-    bookmarks.add(doc.primary());
-    store(STORE, bookmarks.values());
-  })
-  .on('remove', function (doc) {
-    bookmarks.remove(doc.primary());
-    store(STORE, bookmarks.values());
-  });
-
-
-/**
- * Fetch a document, saving it to documents.
- *
- * @param {String} id
- * @param {Function} callback(err, doc)
- */
-
-exports.fetch = function (id, callback) {
-  Document.get(id, function (err, doc) {
-    if (!doc) {
-      doc = new Document();
-      doc.save();
-      window.analytics.track('Created New Document', { id: doc.primary() });
-    }
-    if (!documents.has(doc)) documents.add(doc);
-    callback && callback(null, doc);
-  });
-};
-
-
-/**
- * Load our documents from the saved bookmarks.
- */
-
-exports.load = function () {
-  each(store(STORE), function (id) {
-    exports.fetch(id);
-  });
-};
-});
-require.register("component-debounce/index.js", function(exports, require, module){
-/**
- * Debounces a function by the given threshold.
- *
- * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
- * @param {Function} function to wrap
- * @param {Number} timeout in ms (`100`)
- * @param {Boolean} whether to execute at the beginning (`false`)
- * @api public
- */
-
-module.exports = function debounce(func, threshold, execAsap){
-  var timeout;
-
-  return function debounced(){
-    var obj = this, args = arguments;
-
-    function delayed () {
-      if (!execAsap) {
-        func.apply(obj, args);
-      }
-      timeout = null;
-    }
-
-    if (timeout) {
-      clearTimeout(timeout);
-    } else if (execAsap) {
-      func.apply(obj, args);
-    }
-
-    timeout = setTimeout(delayed, threshold || 100);
-  };
-};
-
-});
-require.register("component-css/index.js", function(exports, require, module){
-
-/**
- * Properties to ignore appending "px".
- */
-
-var ignore = {
-  columnCount: true,
-  fillOpacity: true,
-  fontWeight: true,
-  lineHeight: true,
-  opacity: true,
-  orphans: true,
-  widows: true,
-  zIndex: true,
-  zoom: true
-};
-
-/**
- * Set `el` css values.
- *
- * @param {Element} el
- * @param {Object} obj
- * @return {Element}
- * @api public
- */
-
-module.exports = function(el, obj){
-  for (var key in obj) {
-    var val = obj[key];
-    if ('number' == typeof val && !ignore[key]) val += 'px';
-    el.style[key] = val;
-  }
-  return el;
-};
-
-});
-require.register("component-sort/index.js", function(exports, require, module){
-
-/**
- * Expose `sort`.
- */
-
-exports = module.exports = sort;
-
-/**
- * Sort `el`'s children with the given `fn(a, b)`.
- *
- * @param {Element} el
- * @param {Function} fn
- * @api public
- */
-
-function sort(el, fn) {
-  var arr = [].slice.call(el.children).sort(fn);
-  var frag = document.createDocumentFragment();
-  for (var i = 0; i < arr.length; i++) {
-    frag.appendChild(arr[i]);
-  }
-  el.appendChild(frag);
-};
-
-/**
- * Sort descending.
- *
- * @param {Element} el
- * @param {Function} fn
- * @api public
- */
-
-exports.desc = function(el, fn){
-  sort(el, function(a, b){
-    return ~fn(a, b) + 1;
-  });
-};
-
-/**
- * Sort ascending.
- */
-
-exports.asc = sort;
-
-});
-require.register("yields-traverse/index.js", function(exports, require, module){
-
-/**
- * dependencies
- */
-
-var matches = require('matches-selector');
-
-/**
- * Traverse with the given `el`, `selector` and `len`.
- *
- * @param {String} type
- * @param {Element} el
- * @param {String} selector
- * @param {Number} len
- * @return {Array}
- * @api public
- */
-
-module.exports = function(type, el, selector, len){
-  var el = el[type]
-    , n = len || 1
-    , ret = [];
-
-  if (!el) return ret;
-
-  do {
-    if (n == ret.length) break;
-    if (1 != el.nodeType) continue;
-    if (matches(el, selector)) ret.push(el);
-    if (!selector) ret.push(el);
-  } while (el = el[type]);
-
-  return ret;
-}
-
-});
-require.register("component-dom/index.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var matches = require('matches-selector');
-var delegate = require('delegate');
-var classes = require('classes');
-var traverse = require('traverse');
-var indexof = require('indexof');
-var domify = require('domify');
-var events = require('event');
-var value = require('value');
-var query = require('query');
-var type = require('type');
-var css = require('css');
-
-/**
- * Attributes supported.
- */
-
-var attrs = [
-  'id',
-  'src',
-  'rel',
-  'cols',
-  'rows',
-  'type',
-  'name',
-  'href',
-  'title',
-  'style',
-  'width',
-  'height',
-  'action',
-  'method',
-  'tabindex',
-  'placeholder'
-];
-
-/**
- * Expose `dom()`.
- */
-
-exports = module.exports = dom;
-
-/**
- * Expose supported attrs.
- */
-
-exports.attrs = attrs;
-
-/**
- * Return a dom `List` for the given
- * `html`, selector, or element.
- *
- * @param {String|Element|List}
- * @return {List}
- * @api public
- */
-
-function dom(selector, context) {
-  // array
-  if (Array.isArray(selector)) {
-    return new List(selector);
-  }
-
-  // List
-  if (selector instanceof List) {
-    return selector;
-  }
-
-  // node
-  if (selector.nodeName) {
-    return new List([selector]);
-  }
-
-  if ('string' != typeof selector) {
-    throw new TypeError('invalid selector');
-  }
-
-  // html
-  if ('<' == selector.charAt(0)) {
-    return new List([domify(selector)], selector);
-  }
-
-  // selector
-  var ctx = context
-    ? (context.els ? context.els[0] : context)
-    : document;
-
-  return new List(query.all(selector, ctx), selector);
-}
-
-/**
- * Expose `List` constructor.
- */
-
-exports.List = List;
-
-/**
- * Initialize a new `List` with the
- * given array-ish of `els` and `selector`
- * string.
- *
- * @param {Mixed} els
- * @param {String} selector
- * @api private
- */
-
-function List(els, selector) {
-  this.els = els || [];
-  this.selector = selector;
-}
-
-/**
- * Enumerable iterator.
- */
-
-List.prototype.__iterate__ = function(){
-  var self = this;
-  return {
-    length: function(){ return self.els.length },
-    get: function(i){ return new List([self.els[i]]) }
-  }
-};
-
-/**
- * Remove elements from the DOM.
- *
- * @api public
- */
-
-List.prototype.remove = function(){
-  for (var i = 0; i < this.els.length; i++) {
-    var el = this.els[i];
-    var parent = el.parentNode;
-    if (parent) parent.removeChild(el);
-  }
-};
-
-/**
- * Set attribute `name` to `val`, or get attr `name`.
- *
- * @param {String} name
- * @param {String} [val]
- * @return {String|List} self
- * @api public
- */
-
-List.prototype.attr = function(name, val){
-  // get
-  if (1 == arguments.length) {
-    return this.els[0] && this.els[0].getAttribute(name);
-  }
-
-  // remove
-  if (null == val) {
-    return this.removeAttr(name);
-  }
-
-  // set
-  return this.forEach(function(el){
-    el.setAttribute(name, val);
-  });
-};
-
-/**
- * Remove attribute `name`.
- *
- * @param {String} name
- * @return {List} self
- * @api public
- */
-
-List.prototype.removeAttr = function(name){
-  return this.forEach(function(el){
-    el.removeAttribute(name);
-  });
-};
-
-/**
- * Set property `name` to `val`, or get property `name`.
- *
- * @param {String} name
- * @param {String} [val]
- * @return {Object|List} self
- * @api public
- */
-
-List.prototype.prop = function(name, val){
-  if (1 == arguments.length) {
-    return this.els[0] && this.els[0][name];
-  }
-
-  return this.forEach(function(el){
-    el[name] = val;
-  });
-};
-
-/**
- * Get the first element's value or set selected
- * element values to `val`.
- *
- * @param {Mixed} [val]
- * @return {Mixed}
- * @api public
- */
-
-List.prototype.val =
-List.prototype.value = function(val){
-  if (0 == arguments.length) {
-    return this.els[0]
-      ? value(this.els[0])
-      : undefined;
-  }
-
-  return this.forEach(function(el){
-    value(el, val);
-  });
-};
-
-/**
- * Return a cloned `List` with all elements cloned.
- *
- * @return {List}
- * @api public
- */
-
-List.prototype.clone = function(){
-  var arr = [];
-  for (var i = 0, len = this.els.length; i < len; ++i) {
-    arr.push(this.els[i].cloneNode(true));
-  }
-  return new List(arr);
-};
-
-/**
- * Prepend `val`.
- *
- * @param {String|Element|List} val
- * @return {List} new list
- * @api public
- */
-
-List.prototype.prepend = function(val){
-  var el = this.els[0];
-  if (!el) return this;
-  val = dom(val);
-  for (var i = 0; i < val.els.length; ++i) {
-    if (el.children.length) {
-      el.insertBefore(val.els[i], el.firstChild);
-    } else {
-      el.appendChild(val.els[i]);
-    }
-  }
-  return val;
-};
-
-/**
- * Append `val`.
- *
- * @param {String|Element|List} val
- * @return {List} new list
- * @api public
- */
-
-List.prototype.append = function(val){
-  var el = this.els[0];
-  if (!el) return this;
-  val = dom(val);
-  for (var i = 0; i < val.els.length; ++i) {
-    el.appendChild(val.els[i]);
-  }
-  return val;
-};
-
-/**
- * Append self's `el` to `val`
- *
- * @param {String|Element|List} val
- * @return {List} self
- * @api public
- */
-
-List.prototype.appendTo = function(val){
-  dom(val).append(this);
-  return this;
-};
-
-/**
- * Insert self's `els` after `val`
- *
- * @param {String|Element|List} val
- * @return {List} self
- * @api public
- */
-
-List.prototype.insertAfter = function(val){
-  val = dom(val).els[0];
-  if (!val || !val.parentNode) return this;
-  this.forEach(function(el){
-    val.parentNode.insertBefore(el, val.nextSibling);
-  });
-  return this;
-};
-
-/**
- * Return a `List` containing the element at `i`.
- *
- * @param {Number} i
- * @return {List}
- * @api public
- */
-
-List.prototype.at = function(i){
-  return new List([this.els[i]], this.selector);
-};
-
-/**
- * Return a `List` containing the first element.
- *
- * @param {Number} i
- * @return {List}
- * @api public
- */
-
-List.prototype.first = function(){
-  return new List([this.els[0]], this.selector);
-};
-
-/**
- * Return a `List` containing the last element.
- *
- * @param {Number} i
- * @return {List}
- * @api public
- */
-
-List.prototype.last = function(){
-  return new List([this.els[this.els.length - 1]], this.selector);
-};
-
-/**
- * Return an `Element` at `i`.
- *
- * @param {Number} i
- * @return {Element}
- * @api public
- */
-
-List.prototype.get = function(i){
-  return this.els[i || 0];
-};
-
-/**
- * Return list length.
- *
- * @return {Number}
- * @api public
- */
-
-List.prototype.length = function(){
-  return this.els.length;
-};
-
-/**
- * Return element text.
- *
- * @param {String} str
- * @return {String|List}
- * @api public
- */
-
-List.prototype.text = function(str){
-  // TODO: real impl
-  if (1 == arguments.length) {
-    this.forEach(function(el){
-      el.textContent = str;
-    });
-    return this;
-  }
-
-  var str = '';
-  for (var i = 0; i < this.els.length; ++i) {
-    str += this.els[i].textContent;
-  }
-  return str;
-};
-
-/**
- * Return element html.
- *
- * @return {String} html
- * @api public
- */
-
-List.prototype.html = function(html){
-  if (1 == arguments.length) {
-    this.forEach(function(el){
-      el.innerHTML = html;
-    });
-  }
-  // TODO: real impl
-  return this.els[0] && this.els[0].innerHTML;
-};
-
-/**
- * Bind to `event` and invoke `fn(e)`. When
- * a `selector` is given then events are delegated.
- *
- * @param {String} event
- * @param {String} [selector]
- * @param {Function} fn
- * @param {Boolean} capture
- * @return {List}
- * @api public
- */
-
-List.prototype.on = function(event, selector, fn, capture){
-  if ('string' == typeof selector) {
-    for (var i = 0; i < this.els.length; ++i) {
-      fn._delegate = delegate.bind(this.els[i], selector, event, fn, capture);
-    }
-    return this;
-  }
-
-  capture = fn;
-  fn = selector;
-
-  for (var i = 0; i < this.els.length; ++i) {
-    events.bind(this.els[i], event, fn, capture);
-  }
-
-  return this;
-};
-
-/**
- * Unbind to `event` and invoke `fn(e)`. When
- * a `selector` is given then delegated event
- * handlers are unbound.
- *
- * @param {String} event
- * @param {String} [selector]
- * @param {Function} fn
- * @param {Boolean} capture
- * @return {List}
- * @api public
- */
-
-List.prototype.off = function(event, selector, fn, capture){
-  if ('string' == typeof selector) {
-    for (var i = 0; i < this.els.length; ++i) {
-      // TODO: add selector support back
-      delegate.unbind(this.els[i], event, fn._delegate, capture);
-    }
-    return this;
-  }
-
-  capture = fn;
-  fn = selector;
-
-  for (var i = 0; i < this.els.length; ++i) {
-    events.unbind(this.els[i], event, fn, capture);
-  }
-  return this;
-};
-
-/**
- * Iterate elements and invoke `fn(list, i)`.
- *
- * @param {Function} fn
- * @return {List} self
- * @api public
- */
-
-List.prototype.each = function(fn){
-  for (var i = 0; i < this.els.length; ++i) {
-    fn(new List([this.els[i]], this.selector), i);
-  }
-  return this;
-};
-
-/**
- * Iterate elements and invoke `fn(el, i)`.
- *
- * @param {Function} fn
- * @return {List} self
- * @api public
- */
-
-List.prototype.forEach = function(fn){
-  for (var i = 0; i < this.els.length; ++i) {
-    fn(this.els[i], i);
-  }
-  return this;
-};
-
-/**
- * Map elements invoking `fn(list, i)`.
- *
- * @param {Function} fn
- * @return {Array}
- * @api public
- */
-
-List.prototype.map = function(fn){
-  var arr = [];
-  for (var i = 0; i < this.els.length; ++i) {
-    arr.push(fn(new List([this.els[i]], this.selector), i));
-  }
-  return arr;
-};
-
-/**
- * Filter elements invoking `fn(list, i)`, returning
- * a new `List` of elements when a truthy value is returned.
- *
- * @param {Function} fn
- * @return {List}
- * @api public
- */
-
-List.prototype.select =
-List.prototype.filter = function(fn){
-  var el;
-  var list = new List([], this.selector);
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    if (fn(new List([el], this.selector), i)) list.els.push(el);
-  }
-  return list;
-};
-
-/**
- * Filter elements invoking `fn(list, i)`, returning
- * a new `List` of elements when a falsey value is returned.
- *
- * @param {Function} fn
- * @return {List}
- * @api public
- */
-
-List.prototype.reject = function(fn){
-  var el;
-  var list = new List([], this.selector);
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    if (!fn(new List([el], this.selector), i)) list.els.push(el);
-  }
-  return list;
-};
-
-/**
- * Add the given class `name`.
- *
- * @param {String} name
- * @return {List} self
- * @api public
- */
-
-List.prototype.addClass = function(name){
-  var el;
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    el._classes = el._classes || classes(el);
-    el._classes.add(name);
-  }
-  return this;
-};
-
-/**
- * Remove the given class `name`.
- *
- * @param {String|RegExp} name
- * @return {List} self
- * @api public
- */
-
-List.prototype.removeClass = function(name){
-  var el;
-
-  if ('regexp' == type(name)) {
-    for (var i = 0; i < this.els.length; ++i) {
-      el = this.els[i];
-      el._classes = el._classes || classes(el);
-      var arr = el._classes.array();
-      for (var j = 0; j < arr.length; j++) {
-        if (name.test(arr[j])) {
-          el._classes.remove(arr[j]);
-        }
-      }
-    }
-    return this;
-  }
-
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    el._classes = el._classes || classes(el);
-    el._classes.remove(name);
-  }
-
-  return this;
-};
-
-/**
- * Toggle the given class `name`,
- * optionally a `bool` may be given
- * to indicate that the class should
- * be added when truthy.
- *
- * @param {String} name
- * @param {Boolean} bool
- * @return {List} self
- * @api public
- */
-
-List.prototype.toggleClass = function(name, bool){
-  var el;
-  var fn = 'toggle';
-
-  // toggle with boolean
-  if (2 == arguments.length) {
-    fn = bool ? 'add' : 'remove';
-  }
-
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    el._classes = el._classes || classes(el);
-    el._classes[fn](name);
-  }
-
-  return this;
-};
-
-/**
- * Check if the given class `name` is present.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-List.prototype.hasClass = function(name){
-  var el;
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    el._classes = el._classes || classes(el);
-    if (el._classes.has(name)) return true;
-  }
-  return false;
-};
-
-/**
- * Set CSS `prop` to `val` or get `prop` value.
- * Also accepts an object (`prop`: `val`)
- *
- * @param {String} prop
- * @param {Mixed} val
- * @return {List|String}
- * @api public
- */
-
-List.prototype.css = function(prop, val){
-  if (2 == arguments.length) {
-    var obj = {};
-    obj[prop] = val;
-    return this.setStyle(obj);
-  }
-
-  if ('object' == type(prop)) {
-    return this.setStyle(prop);
-  }
-
-  return this.getStyle(prop);
-};
-
-/**
- * Set CSS `props`.
- *
- * @param {Object} props
- * @return {List} self
- * @api private
- */
-
-List.prototype.setStyle = function(props){
-  for (var i = 0; i < this.els.length; ++i) {
-    css(this.els[i], props);
-  }
-  return this;
-};
-
-/**
- * Get CSS `prop` value.
- *
- * @param {String} prop
- * @return {String}
- * @api private
- */
-
-List.prototype.getStyle = function(prop){
-  var el = this.els[0];
-  if (el) return el.style[prop];
-};
-
-/**
- * Find children matching the given `selector`.
- *
- * @param {String} selector
- * @return {List}
- * @api public
- */
-
-List.prototype.find = function(selector){
-  return dom(selector, this);
-};
-
-/**
- * Empty the dom list
- *
- * @return self
- * @api public
- */
-
-List.prototype.empty = function(){
-  var elem, el;
-
-  for (var i = 0; i < this.els.length; ++i) {
-    el = this.els[i];
-    while (el.firstChild) {
-      el.removeChild(el.firstChild);
-    }
-  }
-
-  return this;
-}
-
-/**
- * Check if the first element matches `selector`.
- *
- * @param {String} selector
- * @return {Boolean}
- * @api public
- */
-
-List.prototype.is = function(selector){
-  return matches(this.get(0), selector);
-};
-
-/**
- * Get parent(s) with optional `selector` and `limit`
- *
- * @param {String} selector
- * @param {Number} limit
- * @return {List}
- * @api public
- */
-
-List.prototype.parent = function(selector, limit){
-  return new List(traverse('parentNode',
-    this.get(0),
-    selector,
-    limit
-    || 1));
-};
-
-/**
- * Get next element(s) with optional `selector` and `limit`.
- *
- * @param {String} selector
- * @param {Number} limit
- * @retrun {List}
- * @api public
- */
-
-List.prototype.next = function(selector, limit){
-  return new List(traverse('nextSibling',
-    this.get(0),
-    selector,
-    limit
-    || 1));
-};
-
-/**
- * Get previous element(s) with optional `selector` and `limit`.
- *
- * @param {String} selector
- * @param {Number} limit
- * @return {List}
- * @api public
- */
-
-List.prototype.prev =
-List.prototype.previous = function(selector, limit){
-  return new List(traverse('previousSibling',
-    this.get(0),
-    selector,
-    limit
-    || 1));
-};
-
-/**
- * Attribute accessors.
- */
-
-attrs.forEach(function(name){
-  List.prototype[name] = function(val){
-    if (0 == arguments.length) return this.attr(name);
-    return this.attr(name, val);
-  };
-});
-
-
-});
-require.register("component-domify/index.js", function(exports, require, module){
-
-/**
- * Expose `parse`.
- */
-
-module.exports = parse;
-
-/**
- * Wrap map from jquery.
- */
-
-var map = {
-  option: [1, '<select multiple="multiple">', '</select>'],
-  optgroup: [1, '<select multiple="multiple">', '</select>'],
-  legend: [1, '<fieldset>', '</fieldset>'],
-  thead: [1, '<table>', '</table>'],
-  tbody: [1, '<table>', '</table>'],
-  tfoot: [1, '<table>', '</table>'],
-  colgroup: [1, '<table>', '</table>'],
-  caption: [1, '<table>', '</table>'],
-  tr: [2, '<table><tbody>', '</tbody></table>'],
-  td: [3, '<table><tbody><tr>', '</tr></tbody></table>'],
-  th: [3, '<table><tbody><tr>', '</tr></tbody></table>'],
-  col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-  _default: [0, '', '']
-};
-
-/**
- * Parse `html` and return the children.
- *
- * @param {String} html
- * @return {Array}
- * @api private
- */
-
-function parse(html) {
-  if ('string' != typeof html) throw new TypeError('String expected');
-
-  // tag name
-  var m = /<([\w:]+)/.exec(html);
-  if (!m) throw new Error('No elements were generated.');
-  var tag = m[1];
-
-  // body support
-  if (tag == 'body') {
-    var el = document.createElement('html');
-    el.innerHTML = html;
-    return el.removeChild(el.lastChild);
-  }
-
-  // wrap map
-  var wrap = map[tag] || map._default;
-  var depth = wrap[0];
-  var prefix = wrap[1];
-  var suffix = wrap[2];
-  var el = document.createElement('div');
-  el.innerHTML = prefix + html + suffix;
-  while (depth--) el = el.lastChild;
-
-  var els = el.children;
-  if (1 == els.length) {
-    return el.removeChild(els[0]);
-  }
-
-  var fragment = document.createDocumentFragment();
-  while (els.length) {
-    fragment.appendChild(el.removeChild(els[0]));
-  }
-
-  return fragment;
-}
-
-});
-require.register("component-value/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var typeOf = require('type');
-
-/**
- * Set or get `el`'s' value.
- *
- * @param {Element} el
- * @param {Mixed} val
- * @return {Mixed}
- * @api public
- */
-
-module.exports = function(el, val){
-  if (2 == arguments.length) return set(el, val);
-  return get(el);
-};
-
-/**
- * Get `el`'s value.
- */
-
-function get(el) {
-  switch (type(el)) {
-    case 'checkbox':
-    case 'radio':
-      if (el.checked) {
-        var attr = el.getAttribute('value');
-        return null == attr ? true : attr;
-      } else {
-        return false;
-      }
-    case 'radiogroup':
-      for (var i = 0, radio; radio = el[i]; i++) {
-        if (radio.checked) return radio.value;
-      }
-      break;
-    case 'select':
-      for (var i = 0, option; option = el.options[i]; i++) {
-        if (option.selected) return option.value;
-      }
-      break;
-    default:
-      return el.value;
-  }
-}
-
-/**
- * Set `el`'s value.
- */
-
-function set(el, val) {
-  switch (type(el)) {
-    case 'checkbox':
-    case 'radio':
-      if (val) {
-        el.checked = true;
-      } else {
-        el.checked = false;
-      }
-      break;
-    case 'radiogroup':
-      for (var i = 0, radio; radio = el[i]; i++) {
-        radio.checked = radio.value === val;
-      }
-      break;
-    case 'select':
-      for (var i = 0, option; option = el.options[i]; i++) {
-        option.selected = option.value === val;
-      }
-      break;
-    default:
-      el.value = val;
-  }
-}
-
-/**
- * Element type.
- */
-
-function type(el) {
-  var group = 'array' == typeOf(el) || 'object' == typeOf(el);
-  if (group) el = el[0];
-  var name = el.nodeName.toLowerCase();
-  var type = el.getAttribute('type');
-
-  if (group && type && 'radio' == type.toLowerCase()) return 'radiogroup';
-  if ('input' == name && type && 'checkbox' == type.toLowerCase()) return 'checkbox';
-  if ('input' == name && type && 'radio' == type.toLowerCase()) return 'radio';
-  if ('select' == name) return 'select';
-  return name;
-}
-
-});
-require.register("segmentio-marked/lib/marked.js", function(exports, require, module){
-/**
- * marked - a markdown parser
- * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)
- * https://github.com/chjj/marked
- */
-
-;(function() {
-
-/**
- * Block-Level Grammar
- */
-
-var block = {
-  newline: /^\n+/,
-  code: /^( {4}[^\n]+\n*)+/,
-  fences: noop,
-  hr: /^( *[-*_]){3,} *(?:\n+|$)/,
-  heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
-  nptable: noop,
-  lheading: /^([^\n]+)\n *(=|-){3,} *\n*/,
-  blockquote: /^( *>[^\n]+(\n[^\n]+)*\n*)+/,
-  list: /^( *)(bull) [\s\S]+?(?:hr|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
-  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
-  def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
-  table: noop,
-  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
-  text: /^[^\n]+/
-};
-
-block.bullet = /(?:[*+-]|\d+\.)/;
-block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
-block.item = replace(block.item, 'gm')
-  (/bull/g, block.bullet)
-  ();
-
-block.list = replace(block.list)
-  (/bull/g, block.bullet)
-  ('hr', /\n+(?=(?: *[-*_]){3,} *(?:\n+|$))/)
-  ();
-
-block._tag = '(?!(?:'
-  + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code'
-  + '|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo'
-  + '|span|br|wbr|ins|del|img)\\b)\\w+(?!:/|@)\\b';
-
-block.html = replace(block.html)
-  ('comment', /<!--[\s\S]*?-->/)
-  ('closed', /<(tag)[\s\S]+?<\/\1>/)
-  ('closing', /<tag(?:"[^"]*"|'[^']*'|[^'">])*?>/)
-  (/tag/g, block._tag)
-  ();
-
-block.paragraph = replace(block.paragraph)
-  ('hr', block.hr)
-  ('heading', block.heading)
-  ('lheading', block.lheading)
-  ('blockquote', block.blockquote)
-  ('tag', '<' + block._tag)
-  ('def', block.def)
-  ();
-
-/**
- * Normal Block Grammar
- */
-
-block.normal = merge({}, block);
-
-/**
- * GFM Block Grammar
- */
-
-block.gfm = merge({}, block.normal, {
-  fences: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n+|$)/,
-  paragraph: /^/
-});
-
-block.gfm.paragraph = replace(block.paragraph)
-  ('(?!', '(?!' + block.gfm.fences.source.replace('\\1', '\\2') + '|')
-  ();
-
-/**
- * GFM + Tables Block Grammar
- */
-
-block.tables = merge({}, block.gfm, {
-  nptable: /^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*/,
-  table: /^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*/
-});
-
-/**
- * Block Lexer
- */
-
-function Lexer(options) {
-  this.tokens = [];
-  this.tokens.links = {};
-  this.options = options || marked.defaults;
-  this.rules = block.normal;
-
-  if (this.options.gfm) {
-    if (this.options.tables) {
-      this.rules = block.tables;
-    } else {
-      this.rules = block.gfm;
-    }
-  }
-}
-
-/**
- * Expose Block Rules
- */
-
-Lexer.rules = block;
-
-/**
- * Static Lex Method
- */
-
-Lexer.lex = function(src, options) {
-  var lexer = new Lexer(options);
-  return lexer.lex(src);
-};
-
-/**
- * Preprocessing
- */
-
-Lexer.prototype.lex = function(src) {
-  src = src
-    .replace(/\r\n|\r/g, '\n')
-    .replace(/\t/g, '    ')
-    .replace(/\u00a0/g, ' ')
-    .replace(/\u2424/g, '\n');
-
-  return this.token(src, true);
-};
-
-/**
- * Lexing
- */
-
-Lexer.prototype.token = function(src, top) {
-  var src = src.replace(/^ +$/gm, '')
-    , next
-    , loose
-    , cap
-    , bull
-    , b
-    , item
-    , space
-    , i
-    , l;
-
-  while (src) {
-    // newline
-    if (cap = this.rules.newline.exec(src)) {
-      src = src.substring(cap[0].length);
-      if (cap[0].length > 1) {
-        this.tokens.push({
-          type: 'space'
-        });
-      }
-    }
-
-    // code
-    if (cap = this.rules.code.exec(src)) {
-      src = src.substring(cap[0].length);
-      cap = cap[0].replace(/^ {4}/gm, '');
-      this.tokens.push({
-        type: 'code',
-        text: !this.options.pedantic
-          ? cap.replace(/\n+$/, '')
-          : cap
-      });
-      continue;
-    }
-
-    // fences (gfm)
-    if (cap = this.rules.fences.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'code',
-        lang: cap[2],
-        text: cap[3]
-      });
-      continue;
-    }
-
-    // heading
-    if (cap = this.rules.heading.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'heading',
-        depth: cap[1].length,
-        text: cap[2]
-      });
-      continue;
-    }
-
-    // table no leading pipe (gfm)
-    if (top && (cap = this.rules.nptable.exec(src))) {
-      src = src.substring(cap[0].length);
-
-      item = {
-        type: 'table',
-        header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
-        align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        cells: cap[3].replace(/\n$/, '').split('\n')
-      };
-
-      for (i = 0; i < item.align.length; i++) {
-        if (/^ *-+: *$/.test(item.align[i])) {
-          item.align[i] = 'right';
-        } else if (/^ *:-+: *$/.test(item.align[i])) {
-          item.align[i] = 'center';
-        } else if (/^ *:-+ *$/.test(item.align[i])) {
-          item.align[i] = 'left';
-        } else {
-          item.align[i] = null;
-        }
-      }
-
-      for (i = 0; i < item.cells.length; i++) {
-        item.cells[i] = item.cells[i].split(/ *\| */);
-      }
-
-      this.tokens.push(item);
-
-      continue;
-    }
-
-    // lheading
-    if (cap = this.rules.lheading.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'heading',
-        depth: cap[2] === '=' ? 1 : 2,
-        text: cap[1]
-      });
-      continue;
-    }
-
-    // hr
-    if (cap = this.rules.hr.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'hr'
-      });
-      continue;
-    }
-
-    // blockquote
-    if (cap = this.rules.blockquote.exec(src)) {
-      src = src.substring(cap[0].length);
-
-      this.tokens.push({
-        type: 'blockquote_start'
-      });
-
-      cap = cap[0].replace(/^ *> ?/gm, '');
-
-      // Pass `top` to keep the current
-      // "toplevel" state. This is exactly
-      // how markdown.pl works.
-      this.token(cap, top);
-
-      this.tokens.push({
-        type: 'blockquote_end'
-      });
-
-      continue;
-    }
-
-    // list
-    if (cap = this.rules.list.exec(src)) {
-      src = src.substring(cap[0].length);
-      bull = cap[2];
-
-      this.tokens.push({
-        type: 'list_start',
-        ordered: bull.length > 1
-      });
-
-      // Get each top-level item.
-      cap = cap[0].match(this.rules.item);
-
-      next = false;
-      l = cap.length;
-      i = 0;
-
-      for (; i < l; i++) {
-        item = cap[i];
-
-        // Remove the list item's bullet
-        // so it is seen as the next token.
-        space = item.length;
-        item = item.replace(/^ *([*+-]|\d+\.) +/, '');
-
-        // Outdent whatever the
-        // list item contains. Hacky.
-        if (~item.indexOf('\n ')) {
-          space -= item.length;
-          item = !this.options.pedantic
-            ? item.replace(new RegExp('^ {1,' + space + '}', 'gm'), '')
-            : item.replace(/^ {1,4}/gm, '');
-        }
-
-        // Determine whether the next list item belongs here.
-        // Backpedal if it does not belong in this list.
-        if (this.options.smartLists && i !== l - 1) {
-          b = block.bullet.exec(cap[i+1])[0];
-          if (bull !== b && !(bull.length > 1 && b.length > 1)) {
-            src = cap.slice(i + 1).join('\n') + src;
-            i = l - 1;
-          }
-        }
-
-        // Determine whether item is loose or not.
-        // Use: /(^|\n)(?! )[^\n]+\n\n(?!\s*$)/
-        // for discount behavior.
-        loose = next || /\n\n(?!\s*$)/.test(item);
-        if (i !== l - 1) {
-          next = item[item.length-1] === '\n';
-          if (!loose) loose = next;
-        }
-
-        this.tokens.push({
-          type: loose
-            ? 'loose_item_start'
-            : 'list_item_start'
-        });
-
-        // Recurse.
-        this.token(item, false);
-
-        this.tokens.push({
-          type: 'list_item_end'
-        });
-      }
-
-      this.tokens.push({
-        type: 'list_end'
-      });
-
-      continue;
-    }
-
-    // html
-    if (cap = this.rules.html.exec(src)) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: this.options.sanitize
-          ? 'paragraph'
-          : 'html',
-        pre: cap[1] === 'pre' || cap[1] === 'script',
-        text: cap[0]
-      });
-      continue;
-    }
-
-    // def
-    if (top && (cap = this.rules.def.exec(src))) {
-      src = src.substring(cap[0].length);
-      this.tokens.links[cap[1].toLowerCase()] = {
-        href: cap[2],
-        title: cap[3]
-      };
-      continue;
-    }
-
-    // table (gfm)
-    if (top && (cap = this.rules.table.exec(src))) {
-      src = src.substring(cap[0].length);
-
-      item = {
-        type: 'table',
-        header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
-        align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
-        cells: cap[3].replace(/(?: *\| *)?\n$/, '').split('\n')
-      };
-
-      for (i = 0; i < item.align.length; i++) {
-        if (/^ *-+: *$/.test(item.align[i])) {
-          item.align[i] = 'right';
-        } else if (/^ *:-+: *$/.test(item.align[i])) {
-          item.align[i] = 'center';
-        } else if (/^ *:-+ *$/.test(item.align[i])) {
-          item.align[i] = 'left';
-        } else {
-          item.align[i] = null;
-        }
-      }
-
-      for (i = 0; i < item.cells.length; i++) {
-        item.cells[i] = item.cells[i]
-          .replace(/^ *\| *| *\| *$/g, '')
-          .split(/ *\| */);
-      }
-
-      this.tokens.push(item);
-
-      continue;
-    }
-
-    // top-level paragraph
-    if (top && (cap = this.rules.paragraph.exec(src))) {
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'paragraph',
-        text: cap[1][cap[1].length-1] === '\n'
-          ? cap[1].slice(0, -1)
-          : cap[1]
-      });
-      continue;
-    }
-
-    // text
-    if (cap = this.rules.text.exec(src)) {
-      // Top-level should never reach here.
-      src = src.substring(cap[0].length);
-      this.tokens.push({
-        type: 'text',
-        text: cap[0]
-      });
-      continue;
-    }
-
-    if (src) {
-      throw new
-        Error('Infinite loop on byte: ' + src.charCodeAt(0));
-    }
-  }
-
-  return this.tokens;
-};
-
-/**
- * Inline-Level Grammar
- */
-
-var inline = {
-  escape: /^\\([\\`*{}\[\]()#+\-.!_>])/,
-  autolink: /^<([^ >]+(@|:\/)[^ >]+)>/,
-  url: noop,
-  tag: /^<!--[\s\S]*?-->|^<\/?\w+(?:"[^"]*"|'[^']*'|[^'">])*?>/,
-  link: /^!?\[(inside)\]\(href\)/,
-  reflink: /^!?\[(inside)\]\s*\[([^\]]*)\]/,
-  nolink: /^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
-  strong: /^__([\s\S]+?)__(?!_)|^\*\*([\s\S]+?)\*\*(?!\*)/,
-  em: /^\b_((?:__|[\s\S])+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
-  code: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
-  br: /^ {2,}\n(?!\s*$)/,
-  del: noop,
-  text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
-};
-
-inline._inside = /(?:\[[^\]]*\]|[^\]]|\](?=[^\[]*\]))*/;
-inline._href = /\s*<?([^\s]*?)>?(?:\s+['"]([\s\S]*?)['"])?\s*/;
-
-inline.link = replace(inline.link)
-  ('inside', inline._inside)
-  ('href', inline._href)
-  ();
-
-inline.reflink = replace(inline.reflink)
-  ('inside', inline._inside)
-  ();
-
-/**
- * Normal Inline Grammar
- */
-
-inline.normal = merge({}, inline);
-
-/**
- * Pedantic Inline Grammar
- */
-
-inline.pedantic = merge({}, inline.normal, {
-  strong: /^__(?=\S)([\s\S]*?\S)__(?!_)|^\*\*(?=\S)([\s\S]*?\S)\*\*(?!\*)/,
-  em: /^_(?=\S)([\s\S]*?\S)_(?!_)|^\*(?=\S)([\s\S]*?\S)\*(?!\*)/
-});
-
-/**
- * GFM Inline Grammar
- */
-
-inline.gfm = merge({}, inline.normal, {
-  escape: replace(inline.escape)('])', '~|])')(),
-  url: /^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/,
-  del: /^~~(?=\S)([\s\S]*?\S)~~/,
-  text: replace(inline.text)
-    (']|', '~]|')
-    ('|', '|https?://|')
-    ()
-});
-
-/**
- * GFM + Line Breaks Inline Grammar
- */
-
-inline.breaks = merge({}, inline.gfm, {
-  br: replace(inline.br)('{2,}', '*')(),
-  text: replace(inline.gfm.text)('{2,}', '*')()
-});
-
-/**
- * Inline Lexer & Compiler
- */
-
-function InlineLexer(links, options) {
-  this.options = options || marked.defaults;
-  this.links = links;
-  this.rules = inline.normal;
-
-  if (!this.links) {
-    throw new
-      Error('Tokens array requires a `links` property.');
-  }
-
-  if (this.options.gfm) {
-    if (this.options.breaks) {
-      this.rules = inline.breaks;
-    } else {
-      this.rules = inline.gfm;
-    }
-  } else if (this.options.pedantic) {
-    this.rules = inline.pedantic;
-  }
-}
-
-/**
- * Expose Inline Rules
- */
-
-InlineLexer.rules = inline;
-
-/**
- * Static Lexing/Compiling Method
- */
-
-InlineLexer.output = function(src, links, options) {
-  var inline = new InlineLexer(links, options);
-  return inline.output(src);
-};
-
-/**
- * Lexing/Compiling
- */
-
-InlineLexer.prototype.output = function(src) {
-  var out = ''
-    , link
-    , text
-    , href
-    , cap;
-
-  while (src) {
-    // escape
-    if (cap = this.rules.escape.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += cap[1];
-      continue;
-    }
-
-    // autolink
-    if (cap = this.rules.autolink.exec(src)) {
-      src = src.substring(cap[0].length);
-      if (cap[2] === '@') {
-        text = cap[1][6] === ':'
-          ? this.mangle(cap[1].substring(7))
-          : this.mangle(cap[1]);
-        href = this.mangle('mailto:') + text;
-      } else {
-        text = escape(cap[1]);
-        href = text;
-      }
-      out += '<a href="'
-        + href
-        + '">'
-        + text
-        + '</a>';
-      continue;
-    }
-
-    // url (gfm)
-    if (cap = this.rules.url.exec(src)) {
-      src = src.substring(cap[0].length);
-      text = escape(cap[1]);
-      href = text;
-      out += '<a href="'
-        + href
-        + '">'
-        + text
-        + '</a>';
-      continue;
-    }
-
-    // tag
-    if (cap = this.rules.tag.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += this.options.sanitize
-        ? escape(cap[0])
-        : cap[0];
-      continue;
-    }
-
-    // link
-    if (cap = this.rules.link.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += this.outputLink(cap, {
-        href: cap[2],
-        title: cap[3]
-      });
-      continue;
-    }
-
-    // reflink, nolink
-    if ((cap = this.rules.reflink.exec(src))
-        || (cap = this.rules.nolink.exec(src))) {
-      src = src.substring(cap[0].length);
-      link = (cap[2] || cap[1]).replace(/\s+/g, ' ');
-      link = this.links[link.toLowerCase()];
-      if (!link || !link.href) {
-        out += cap[0][0];
-        src = cap[0].substring(1) + src;
-        continue;
-      }
-      out += this.outputLink(cap, link);
-      continue;
-    }
-
-    // strong
-    if (cap = this.rules.strong.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += '<strong>'
-        + this.output(cap[2] || cap[1])
-        + '</strong>';
-      continue;
-    }
-
-    // em
-    if (cap = this.rules.em.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += '<em>'
-        + this.output(cap[2] || cap[1])
-        + '</em>';
-      continue;
-    }
-
-    // code
-    if (cap = this.rules.code.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += '<code>'
-        + escape(cap[2], true)
-        + '</code>';
-      continue;
-    }
-
-    // br
-    if (cap = this.rules.br.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += '<br>';
-      continue;
-    }
-
-    // del (gfm)
-    if (cap = this.rules.del.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += '<del>'
-        + this.output(cap[1])
-        + '</del>';
-      continue;
-    }
-
-    // text
-    if (cap = this.rules.text.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += escape(this.smartypants(cap[0]));
-      continue;
-    }
-
-    if (src) {
-      throw new
-        Error('Infinite loop on byte: ' + src.charCodeAt(0));
-    }
-  }
-
-  return out;
-};
-
-/**
- * Compile Link
- */
-
-InlineLexer.prototype.outputLink = function(cap, link) {
-  if (cap[0][0] !== '!') {
-    return '<a href="'
-      + escape(link.href)
-      + '"'
-      + (link.title
-      ? ' title="'
-      + escape(link.title)
-      + '"'
-      : '')
-      + '>'
-      + this.output(cap[1])
-      + '</a>';
-  } else {
-    return '<img src="'
-      + escape(link.href)
-      + '" alt="'
-      + escape(cap[1])
-      + '"'
-      + (link.title
-      ? ' title="'
-      + escape(link.title)
-      + '"'
-      : '')
-      + '>';
-  }
-};
-
-/**
- * Smartypants Transformations
- */
-
-InlineLexer.prototype.smartypants = function(text) {
-  if (!this.options.smartypants) return text;
-  return text
-    .replace(/(^|[-\u2014\s(\["])'/g, "$1\u2018")       // opening singles
-    .replace(/'/g, "\u2019")                            // closing singles & apostrophes
-    .replace(/(^|[-\u2014/\[(\u2018\s])"/g, "$1\u201C") // opening doubles
-    .replace(/"/g, "\u201D")                            // closing doubles
-    .replace(/--/g, "\u2014")                           // em-dashes
-    .replace(/\.{3}/g, '\u2026');                       // ellipsis
-};
-
-/**
- * Mangle Links
- */
-
-InlineLexer.prototype.mangle = function(text) {
-  var out = ''
-    , l = text.length
-    , i = 0
-    , ch;
-
-  for (; i < l; i++) {
-    ch = text.charCodeAt(i);
-    if (Math.random() > 0.5) {
-      ch = 'x' + ch.toString(16);
-    }
-    out += '&#' + ch + ';';
-  }
-
-  return out;
-};
-
-/**
- * Parsing & Compiling
- */
-
-function Parser(options) {
-  this.tokens = [];
-  this.token = null;
-  this.options = options || marked.defaults;
-}
-
-/**
- * Static Parse Method
- */
-
-Parser.parse = function(src, options) {
-  var parser = new Parser(options);
-  return parser.parse(src);
-};
-
-/**
- * Parse Loop
- */
-
-Parser.prototype.parse = function(src) {
-  this.inline = new InlineLexer(src.links, this.options);
-  this.tokens = src.reverse();
-
-  var out = '';
-  while (this.next()) {
-    out += this.tok();
-  }
-
-  return out;
-};
-
-/**
- * Next Token
- */
-
-Parser.prototype.next = function() {
-  return this.token = this.tokens.pop();
-};
-
-/**
- * Preview Next Token
- */
-
-Parser.prototype.peek = function() {
-  return this.tokens[this.tokens.length-1] || 0;
-};
-
-/**
- * Parse Text Tokens
- */
-
-Parser.prototype.parseText = function() {
-  var body = this.token.text;
-
-  while (this.peek().type === 'text') {
-    body += '\n' + this.next().text;
-  }
-
-  return this.inline.output(body);
-};
-
-/**
- * Parse Current Token
- */
-
-Parser.prototype.tok = function() {
-  switch (this.token.type) {
-    case 'space': {
-      return '';
-    }
-    case 'hr': {
-      return '<hr>\n';
-    }
-    case 'heading': {
-      return '<h'
-        + this.token.depth
-        + '>'
-        + this.inline.output(this.token.text)
-        + '</h'
-        + this.token.depth
-        + '>\n';
-    }
-    case 'code': {
-      if (this.options.highlight) {
-        var code = this.options.highlight(this.token.text, this.token.lang);
-        if (code != null && code !== this.token.text) {
-          this.token.escaped = true;
-          this.token.text = code;
-        }
-      }
-
-      if (!this.token.escaped) {
-        this.token.text = escape(this.token.text, true);
-      }
-
-      return '<pre><code'
-        + (this.token.lang
-        ? ' class="'
-        + this.options.langPrefix
-        + this.token.lang
-        + '"'
-        : '')
-        + '>'
-        + this.token.text
-        + '</code></pre>\n';
-    }
-    case 'table': {
-      var body = ''
-        , heading
-        , i
-        , row
-        , cell
-        , j;
-
-      // header
-      body += '<thead>\n<tr>\n';
-      for (i = 0; i < this.token.header.length; i++) {
-        heading = this.inline.output(this.token.header[i]);
-        body += this.token.align[i]
-          ? '<th align="' + this.token.align[i] + '">' + heading + '</th>\n'
-          : '<th>' + heading + '</th>\n';
-      }
-      body += '</tr>\n</thead>\n';
-
-      // body
-      body += '<tbody>\n'
-      for (i = 0; i < this.token.cells.length; i++) {
-        row = this.token.cells[i];
-        body += '<tr>\n';
-        for (j = 0; j < row.length; j++) {
-          cell = this.inline.output(row[j]);
-          body += this.token.align[j]
-            ? '<td align="' + this.token.align[j] + '">' + cell + '</td>\n'
-            : '<td>' + cell + '</td>\n';
-        }
-        body += '</tr>\n';
-      }
-      body += '</tbody>\n';
-
-      return '<table>\n'
-        + body
-        + '</table>\n';
-    }
-    case 'blockquote_start': {
-      var body = '';
-
-      while (this.next().type !== 'blockquote_end') {
-        body += this.tok();
-      }
-
-      return '<blockquote>\n'
-        + body
-        + '</blockquote>\n';
-    }
-    case 'list_start': {
-      var type = this.token.ordered ? 'ol' : 'ul'
-        , body = '';
-
-      while (this.next().type !== 'list_end') {
-        body += this.tok();
-      }
-
-      return '<'
-        + type
-        + '>\n'
-        + body
-        + '</'
-        + type
-        + '>\n';
-    }
-    case 'list_item_start': {
-      var body = '';
-
-      while (this.next().type !== 'list_item_end') {
-        body += this.token.type === 'text'
-          ? this.parseText()
-          : this.tok();
-      }
-
-      return '<li>'
-        + body
-        + '</li>\n';
-    }
-    case 'loose_item_start': {
-      var body = '';
-
-      while (this.next().type !== 'list_item_end') {
-        body += this.tok();
-      }
-
-      return '<li>'
-        + body
-        + '</li>\n';
-    }
-    case 'html': {
-      return !this.token.pre && !this.options.pedantic
-        ? this.inline.output(this.token.text)
-        : this.token.text;
-    }
-    case 'paragraph': {
-      return '<p>'
-        + this.inline.output(this.token.text)
-        + '</p>\n';
-    }
-    case 'text': {
-      return '<p>'
-        + this.parseText()
-        + '</p>\n';
-    }
-  }
-};
-
-/**
- * Helpers
- */
-
-function escape(html, encode) {
-  return html
-    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function replace(regex, opt) {
-  regex = regex.source;
-  opt = opt || '';
-  return function self(name, val) {
-    if (!name) return new RegExp(regex, opt);
-    val = val.source || val;
-    val = val.replace(/(^|[^\[])\^/g, '$1');
-    regex = regex.replace(name, val);
-    return self;
-  };
-}
-
-function noop() {}
-noop.exec = noop;
-
-function merge(obj) {
-  var i = 1
-    , target
-    , key;
-
-  for (; i < arguments.length; i++) {
-    target = arguments[i];
-    for (key in target) {
-      if (Object.prototype.hasOwnProperty.call(target, key)) {
-        obj[key] = target[key];
-      }
-    }
-  }
-
-  return obj;
-}
-
-/**
- * Marked
- */
-
-function marked(src, opt, callback) {
-  if (callback || typeof opt === 'function') {
-    if (!callback) {
-      callback = opt;
-      opt = null;
-    }
-
-    if (opt) opt = merge({}, marked.defaults, opt);
-
-    var highlight = opt.highlight
-      , tokens
-      , pending
-      , i = 0;
-
-    try {
-      tokens = Lexer.lex(src, opt)
-    } catch (e) {
-      return callback(e);
-    }
-
-    pending = tokens.length;
-
-    var done = function(hi) {
-      var out, err;
-
-      if (hi !== true) {
-        delete opt.highlight;
-      }
-
-      try {
-        out = Parser.parse(tokens, opt);
-      } catch (e) {
-        err = e;
-      }
-
-      opt.highlight = highlight;
-
-      return err
-        ? callback(err)
-        : callback(null, out);
-    };
-
-    if (!highlight || highlight.length < 3) {
-      return done(true);
-    }
-
-    if (!pending) return done();
-
-    for (; i < tokens.length; i++) {
-      (function(token) {
-        if (token.type !== 'code') {
-          return --pending || done();
-        }
-        return highlight(token.text, token.lang, function(err, code) {
-          if (code == null || code === token.text) {
-            return --pending || done();
-          }
-          token.text = code;
-          token.escaped = true;
-          --pending || done();
-        });
-      })(tokens[i]);
-    }
-
-    return;
-  }
-  try {
-    if (opt) opt = merge({}, marked.defaults, opt);
-    return Parser.parse(Lexer.lex(src, opt), opt);
-  } catch (e) {
-    e.message += '\nPlease report this to https://github.com/chjj/marked.';
-    if ((opt || marked.defaults).silent) {
-      return '<p>An error occured:</p><pre>'
-        + escape(e.message + '', true)
-        + '</pre>';
-    }
-    throw e;
-  }
-}
-
-/**
- * Options
- */
-
-marked.options =
-marked.setOptions = function(opt) {
-  merge(marked.defaults, opt);
-  return marked;
-};
-
-marked.defaults = {
-  gfm: true,
-  tables: true,
-  breaks: false,
-  pedantic: false,
-  sanitize: false,
-  smartLists: false,
-  silent: false,
-  highlight: null,
-  langPrefix: 'lang-',
-  smartypants: false
-};
-
-/**
- * Expose
- */
-
-marked.Parser = Parser;
-marked.parser = Parser.parse;
-
-marked.Lexer = Lexer;
-marked.lexer = Lexer.lex;
-
-marked.InlineLexer = InlineLexer;
-marked.inlineLexer = InlineLexer.output;
-
-marked.parse = marked;
-
-if (typeof exports === 'object') {
-  module.exports = marked;
-} else if (typeof define === 'function' && define.amd) {
-  define(function() { return marked; });
-} else {
-  this.marked = marked;
-}
-
-}).call(function() {
-  return this || (typeof window !== 'undefined' ? window : global);
-}());
-
-});
-require.register("segmentio-mathjax/MathJax.js", function(exports, require, module){
-/*************************************************************
- *
- *  MathJax.js
- *
- *  The main code for the MathJax math-typesetting library.  See
- *  http://www.mathjax.org/ for details.
- *
- *  ---------------------------------------------------------------------
- *
- *  Copyright (c) 2009-2013 The MathJax Consortium
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-if (!window.MathJax) {window.MathJax = {}}
-
-MathJax.isPacked = true;
-
-if(document.getElementById&&document.childNodes&&document.createElement){if(!window.MathJax){window.MathJax={}}if(!MathJax.Hub){MathJax.version="2.2";MathJax.fileversion="2.2";(function(d){var b=window[d];if(!b){b=window[d]={}}var f=[];var c=function(g){var h=g.constructor;if(!h){h=new Function("")}for(var i in g){if(i!=="constructor"&&g.hasOwnProperty(i)){h[i]=g[i]}}return h};var a=function(){return new Function("return arguments.callee.Init.call(this,arguments)")};var e=a();e.prototype={bug_test:1};if(!e.prototype.bug_test){a=function(){return function(){return arguments.callee.Init.call(this,arguments)}}}b.Object=c({constructor:a(),Subclass:function(g,i){var h=a();h.SUPER=this;h.Init=this.Init;h.Subclass=this.Subclass;h.Augment=this.Augment;h.protoFunction=this.protoFunction;h.can=this.can;h.has=this.has;h.isa=this.isa;h.prototype=new this(f);h.prototype.constructor=h;h.Augment(g,i);return h},Init:function(g){var h=this;if(g.length===1&&g[0]===f){return h}if(!(h instanceof g.callee)){h=new g.callee(f)}return h.Init.apply(h,g)||h},Augment:function(g,h){var i;if(g!=null){for(i in g){if(g.hasOwnProperty(i)){this.protoFunction(i,g[i])}}if(g.toString!==this.prototype.toString&&g.toString!=={}.toString){this.protoFunction("toString",g.toString)}}if(h!=null){for(i in h){if(h.hasOwnProperty(i)){this[i]=h[i]}}}return this},protoFunction:function(h,g){this.prototype[h]=g;if(typeof g==="function"){g.SUPER=this.SUPER.prototype}},prototype:{Init:function(){},SUPER:function(g){return g.callee.SUPER},can:function(g){return typeof(this[g])==="function"},has:function(g){return typeof(this[g])!=="undefined"},isa:function(g){return(g instanceof Object)&&(this instanceof g)}},can:function(g){return this.prototype.can.call(this,g)},has:function(g){return this.prototype.has.call(this,g)},isa:function(h){var g=this;while(g){if(g===h){return true}else{g=g.SUPER}}return false},SimpleSUPER:c({constructor:function(g){return this.SimpleSUPER.define(g)},define:function(g){var i={};if(g!=null){for(var h in g){if(g.hasOwnProperty(h)){i[h]=this.wrap(h,g[h])}}if(g.toString!==this.prototype.toString&&g.toString!=={}.toString){i.toString=this.wrap("toString",g.toString)}}return i},wrap:function(i,h){if(typeof(h)==="function"&&h.toString().match(/\.\s*SUPER\s*\(/)){var g=new Function(this.wrapper);g.label=i;g.original=h;h=g;g.toString=this.stringify}return h},wrapper:function(){var h=arguments.callee;this.SUPER=h.SUPER[h.label];try{var g=h.original.apply(this,arguments)}catch(i){delete this.SUPER;throw i}delete this.SUPER;return g}.toString().replace(/^\s*function\s*\(\)\s*\{\s*/i,"").replace(/\s*\}\s*$/i,""),toString:function(){return this.original.toString.apply(this.original,arguments)}})})})("MathJax");(function(BASENAME){var BASE=window[BASENAME];if(!BASE){BASE=window[BASENAME]={}}var CALLBACK=function(data){var cb=new Function("return arguments.callee.execute.apply(arguments.callee,arguments)");for(var id in CALLBACK.prototype){if(CALLBACK.prototype.hasOwnProperty(id)){if(typeof(data[id])!=="undefined"){cb[id]=data[id]}else{cb[id]=CALLBACK.prototype[id]}}}cb.toString=CALLBACK.prototype.toString;return cb};CALLBACK.prototype={isCallback:true,hook:function(){},data:[],object:window,execute:function(){if(!this.called||this.autoReset){this.called=!this.autoReset;return this.hook.apply(this.object,this.data.concat([].slice.call(arguments,0)))}},reset:function(){delete this.called},toString:function(){return this.hook.toString.apply(this.hook,arguments)}};var ISCALLBACK=function(f){return(typeof(f)==="function"&&f.isCallback)};var EVAL=function(code){return eval.call(window,code)};EVAL("var __TeSt_VaR__ = 1");if(window.__TeSt_VaR__){try{delete window.__TeSt_VaR__}catch(error){window.__TeSt_VaR__=null}}else{if(window.execScript){EVAL=function(code){BASE.__code=code;code="try {"+BASENAME+".__result = eval("+BASENAME+".__code)} catch(err) {"+BASENAME+".__result = err}";window.execScript(code);var result=BASE.__result;delete BASE.__result;delete BASE.__code;if(result instanceof Error){throw result}return result}}else{EVAL=function(code){BASE.__code=code;code="try {"+BASENAME+".__result = eval("+BASENAME+".__code)} catch(err) {"+BASENAME+".__result = err}";var head=(document.getElementsByTagName("head"))[0];if(!head){head=document.body}var script=document.createElement("script");script.appendChild(document.createTextNode(code));head.appendChild(script);head.removeChild(script);var result=BASE.__result;delete BASE.__result;delete BASE.__code;if(result instanceof Error){throw result}return result}}}var USING=function(args,i){if(arguments.length>1){if(arguments.length===2&&!(typeof arguments[0]==="function")&&arguments[0] instanceof Object&&typeof arguments[1]==="number"){args=[].slice.call(args,i)}else{args=[].slice.call(arguments,0)}}if(args instanceof Array&&args.length===1){args=args[0]}if(typeof args==="function"){if(args.execute===CALLBACK.prototype.execute){return args}return CALLBACK({hook:args})}else{if(args instanceof Array){if(typeof(args[0])==="string"&&args[1] instanceof Object&&typeof args[1][args[0]]==="function"){return CALLBACK({hook:args[1][args[0]],object:args[1],data:args.slice(2)})}else{if(typeof args[0]==="function"){return CALLBACK({hook:args[0],data:args.slice(1)})}else{if(typeof args[1]==="function"){return CALLBACK({hook:args[1],object:args[0],data:args.slice(2)})}}}}else{if(typeof(args)==="string"){return CALLBACK({hook:EVAL,data:[args]})}else{if(args instanceof Object){return CALLBACK(args)}else{if(typeof(args)==="undefined"){return CALLBACK({})}}}}}throw Error("Can't make callback from given data")};var DELAY=function(time,callback){callback=USING(callback);callback.timeout=setTimeout(callback,time);return callback};var WAITFOR=function(callback,signal){callback=USING(callback);if(!callback.called){WAITSIGNAL(callback,signal);signal.pending++}};var WAITEXECUTE=function(){var signals=this.signal;delete this.signal;this.execute=this.oldExecute;delete this.oldExecute;var result=this.execute.apply(this,arguments);if(ISCALLBACK(result)&&!result.called){WAITSIGNAL(result,signals)}else{for(var i=0,m=signals.length;i<m;i++){signals[i].pending--;if(signals[i].pending<=0){signals[i].call()}}}};var WAITSIGNAL=function(callback,signals){if(!(signals instanceof Array)){signals=[signals]}if(!callback.signal){callback.oldExecute=callback.execute;callback.execute=WAITEXECUTE;callback.signal=signals}else{if(signals.length===1){callback.signal.push(signals[0])}else{callback.signal=callback.signal.concat(signals)}}};var AFTER=function(callback){callback=USING(callback);callback.pending=0;for(var i=1,m=arguments.length;i<m;i++){if(arguments[i]){WAITFOR(arguments[i],callback)}}if(callback.pending===0){var result=callback();if(ISCALLBACK(result)){callback=result}}return callback};var HOOKS=MathJax.Object.Subclass({Init:function(reset){this.hooks=[];this.reset=reset},Add:function(hook,priority){if(priority==null){priority=10}if(!ISCALLBACK(hook)){hook=USING(hook)}hook.priority=priority;var i=this.hooks.length;while(i>0&&priority<this.hooks[i-1].priority){i--}this.hooks.splice(i,0,hook);return hook},Remove:function(hook){for(var i=0,m=this.hooks.length;i<m;i++){if(this.hooks[i]===hook){this.hooks.splice(i,1);return}}},Execute:function(){var callbacks=[{}];for(var i=0,m=this.hooks.length;i<m;i++){if(this.reset){this.hooks[i].reset()}var result=this.hooks[i].apply(window,arguments);if(ISCALLBACK(result)&&!result.called){callbacks.push(result)}}if(callbacks.length===1){return null}if(callbacks.length===2){return callbacks[1]}return AFTER.apply({},callbacks)}});var EXECUTEHOOKS=function(hooks,data,reset){if(!hooks){return null}if(!(hooks instanceof Array)){hooks=[hooks]}if(!(data instanceof Array)){data=(data==null?[]:[data])}var handler=HOOKS(reset);for(var i=0,m=hooks.length;i<m;i++){handler.Add(hooks[i])}return handler.Execute.apply(handler,data)};var QUEUE=BASE.Object.Subclass({Init:function(){this.pending=0;this.running=0;this.queue=[];this.Push.apply(this,arguments)},Push:function(){var callback;for(var i=0,m=arguments.length;i<m;i++){callback=USING(arguments[i]);if(callback===arguments[i]&&!callback.called){callback=USING(["wait",this,callback])}this.queue.push(callback)}if(!this.running&&!this.pending){this.Process()}return callback},Process:function(queue){while(!this.running&&!this.pending&&this.queue.length){var callback=this.queue[0];queue=this.queue.slice(1);this.queue=[];this.Suspend();var result=callback();this.Resume();if(queue.length){this.queue=queue.concat(this.queue)}if(ISCALLBACK(result)&&!result.called){WAITFOR(result,this)}}},Suspend:function(){this.running++},Resume:function(){if(this.running){this.running--}},call:function(){this.Process.apply(this,arguments)},wait:function(callback){return callback}});var SIGNAL=QUEUE.Subclass({Init:function(name){QUEUE.prototype.Init.call(this);this.name=name;this.posted=[];this.listeners=HOOKS(true)},Post:function(message,callback,forget){callback=USING(callback);if(this.posting||this.pending){this.Push(["Post",this,message,callback,forget])}else{this.callback=callback;callback.reset();if(!forget){this.posted.push(message)}this.Suspend();this.posting=true;var result=this.listeners.Execute(message);if(ISCALLBACK(result)&&!result.called){WAITFOR(result,this)}this.Resume();delete this.posting;if(!this.pending){this.call()}}return callback},Clear:function(callback){callback=USING(callback);if(this.posting||this.pending){callback=this.Push(["Clear",this,callback])}else{this.posted=[];callback()}return callback},call:function(){this.callback(this);this.Process()},Interest:function(callback,ignorePast,priority){callback=USING(callback);this.listeners.Add(callback,priority);if(!ignorePast){for(var i=0,m=this.posted.length;i<m;i++){callback.reset();var result=callback(this.posted[i]);if(ISCALLBACK(result)&&i===this.posted.length-1){WAITFOR(result,this)}}}return callback},NoInterest:function(callback){this.listeners.Remove(callback)},MessageHook:function(msg,callback,priority){callback=USING(callback);if(!this.hooks){this.hooks={};this.Interest(["ExecuteHooks",this])}if(!this.hooks[msg]){this.hooks[msg]=HOOKS(true)}this.hooks[msg].Add(callback,priority);for(var i=0,m=this.posted.length;i<m;i++){if(this.posted[i]==msg){callback.reset();callback(this.posted[i])}}return callback},ExecuteHooks:function(msg,more){var type=((msg instanceof Array)?msg[0]:msg);if(!this.hooks[type]){return null}return this.hooks[type].Execute(msg)}},{signals:{},find:function(name){if(!SIGNAL.signals[name]){SIGNAL.signals[name]=new SIGNAL(name)}return SIGNAL.signals[name]}});BASE.Callback=BASE.CallBack=USING;BASE.Callback.Delay=DELAY;BASE.Callback.After=AFTER;BASE.Callback.Queue=QUEUE;BASE.Callback.Signal=SIGNAL.find;BASE.Callback.Hooks=HOOKS;BASE.Callback.ExecuteHooks=EXECUTEHOOKS})("MathJax");(function(d){var a=window[d];if(!a){a=window[d]={}}var c=(navigator.vendor==="Apple Computer, Inc."&&typeof navigator.vendorSub==="undefined");var f=0;var g=function(h){if(document.styleSheets&&document.styleSheets.length>f){f=document.styleSheets.length}if(!h){h=(document.getElementsByTagName("head"))[0];if(!h){h=document.body}}return h};var e=[];var b=function(){for(var j=0,h=e.length;j<h;j++){a.Ajax.head.removeChild(e[j])}e=[]};a.Ajax={loaded:{},loading:{},loadHooks:{},timeout:15*1000,styleDelay:1,config:{root:""},STATUS:{OK:1,ERROR:-1},rootPattern:new RegExp("^\\["+d+"\\]"),fileURL:function(h){return h.replace(this.rootPattern,this.config.root)},Require:function(j,m){m=a.Callback(m);var k;if(j instanceof Object){for(var h in j){if(j.hasOwnProperty(h)){k=h.toUpperCase();j=j[h]}}}else{k=j.split(/\./).pop().toUpperCase()}j=this.fileURL(j);if(this.loaded[j]){m(this.loaded[j])}else{var l={};l[k]=j;this.Load(l,m)}return m},Load:function(j,l){l=a.Callback(l);var k;if(j instanceof Object){for(var h in j){if(j.hasOwnProperty(h)){k=h.toUpperCase();j=j[h]}}}else{k=j.split(/\./).pop().toUpperCase()}j=this.fileURL(j);if(this.loading[j]){this.addHook(j,l)}else{this.head=g(this.head);if(this.loader[k]){this.loader[k].call(this,j,l)}else{throw Error("Can't load files of type "+k)}}return l},LoadHook:function(k,l,j){l=a.Callback(l);if(k instanceof Object){for(var h in k){if(k.hasOwnProperty(h)){k=k[h]}}}k=this.fileURL(k);if(this.loaded[k]){l(this.loaded[k])}else{this.addHook(k,l,j)}return l},addHook:function(i,j,h){if(!this.loadHooks[i]){this.loadHooks[i]=MathJax.Callback.Hooks()}this.loadHooks[i].Add(j,h)},Preloading:function(){for(var k=0,h=arguments.length;k<h;k++){var j=this.fileURL(arguments[k]);if(!this.loading[j]){this.loading[j]={preloaded:true}}}},loader:{JS:function(i,k){var h=document.createElement("script");var j=a.Callback(["loadTimeout",this,i]);this.loading[i]={callback:k,timeout:setTimeout(j,this.timeout),status:this.STATUS.OK,script:h};this.loading[i].message=a.Message.File(i);h.onerror=j;h.type="text/javascript";h.src=i;this.head.appendChild(h)},CSS:function(h,j){var i=document.createElement("link");i.rel="stylesheet";i.type="text/css";i.href=h;this.loading[h]={callback:j,message:a.Message.File(h),status:this.STATUS.OK};this.head.appendChild(i);this.timer.create.call(this,[this.timer.file,h],i)}},timer:{create:function(i,h){i=a.Callback(i);if(h.nodeName==="STYLE"&&h.styleSheet&&typeof(h.styleSheet.cssText)!=="undefined"){i(this.STATUS.OK)}else{if(window.chrome&&typeof(window.sessionStorage)!=="undefined"&&h.nodeName==="STYLE"){i(this.STATUS.OK)}else{if(c){this.timer.start(this,[this.timer.checkSafari2,f++,i],this.styleDelay)}else{this.timer.start(this,[this.timer.checkLength,h,i],this.styleDelay)}}}return i},start:function(i,h,j,k){h=a.Callback(h);h.execute=this.execute;h.time=this.time;h.STATUS=i.STATUS;h.timeout=k||i.timeout;h.delay=h.total=0;if(j){setTimeout(h,j)}else{h()}},time:function(h){this.total+=this.delay;this.delay=Math.floor(this.delay*1.05+5);if(this.total>=this.timeout){h(this.STATUS.ERROR);return 1}return 0},file:function(i,h){if(h<0){a.Ajax.loadTimeout(i)}else{a.Ajax.loadComplete(i)}},execute:function(){this.hook.call(this.object,this,this.data[0],this.data[1])},checkSafari2:function(h,i,j){if(h.time(j)){return}if(document.styleSheets.length>i&&document.styleSheets[i].cssRules&&document.styleSheets[i].cssRules.length){j(h.STATUS.OK)}else{setTimeout(h,h.delay)}},checkLength:function(h,k,m){if(h.time(m)){return}var l=0;var i=(k.sheet||k.styleSheet);try{if((i.cssRules||i.rules||[]).length>0){l=1}}catch(j){if(j.message.match(/protected variable|restricted URI/)){l=1}else{if(j.message.match(/Security error/)){l=1}}}if(l){setTimeout(a.Callback([m,h.STATUS.OK]),0)}else{setTimeout(h,h.delay)}}},loadComplete:function(h){h=this.fileURL(h);var i=this.loading[h];if(i&&!i.preloaded){a.Message.Clear(i.message);clearTimeout(i.timeout);if(i.script){if(e.length===0){setTimeout(b,0)}e.push(i.script)}this.loaded[h]=i.status;delete this.loading[h];this.addHook(h,i.callback)}else{if(i){delete this.loading[h]}this.loaded[h]=this.STATUS.OK;i={status:this.STATUS.OK}}if(!this.loadHooks[h]){return null}return this.loadHooks[h].Execute(i.status)},loadTimeout:function(h){if(this.loading[h].timeout){clearTimeout(this.loading[h].timeout)}this.loading[h].status=this.STATUS.ERROR;this.loadError(h);this.loadComplete(h)},loadError:function(h){a.Message.Set(["LoadFailed","File failed to load: %1",h],null,2000);a.Hub.signal.Post(["file load error",h])},Styles:function(j,k){var h=this.StyleString(j);if(h===""){k=a.Callback(k);k()}else{var i=document.createElement("style");i.type="text/css";this.head=g(this.head);this.head.appendChild(i);if(i.styleSheet&&typeof(i.styleSheet.cssText)!=="undefined"){i.styleSheet.cssText=h}else{i.appendChild(document.createTextNode(h))}k=this.timer.create.call(this,k,i)}return k},StyleString:function(m){if(typeof(m)==="string"){return m}var j="",n,l;for(n in m){if(m.hasOwnProperty(n)){if(typeof m[n]==="string"){j+=n+" {"+m[n]+"}\n"}else{if(m[n] instanceof Array){for(var k=0;k<m[n].length;k++){l={};l[n]=m[n][k];j+=this.StyleString(l)}}else{if(n.substr(0,6)==="@media"){j+=n+" {"+this.StyleString(m[n])+"}\n"}else{if(m[n]!=null){l=[];for(var h in m[n]){if(m[n].hasOwnProperty(h)){if(m[n][h]!=null){l[l.length]=h+": "+m[n][h]}}}j+=n+" {"+l.join("; ")+"}\n"}}}}}}return j}}})("MathJax");MathJax.HTML={Element:function(c,e,d){var f=document.createElement(c);if(e){if(e.style){var b=e.style;e.style={};for(var g in b){if(b.hasOwnProperty(g)){e.style[g.replace(/-([a-z])/g,this.ucMatch)]=b[g]}}}MathJax.Hub.Insert(f,e)}if(d){if(!(d instanceof Array)){d=[d]}for(var a=0;a<d.length;a++){if(d[a] instanceof Array){f.appendChild(this.Element(d[a][0],d[a][1],d[a][2]))}else{if(c==="script"){this.setScript(f,d[a])}else{f.appendChild(document.createTextNode(d[a]))}}}}return f},ucMatch:function(a,b){return b.toUpperCase()},addElement:function(b,a,d,c){return b.appendChild(this.Element(a,d,c))},TextNode:function(a){return document.createTextNode(a)},addText:function(a,b){return a.appendChild(this.TextNode(b))},setScript:function(a,b){if(this.setScriptBug){a.text=b}else{while(a.firstChild){a.removeChild(a.firstChild)}this.addText(a,b)}},getScript:function(a){var b=(a.text===""?a.innerHTML:a.text);return b.replace(/^\s+/,"").replace(/\s+$/,"")},Cookie:{prefix:"mjx",expires:365,Set:function(a,e){var d=[];if(e){for(var g in e){if(e.hasOwnProperty(g)){d.push(g+":"+e[g].toString().replace(/&/g,"&&"))}}}var b=this.prefix+"."+a+"="+escape(d.join("&;"));if(this.expires){var f=new Date();f.setDate(f.getDate()+this.expires);b+="; expires="+f.toGMTString()}try{document.cookie=b+"; path=/"}catch(c){}},Get:function(c,h){if(!h){h={}}var g=new RegExp("(?:^|;\\s*)"+this.prefix+"\\."+c+"=([^;]*)(?:;|$)");var b=g.exec(document.cookie);if(b&&b[1]!==""){var e=unescape(b[1]).split("&;");for(var d=0,a=e.length;d<a;d++){b=e[d].match(/([^:]+):(.*)/);var f=b[2].replace(/&&/g,"&");if(f==="true"){f=true}else{if(f==="false"){f=false}else{if(f.match(/^-?(\d+(\.\d+)?|\.\d+)$/)){f=parseFloat(f)}}}h[b[1]]=f}}return h}}};MathJax.Localization={locale:"en",directory:"[MathJax]/localization",strings:{en:{menuTitle:"English",isLoaded:true},de:{menuTitle:"Deutsch"},fr:{menuTitle:"Fran\u00E7ais"}},pattern:/%(\d+|\{\d+\}|\{[a-z]+:\%\d+(?:\|(?:%\{\d+\}|%.|[^\}])*)+\}|.)/g,SPLIT:("axb".split(/(x)/).length===3?function(a,b){return a.split(b)}:function(c,e){var a=[],b,d=0;e.lastIndex=0;while(b=e.exec(c)){a.push(c.substr(d,b.index));a.push.apply(a,b.slice(1));d=b.index+b[0].length}a.push(c.substr(d));return a}),_:function(b,a){if(a instanceof Array){return this.processSnippet(b,a)}return this.processString(this.lookupPhrase(b,a),[].slice.call(arguments,2))},processString:function(l,o,g){var j,e;for(j=0,e=o.length;j<e;j++){if(g&&o[j] instanceof Array){o[j]=this.processSnippet(g,o[j])}}var f=this.SPLIT(l,this.pattern);for(j=1,e=f.length;j<e;j+=2){var p=f[j].charAt(0);if(p>="0"&&p<="9"){f[j]=o[f[j]-1];if(typeof f[j]==="number"){f[j]=this.number(f[j])}}else{if(p==="{"){p=f[j].substr(1);if(p>="0"&&p<="9"){f[j]=o[f[j].substr(1,f[j].length-2)-1];if(typeof f[j]==="number"){f[j]=this.number(f[j])}}else{var k=f[j].match(/^\{([a-z]+):%(\d+)\|(.*)\}$/);if(k){if(k[1]==="plural"){var d=o[k[2]-1];if(typeof d==="undefined"){f[j]="???"}else{d=this.plural(d)-1;var h=k[3].replace(/(^|[^%])(%%)*%\|/g,"$1$2%\uEFEF").split(/\|/);if(d>=0&&d<h.length){f[j]=this.processString(h[d].replace(/\uEFEF/g,"|"),o,g)}else{f[j]="???"}}}else{f[j]="%"+f[j]}}}}}if(f[j]==null){f[j]="???"}}if(!g){return f.join("")}var a=[],b="";for(j=0;j<e;j++){b+=f[j];j++;if(j<e){if(f[j] instanceof Array){a.push(b);a=a.concat(f[j]);b=""}else{b+=f[j]}}}if(b!==""){a.push(b)}return a},processSnippet:function(g,e){var c=[];for(var d=0,b=e.length;d<b;d++){if(e[d] instanceof Array){var f=e[d];if(typeof f[1]==="string"){var h=f[0];if(!(h instanceof Array)){h=[g,h]}var a=this.lookupPhrase(h,f[1]);c=c.concat(this.processMarkdown(a,f.slice(2),g))}else{if(f[1] instanceof Array){c=c.concat(this.processSnippet.apply(this,f))}else{if(f.length>=3){c.push([f[0],f[1],this.processSnippet(g,f[2])])}else{c.push(e[d])}}}}else{c.push(e[d])}}return c},markdownPattern:/(%.)|(\*{1,3})((?:%.|.)+?)\2|(`+)((?:%.|.)+?)\4|\[((?:%.|.)+?)\]\(([^\s\)]+)\)/,processMarkdown:function(b,h,d){var j=[],e;var c=b.split(this.markdownPattern);var g=c[0];for(var f=1,a=c.length;f<a;f+=8){if(c[f+1]){e=this.processString(c[f+2],h,d);if(!(e instanceof Array)){e=[e]}e=[["b","i","i"][c[f+1].length-1],{},e];if(c[f+1].length===3){e=["b",{},e]}}else{if(c[f+3]){e=this.processString(c[f+4].replace(/^\s/,"").replace(/\s$/,""),h,d);if(!(e instanceof Array)){e=[e]}e=["code",{},e]}else{if(c[f+5]){e=this.processString(c[f+5],h,d);if(!(e instanceof Array)){e=[e]}e=["a",{href:this.processString(c[f+6],h),target:"_blank"},e]}else{g+=c[f];e=null}}}if(e){j=this.concatString(j,g,h,d);j.push(e);g=""}if(c[f+7]!==""){g+=c[f+7]}}j=this.concatString(j,g,h,d);return j},concatString:function(a,c,b,d){if(c!=""){c=this.processString(c,b,d);if(!(c instanceof Array)){c=[c]}a=a.concat(c)}return a},lookupPhrase:function(f,a,d){if(!d){d="_"}if(f instanceof Array){d=(f[0]||"_");f=(f[1]||"")}var c=this.loadDomain(d);if(c){MathJax.Hub.RestartAfter(c)}var b=this.strings[this.locale];if(b){if(b.domains&&d in b.domains){var e=b.domains[d];if(e.strings&&f in e.strings){a=e.strings[f]}}}return a},loadFile:function(b,d,e){e=MathJax.Callback(e||{});b=(d.file||b);if(!b.match(/\.js$/)){b+=".js"}if(!b.match(/^([a-z]+:|\[MathJax\])/)){var a=(this.strings[this.locale].directory||this.directory+"/"+this.locale||"[MathJax]/localization/"+this.locale);b=a+"/"+b}var c=MathJax.Ajax.Require(b,function(){d.isLoaded=true;return e()});return(c.called?null:c)},loadDomain:function(c,e){var b,a=this.strings[this.locale];if(a){if(!a.isLoaded){b=this.loadFile(this.locale,a);if(b){return MathJax.Callback.Queue(b,["loadDomain",this,c]).Push(e)}}if(a.domains&&c in a.domains){var d=a.domains[c];if(!d.isLoaded){b=this.loadFile(c,d);if(b){return MathJax.Callback.Queue(b).Push(e)}}}}return MathJax.Callback(e)()},Try:function(a){a=MathJax.Callback(a);a.autoReset=true;try{a()}catch(b){if(!b.restart){throw b}MathJax.Callback.After(["Try",this,a],b.restart)}},setLocale:function(a){if(this.strings[a]){this.locale=a}if(MathJax.Menu){this.loadDomain("MathMenu")}},addTranslation:function(b,e,c){var d=this.strings[b],a=false;if(!d){d=this.strings[b]={};a=true}if(!d.domains){d.domains={}}if(e){if(!d.domains[e]){d.domains[e]={}}d=d.domains[e]}MathJax.Hub.Insert(d,c);if(a&&MathJax.Menu.menu){MathJax.Menu.CreateLocaleMenu()}},setCSS:function(b){var a=this.strings[this.locale];if(a){if(a.fontFamily){b.style.fontFamily=a.fontFamily}if(a.fontDirection){b.style.direction=a.fontDirection;if(a.fontDirection==="rtl"){b.style.textAlign="right"}}}return b},fontFamily:function(){var a=this.strings[this.locale];return(a?a.fontFamily:null)},fontDirection:function(){var a=this.strings[this.locale];return(a?a.fontDirection:null)},plural:function(b){var a=this.strings[this.locale];if(a&&a.plural){return a.plural(b)}if(b==1){return 1}return 2},number:function(b){var a=this.strings[this.locale];if(a&&a.number){return a.number(b)}return b}};MathJax.Message={ready:false,log:[{}],current:null,textNodeBug:(navigator.vendor==="Apple Computer, Inc."&&typeof navigator.vendorSub==="undefined")||(window.hasOwnProperty&&window.hasOwnProperty("konqueror")),styles:{"#MathJax_Message":{position:"fixed",left:"1px",bottom:"2px","background-color":"#E6E6E6",border:"1px solid #959595",margin:"0px",padding:"2px 8px","z-index":"102",color:"black","font-size":"80%",width:"auto","white-space":"nowrap"},"#MathJax_MSIE_Frame":{position:"absolute",top:0,left:0,width:"0px","z-index":101,border:"0px",margin:"0px",padding:"0px"}},browsers:{MSIE:function(a){MathJax.Hub.config.styles["#MathJax_Message"].position="absolute";MathJax.Message.quirks=(document.compatMode==="BackCompat")},Chrome:function(a){MathJax.Hub.config.styles["#MathJax_Message"].bottom="1.5em";MathJax.Hub.config.styles["#MathJax_Message"].left="1em"}},Init:function(a){if(a){this.ready=true}if(!document.body||!this.ready){return false}if(this.div&&this.div.parentNode==null){this.div=document.getElementById("MathJax_Message");if(this.div){this.text=this.div.firstChild}}if(!this.div){var b=document.body;if(MathJax.Hub.Browser.isMSIE){b=this.frame=this.addDiv(document.body);b.removeAttribute("id");b.style.position="absolute";b.style.border=b.style.margin=b.style.padding="0px";b.style.zIndex="101";b.style.height="0px";b=this.addDiv(b);b.id="MathJax_MSIE_Frame";window.attachEvent("onscroll",this.MoveFrame);window.attachEvent("onresize",this.MoveFrame);this.MoveFrame()}this.div=this.addDiv(b);this.div.style.display="none";this.text=this.div.appendChild(document.createTextNode(""))}return true},addDiv:function(a){var b=document.createElement("div");b.id="MathJax_Message";if(a.firstChild){a.insertBefore(b,a.firstChild)}else{a.appendChild(b)}return b},MoveFrame:function(){var a=(MathJax.Message.quirks?document.body:document.documentElement);var b=MathJax.Message.frame;b.style.left=a.scrollLeft+"px";b.style.top=a.scrollTop+"px";b.style.width=a.clientWidth+"px";b=b.firstChild;b.style.height=a.clientHeight+"px"},localize:function(a){return MathJax.Localization._(a,a)},filterText:function(a,c,b){if(MathJax.Hub.config.messageStyle==="simple"){if(b==="LoadFile"){if(!this.loading){this.loading=this.localize("Loading")+" "}a=this.loading;this.loading+="."}else{if(b==="ProcessMath"){if(!this.processing){this.processing=this.localize("Processing")+" "}a=this.processing;this.processing+="."}else{if(b==="TypesetMath"){if(!this.typesetting){this.typesetting=this.localize("Typesetting")+" "}a=this.typesetting;this.typesetting+="."}}}}return a},Set:function(c,e,b){if(e==null){e=this.log.length;this.log[e]={}}var d="";if(c instanceof Array){d=c[0];if(d instanceof Array){d=d[1]}try{c=MathJax.Localization._.apply(MathJax.Localization,c)}catch(a){if(!a.restart){throw a}if(!a.restart.called){if(this.log[e].restarted==null){this.log[e].restarted=0}this.log[e].restarted++;delete this.log[e].cleared;MathJax.Callback.After(["Set",this,c,e,b],a.restart);return e}}}if(this.timer){clearTimeout(this.timer);delete this.timer}this.log[e].text=c;this.log[e].filteredText=c=this.filterText(c,e,d);if(typeof(this.log[e].next)==="undefined"){this.log[e].next=this.current;if(this.current!=null){this.log[this.current].prev=e}this.current=e}if(this.current===e&&MathJax.Hub.config.messageStyle!=="none"){if(this.Init()){if(this.textNodeBug){this.div.innerHTML=c}else{this.text.nodeValue=c}this.div.style.display="";if(this.status){window.status="";delete this.status}}else{window.status=c;this.status=true}}if(this.log[e].restarted){if(this.log[e].cleared){b=0}if(--this.log[e].restarted===0){delete this.log[e].cleared}}if(b){setTimeout(MathJax.Callback(["Clear",this,e]),b)}else{if(b==0){this.Clear(e,0)}}return e},Clear:function(b,a){if(this.log[b].prev!=null){this.log[this.log[b].prev].next=this.log[b].next}if(this.log[b].next!=null){this.log[this.log[b].next].prev=this.log[b].prev}if(this.current===b){this.current=this.log[b].next;if(this.text){if(this.div.parentNode==null){this.Init()}if(this.current==null){if(this.timer){clearTimeout(this.timer);delete this.timer}if(a==null){a=600}if(a===0){this.Remove()}else{this.timer=setTimeout(MathJax.Callback(["Remove",this]),a)}}else{if(MathJax.Hub.config.messageStyle!=="none"){if(this.textNodeBug){this.div.innerHTML=this.log[this.current].filteredText}else{this.text.nodeValue=this.log[this.current].filteredText}}}if(this.status){window.status="";delete this.status}}else{if(this.status){window.status=(this.current==null?"":this.log[this.current].text)}}}delete this.log[b].next;delete this.log[b].prev;delete this.log[b].filteredText;if(this.log[b].restarted){this.log[b].cleared=true}},Remove:function(){this.text.nodeValue="";this.div.style.display="none"},File:function(b){var a=MathJax.Ajax.config.root;if(b.substr(0,a.length)===a){b="[MathJax]"+b.substr(a.length)}return this.Set(["LoadFile","Loading %1",b],null,null)},Log:function(){var b=[];for(var c=1,a=this.log.length;c<a;c++){b[c]=this.log[c].text}return b.join("\n")}};MathJax.Hub={config:{root:"",config:[],styleSheets:[],styles:{".MathJax_Preview":{color:"#888"}},jax:[],extensions:[],preJax:null,postJax:null,displayAlign:"center",displayIndent:"0",preRemoveClass:"MathJax_Preview",showProcessingMessages:true,messageStyle:"normal",delayStartupUntil:"none",skipStartupTypeset:false,elements:[],positionToHash:true,showMathMenu:true,showMathMenuMSIE:true,menuSettings:{zoom:"None",CTRL:false,ALT:false,CMD:false,Shift:false,discoverable:false,zscale:"200%",renderer:"",font:"Auto",context:"MathJax",locale:"en",mpContext:false,mpMouse:false,texHints:true},errorSettings:{message:["[",["MathProcessingError","Math Processing Error"],"]"],style:{color:"#CC0000","font-style":"italic"}}},preProcessors:MathJax.Callback.Hooks(true),inputJax:{},outputJax:{order:{}},processUpdateTime:250,processUpdateDelay:10,signal:MathJax.Callback.Signal("Hub"),Config:function(a){this.Insert(this.config,a);if(this.config.Augment){this.Augment(this.config.Augment)}},CombineConfig:function(c,f){var b=this.config,g,e;c=c.split(/\./);for(var d=0,a=c.length;d<a;d++){g=c[d];if(!b[g]){b[g]={}}e=b;b=b[g]}e[g]=b=this.Insert(f,b);return b},Register:{PreProcessor:function(){MathJax.Hub.preProcessors.Add.apply(MathJax.Hub.preProcessors,arguments)},MessageHook:function(){return MathJax.Hub.signal.MessageHook.apply(MathJax.Hub.signal,arguments)},StartupHook:function(){return MathJax.Hub.Startup.signal.MessageHook.apply(MathJax.Hub.Startup.signal,arguments)},LoadHook:function(){return MathJax.Ajax.LoadHook.apply(MathJax.Ajax,arguments)}},getAllJax:function(e){var c=[],b=this.elementScripts(e);for(var d=0,a=b.length;d<a;d++){if(b[d].MathJax&&b[d].MathJax.elementJax){c.push(b[d].MathJax.elementJax)}}return c},getJaxByType:function(f,e){var c=[],b=this.elementScripts(e);for(var d=0,a=b.length;d<a;d++){if(b[d].MathJax&&b[d].MathJax.elementJax&&b[d].MathJax.elementJax.mimeType===f){c.push(b[d].MathJax.elementJax)}}return c},getJaxByInputType:function(f,e){var c=[],b=this.elementScripts(e);for(var d=0,a=b.length;d<a;d++){if(b[d].MathJax&&b[d].MathJax.elementJax&&b[d].type&&b[d].type.replace(/ *;(.|\s)*/,"")===f){c.push(b[d].MathJax.elementJax)}}return c},getJaxFor:function(a){if(typeof(a)==="string"){a=document.getElementById(a)}if(a&&a.MathJax){return a.MathJax.elementJax}if(a&&a.isMathJax){while(a&&!a.jaxID){a=a.parentNode}if(a){return MathJax.OutputJax[a.jaxID].getJaxFromMath(a)}}return null},isJax:function(a){if(typeof(a)==="string"){a=document.getElementById(a)}if(a&&a.isMathJax){return 1}if(a&&a.tagName!=null&&a.tagName.toLowerCase()==="script"){if(a.MathJax){return(a.MathJax.state===MathJax.ElementJax.STATE.PROCESSED?1:-1)}if(a.type&&this.inputJax[a.type.replace(/ *;(.|\s)*/,"")]){return -1}}return 0},setRenderer:function(d,c){if(!d){return}if(!MathJax.OutputJax[d]){this.config.menuSettings.renderer="";var b="[MathJax]/jax/output/"+d+"/config.js";return MathJax.Ajax.Require(b,["setRenderer",this,d,c])}else{this.config.menuSettings.renderer=d;if(c==null){c="jax/mml"}var a=this.outputJax;if(a[c]&&a[c].length){if(d!==a[c][0].id){a[c].unshift(MathJax.OutputJax[d]);return this.signal.Post(["Renderer Selected",d])}}return null}},Queue:function(){return this.queue.Push.apply(this.queue,arguments)},Typeset:function(e,f){if(!MathJax.isReady){return null}var c=this.elementCallback(e,f);var b=MathJax.Callback.Queue();for(var d=0,a=c.elements.length;d<a;d++){if(c.elements[d]){b.Push(["PreProcess",this,c.elements[d]],["Process",this,c.elements[d]])}}return b.Push(c.callback)},PreProcess:function(e,f){var c=this.elementCallback(e,f);var b=MathJax.Callback.Queue();for(var d=0,a=c.elements.length;d<a;d++){if(c.elements[d]){b.Push(["Post",this.signal,["Begin PreProcess",c.elements[d]]],(arguments.callee.disabled?{}:["Execute",this.preProcessors,c.elements[d]]),["Post",this.signal,["End PreProcess",c.elements[d]]])}}return b.Push(c.callback)},Process:function(a,b){return this.takeAction("Process",a,b)},Update:function(a,b){return this.takeAction("Update",a,b)},Reprocess:function(a,b){return this.takeAction("Reprocess",a,b)},Rerender:function(a,b){return this.takeAction("Rerender",a,b)},takeAction:function(g,e,h){var c=this.elementCallback(e,h);var b=MathJax.Callback.Queue(["Clear",this.signal]);for(var d=0,a=c.elements.length;d<a;d++){if(c.elements[d]){var f={scripts:[],start:new Date().getTime(),i:0,j:0,jax:{},jaxIDs:[]};b.Push(["Post",this.signal,["Begin "+g,c.elements[d]]],["Post",this.signal,["Begin Math",c.elements[d],g]],["prepareScripts",this,g,c.elements[d],f],["Post",this.signal,["Begin Math Input",c.elements[d],g]],["processInput",this,f],["Post",this.signal,["End Math Input",c.elements[d],g]],["prepareOutput",this,f,"preProcess"],["Post",this.signal,["Begin Math Output",c.elements[d],g]],["processOutput",this,f],["Post",this.signal,["End Math Output",c.elements[d],g]],["prepareOutput",this,f,"postProcess"],["Post",this.signal,["End Math",c.elements[d],g]],["Post",this.signal,["End "+g,c.elements[d]]])}}return b.Push(c.callback)},scriptAction:{Process:function(a){},Update:function(b){var a=b.MathJax.elementJax;if(a&&a.needsUpdate()){a.Remove(true);b.MathJax.state=a.STATE.UPDATE}else{b.MathJax.state=a.STATE.PROCESSED}},Reprocess:function(b){var a=b.MathJax.elementJax;if(a){a.Remove(true);b.MathJax.state=a.STATE.UPDATE}},Rerender:function(b){var a=b.MathJax.elementJax;if(a){a.Remove(true);b.MathJax.state=a.STATE.OUTPUT}}},prepareScripts:function(h,e,g){if(arguments.callee.disabled){return}var b=this.elementScripts(e);var f=MathJax.ElementJax.STATE;for(var d=0,a=b.length;d<a;d++){var c=b[d];if(c.type&&this.inputJax[c.type.replace(/ *;(.|\n)*/,"")]){if(c.MathJax){if(c.MathJax.elementJax&&c.MathJax.elementJax.hover){MathJax.Extension.MathEvents.Hover.ClearHover(c.MathJax.elementJax)}if(c.MathJax.state!==f.PENDING){this.scriptAction[h](c)}}if(!c.MathJax){c.MathJax={state:f.PENDING}}if(c.MathJax.state!==f.PROCESSED){g.scripts.push(c)}}}},checkScriptSiblings:function(a){if(a.MathJax.checked){return}var b=this.config,f=a.previousSibling;if(f&&f.nodeName==="#text"){var d,e,c=a.nextSibling;if(c&&c.nodeName!=="#text"){c=null}if(b.preJax){if(typeof(b.preJax)==="string"){b.preJax=new RegExp(b.preJax+"$")}d=f.nodeValue.match(b.preJax)}if(b.postJax&&c){if(typeof(b.postJax)==="string"){b.postJax=new RegExp("^"+b.postJax)}e=c.nodeValue.match(b.postJax)}if(d&&(!b.postJax||e)){f.nodeValue=f.nodeValue.replace(b.preJax,(d.length>1?d[1]:""));f=null}if(e&&(!b.preJax||d)){c.nodeValue=c.nodeValue.replace(b.postJax,(e.length>1?e[1]:""))}if(f&&!f.nodeValue.match(/\S/)){f=f.previousSibling}}if(b.preRemoveClass&&f&&f.className===b.preRemoveClass){a.MathJax.preview=f}a.MathJax.checked=1},processInput:function(a){var b,i=MathJax.ElementJax.STATE;var h,e,d=a.scripts.length;try{while(a.i<d){h=a.scripts[a.i];if(!h){a.i++;continue}e=h.previousSibling;if(e&&e.className==="MathJax_Error"){e.parentNode.removeChild(e)}if(!h.MathJax||h.MathJax.state===i.PROCESSED){a.i++;continue}if(!h.MathJax.elementJax||h.MathJax.state===i.UPDATE){this.checkScriptSiblings(h);var g=h.type.replace(/ *;(.|\s)*/,"");b=this.inputJax[g].Process(h,a);if(typeof b==="function"){if(b.called){continue}this.RestartAfter(b)}b.Attach(h,this.inputJax[g].id);this.saveScript(b,a,h,i)}else{if(h.MathJax.state===i.OUTPUT){this.saveScript(h.MathJax.elementJax,a,h,i)}}a.i++;var c=new Date().getTime();if(c-a.start>this.processUpdateTime&&a.i<a.scripts.length){a.start=c;this.RestartAfter(MathJax.Callback.Delay(1))}}}catch(f){return this.processError(f,a,"Input")}if(a.scripts.length&&this.config.showProcessingMessages){MathJax.Message.Set(["ProcessMath","Processing math: %1%%",100],0)}a.start=new Date().getTime();a.i=a.j=0;return null},saveScript:function(a,d,b,c){if(!this.outputJax[a.mimeType]){b.MathJax.state=c.UPDATE;throw Error("No output jax registered for "+a.mimeType)}a.outputJax=this.outputJax[a.mimeType][0].id;if(!d.jax[a.outputJax]){if(d.jaxIDs.length===0){d.jax[a.outputJax]=d.scripts}else{if(d.jaxIDs.length===1){d.jax[d.jaxIDs[0]]=d.scripts.slice(0,d.i)}d.jax[a.outputJax]=[]}d.jaxIDs.push(a.outputJax)}if(d.jaxIDs.length>1){d.jax[a.outputJax].push(b)}b.MathJax.state=c.OUTPUT},prepareOutput:function(c,f){while(c.j<c.jaxIDs.length){var e=c.jaxIDs[c.j],d=MathJax.OutputJax[e];if(d[f]){try{var a=d[f](c);if(typeof a==="function"){if(a.called){continue}this.RestartAfter(a)}}catch(b){if(!b.restart){MathJax.Message.Set(["PrepError","Error preparing %1 output (%2)",e,f],null,600);MathJax.Hub.lastPrepError=b;c.j++}return MathJax.Callback.After(["prepareOutput",this,c,f],b.restart)}}c.j++}return null},processOutput:function(h){var b,g=MathJax.ElementJax.STATE,d,a=h.scripts.length;try{while(h.i<a){d=h.scripts[h.i];if(!d||!d.MathJax||d.MathJax.error){h.i++;continue}var c=d.MathJax.elementJax;if(!c){h.i++;continue}b=MathJax.OutputJax[c.outputJax].Process(d,h);d.MathJax.state=g.PROCESSED;h.i++;if(d.MathJax.preview){d.MathJax.preview.innerHTML=""}this.signal.Post(["New Math",c.inputID]);var e=new Date().getTime();if(e-h.start>this.processUpdateTime&&h.i<h.scripts.length){h.start=e;this.RestartAfter(MathJax.Callback.Delay(this.processUpdateDelay))}}}catch(f){return this.processError(f,h,"Output")}if(h.scripts.length&&this.config.showProcessingMessages){MathJax.Message.Set(["TypesetMath","Typesetting math: %1%%",100],0);MathJax.Message.Clear(0)}h.i=h.j=0;return null},processMessage:function(d,b){var a=Math.floor(d.i/(d.scripts.length)*100);var c=(b==="Output"?["TypesetMath","Typesetting math: %1%%"]:["ProcessMath","Processing math: %1%%"]);if(this.config.showProcessingMessages){MathJax.Message.Set(c.concat(a),0)}},processError:function(b,c,a){if(!b.restart){if(!this.config.errorSettings.message){throw b}this.formatError(c.scripts[c.i],b);c.i++}this.processMessage(c,a);return MathJax.Callback.After(["process"+a,this,c],b.restart)},formatError:function(b,e){var d="Error: "+e.message+"\n";if(e.sourceURL){d+="\nfile: "+e.sourceURL}if(e.line){d+="\nline: "+e.line}b.MathJax.error=MathJax.OutputJax.Error.Jax(d,b);var f=this.config.errorSettings;var a=MathJax.Localization._(f.messageId,f.message);var c=MathJax.HTML.Element("span",{className:"MathJax_Error",jaxID:"Error",isMathJax:true},a);if(MathJax.Extension.MathEvents){c.oncontextmenu=MathJax.Extension.MathEvents.Event.Menu;c.onmousedown=MathJax.Extension.MathEvents.Event.Mousedown}else{MathJax.Ajax.Require("[MathJax]/extensions/MathEvents.js",function(){c.oncontextmenu=MathJax.Extension.MathEvents.Event.Menu;c.onmousedown=MathJax.Extension.MathEvents.Event.Mousedown})}b.parentNode.insertBefore(c,b);if(b.MathJax.preview){b.MathJax.preview.innerHTML=""}this.lastError=e;this.signal.Post(["Math Processing Error",b,e])},RestartAfter:function(a){throw this.Insert(Error("restart"),{restart:MathJax.Callback(a)})},elementCallback:function(c,f){if(f==null&&(c instanceof Array||typeof c==="function")){try{MathJax.Callback(c);f=c;c=null}catch(d){}}if(c==null){c=this.config.elements||[]}if(!(c instanceof Array)){c=[c]}c=[].concat(c);for(var b=0,a=c.length;b<a;b++){if(typeof(c[b])==="string"){c[b]=document.getElementById(c[b])}}if(!document.body){document.body=document.getElementsByTagName("body")[0]}if(c.length==0){c.push(document.body)}if(!f){f={}}return{elements:c,callback:f}},elementScripts:function(a){if(typeof(a)==="string"){a=document.getElementById(a)}if(!document.body){document.body=document.getElementsByTagName("body")[0]}if(a==null){a=document.body}if(a.tagName!=null&&a.tagName.toLowerCase()==="script"){return[a]}return a.getElementsByTagName("script")},Insert:function(c,a){for(var b in a){if(a.hasOwnProperty(b)){if(typeof a[b]==="object"&&!(a[b] instanceof Array)&&(typeof c[b]==="object"||typeof c[b]==="function")){this.Insert(c[b],a[b])}else{c[b]=a[b]}}}return c},SplitList:("trim" in String.prototype?function(a){return a.trim().split(/\s+/)}:function(a){return a.replace(/^\s+/,"").replace(/\s+$/,"").split(/\s+/)})};MathJax.Hub.Insert(MathJax.Hub.config.styles,MathJax.Message.styles);MathJax.Hub.Insert(MathJax.Hub.config.styles,{".MathJax_Error":MathJax.Hub.config.errorSettings.style});MathJax.Extension={};MathJax.Hub.Configured=MathJax.Callback({});MathJax.Hub.Startup={script:"",queue:MathJax.Callback.Queue(),signal:MathJax.Callback.Signal("Startup"),params:{},Config:function(){this.queue.Push(["Post",this.signal,"Begin Config"]);if(this.params.locale){MathJax.Localization.locale=this.params.locale;MathJax.Hub.config.menuSettings.locale=this.params.locale}var b=MathJax.HTML.Cookie.Get("user");if(b.URL||b.Config){if(confirm(MathJax.Localization._("CookieConfig","MathJax has found a user-configuration cookie that includes code to be run. Do you want to run it?\n\n(You should press Cancel unless you set up the cookie yourself.)"))){if(b.URL){this.queue.Push(["Require",MathJax.Ajax,b.URL])}if(b.Config){this.queue.Push(new Function(b.Config))}}else{MathJax.HTML.Cookie.Set("user",{})}}if(this.params.config){var d=this.params.config.split(/,/);for(var c=0,a=d.length;c<a;c++){if(!d[c].match(/\.js$/)){d[c]+=".js"}this.queue.Push(["Require",MathJax.Ajax,this.URL("config",d[c])])}}if(this.script.match(/\S/)){this.queue.Push(this.script+";\n1;")}this.queue.Push(["ConfigDelay",this],["ConfigBlocks",this],[function(e){return e.loadArray(MathJax.Hub.config.config,"config",null,true)},this],["Post",this.signal,"End Config"])},ConfigDelay:function(){var a=this.params.delayStartupUntil||MathJax.Hub.config.delayStartupUntil;if(a==="onload"){return this.onload}if(a==="configured"){return MathJax.Hub.Configured}return a},ConfigBlocks:function(){var c=document.getElementsByTagName("script");var f=null,b=MathJax.Callback.Queue();for(var d=0,a=c.length;d<a;d++){var e=String(c[d].type).replace(/ /g,"");if(e.match(/^text\/x-mathjax-config(;.*)?$/)&&!e.match(/;executed=true/)){c[d].type+=";executed=true";f=b.Push(c[d].innerHTML+";\n1;")}}return f},Cookie:function(){return this.queue.Push(["Post",this.signal,"Begin Cookie"],["Get",MathJax.HTML.Cookie,"menu",MathJax.Hub.config.menuSettings],[function(d){if(d.menuSettings.locale){MathJax.Localization.locale=d.menuSettings.locale}var f=d.menuSettings.renderer,b=d.jax;if(f){var c="output/"+f;b.sort();for(var e=0,a=b.length;e<a;e++){if(b[e].substr(0,7)==="output/"){break}}if(e==a-1){b.pop()}else{while(e<a){if(b[e]===c){b.splice(e,1);break}e++}}b.unshift(c)}},MathJax.Hub.config],["Post",this.signal,"End Cookie"])},Styles:function(){return this.queue.Push(["Post",this.signal,"Begin Styles"],["loadArray",this,MathJax.Hub.config.styleSheets,"config"],["Styles",MathJax.Ajax,MathJax.Hub.config.styles],["Post",this.signal,"End Styles"])},Jax:function(){var f=MathJax.Hub.config,c=MathJax.Hub.outputJax;for(var g=0,b=f.jax.length,d=0;g<b;g++){var e=f.jax[g].substr(7);if(f.jax[g].substr(0,7)==="output/"&&c.order[e]==null){c.order[e]=d;d++}}var a=MathJax.Callback.Queue();return a.Push(["Post",this.signal,"Begin Jax"],["loadArray",this,f.jax,"jax","config.js"],["Post",this.signal,"End Jax"])},Extensions:function(){var a=MathJax.Callback.Queue();return a.Push(["Post",this.signal,"Begin Extensions"],["loadArray",this,MathJax.Hub.config.extensions,"extensions"],["Post",this.signal,"End Extensions"])},Message:function(){MathJax.Message.Init(true)},Menu:function(){var b=MathJax.Hub.config.menuSettings,a=MathJax.Hub.outputJax,d;for(var c in a){if(a.hasOwnProperty(c)){if(a[c].length){d=a[c];break}}}if(d&&d.length){if(b.renderer&&b.renderer!==d[0].id){d.unshift(MathJax.OutputJax[b.renderer])}b.renderer=d[0].id}},Hash:function(){if(MathJax.Hub.config.positionToHash&&document.location.hash&&document.body&&document.body.scrollIntoView){var d=document.location.hash.substr(1);var f=document.getElementById(d);if(!f){var c=document.getElementsByTagName("a");for(var e=0,b=c.length;e<b;e++){if(c[e].name===d){f=c[e];break}}}if(f){while(!f.scrollIntoView){f=f.parentNode}f=this.HashCheck(f);if(f&&f.scrollIntoView){setTimeout(function(){f.scrollIntoView(true)},1)}}}},HashCheck:function(b){if(b.isMathJax){var a=MathJax.Hub.getJaxFor(b);if(a&&MathJax.OutputJax[a.outputJax].hashCheck){b=MathJax.OutputJax[a.outputJax].hashCheck(b)}}return b},MenuZoom:function(){if(!MathJax.Extension.MathMenu){setTimeout(function(){MathJax.Callback.Queue(["Require",MathJax.Ajax,"[MathJax]/extensions/MathMenu.js",{}],["loadDomain",MathJax.Localization,"MathMenu"])},1000)}else{setTimeout(MathJax.Callback(["loadDomain",MathJax.Localization,"MathMenu"]),1000)}if(!MathJax.Extension.MathZoom){setTimeout(MathJax.Callback(["Require",MathJax.Ajax,"[MathJax]/extensions/MathZoom.js",{}]),2000)}},onLoad:function(){var a=this.onload=MathJax.Callback(function(){MathJax.Hub.Startup.signal.Post("onLoad")});if(document.body&&document.readyState){if(MathJax.Hub.Browser.isMSIE){if(document.readyState==="complete"){return[a]}}else{if(document.readyState!=="loading"){return[a]}}}if(window.addEventListener){window.addEventListener("load",a,false);if(!this.params.noDOMContentEvent){window.addEventListener("DOMContentLoaded",a,false)}}else{if(window.attachEvent){window.attachEvent("onload",a)}else{window.onload=a}}return a},Typeset:function(a,b){if(MathJax.Hub.config.skipStartupTypeset){return function(){}}return this.queue.Push(["Post",this.signal,"Begin Typeset"],["Typeset",MathJax.Hub,a,b],["Post",this.signal,"End Typeset"])},URL:function(b,a){if(!a.match(/^([a-z]+:\/\/|\[|\/)/)){a="[MathJax]/"+b+"/"+a}return a},loadArray:function(b,f,c,a){if(b){if(!(b instanceof Array)){b=[b]}if(b.length){var h=MathJax.Callback.Queue(),j={},e;for(var g=0,d=b.length;g<d;g++){e=this.URL(f,b[g]);if(c){e+="/"+c}if(a){h.Push(["Require",MathJax.Ajax,e,j])}else{h.Push(MathJax.Ajax.Require(e,j))}}return h.Push({})}}return null}};(function(d){var b=window[d],e="["+d+"]";var c=b.Hub,a=b.Ajax,f=b.Callback;var g=MathJax.Object.Subclass({JAXFILE:"jax.js",require:null,config:{},Init:function(i,h){if(arguments.length===0){return this}return(this.constructor.Subclass(i,h))()},Augment:function(k,j){var i=this.constructor,h={};if(k!=null){for(var l in k){if(k.hasOwnProperty(l)){if(typeof k[l]==="function"){i.protoFunction(l,k[l])}else{h[l]=k[l]}}}if(k.toString!==i.prototype.toString&&k.toString!=={}.toString){i.protoFunction("toString",k.toString)}}c.Insert(i.prototype,h);i.Augment(null,j);return this},Translate:function(h,i){throw Error(this.directory+"/"+this.JAXFILE+" failed to define the Translate() method")},Register:function(h){},Config:function(){this.config=c.CombineConfig(this.id,this.config);if(this.config.Augment){this.Augment(this.config.Augment)}},Startup:function(){},loadComplete:function(i){if(i==="config.js"){return a.loadComplete(this.directory+"/"+i)}else{var h=f.Queue();h.Push(c.Register.StartupHook("End Config",{}),["Post",c.Startup.signal,this.id+" Jax Config"],["Config",this],["Post",c.Startup.signal,this.id+" Jax Require"],[function(j){return MathJax.Hub.Startup.loadArray(j.require,this.directory)},this],[function(j,k){return MathJax.Hub.Startup.loadArray(j.extensions,"extensions/"+k)},this.config||{},this.id],["Post",c.Startup.signal,this.id+" Jax Startup"],["Startup",this],["Post",c.Startup.signal,this.id+" Jax Ready"]);if(this.copyTranslate){h.Push([function(j){j.preProcess=j.preTranslate;j.Process=j.Translate;j.postProcess=j.postTranslate},this.constructor.prototype])}return h.Push(["loadComplete",a,this.directory+"/"+i])}}},{id:"Jax",version:"2.2",directory:e+"/jax",extensionDir:e+"/extensions"});b.InputJax=g.Subclass({elementJax:"mml",sourceMenuTitle:["OriginalForm","Original Form"],copyTranslate:true,Process:function(l,q){var j=f.Queue(),o;var k=this.elementJax;if(!(k instanceof Array)){k=[k]}for(var n=0,h=k.length;n<h;n++){o=b.ElementJax.directory+"/"+k[n]+"/"+this.JAXFILE;if(!this.require){this.require=[]}else{if(!(this.require instanceof Array)){this.require=[this.require]}}this.require.push(o);j.Push(a.Require(o))}o=this.directory+"/"+this.JAXFILE;var p=j.Push(a.Require(o));if(!p.called){this.constructor.prototype.Process=function(){if(!p.called){return p}throw Error(o+" failed to load properly")}}k=c.outputJax["jax/"+k[0]];if(k){j.Push(a.Require(k[0].directory+"/"+this.JAXFILE))}return j.Push({})},needsUpdate:function(h){var i=h.SourceElement();return(h.originalText!==b.HTML.getScript(i))},Register:function(h){if(!c.inputJax){c.inputJax={}}c.inputJax[h]=this}},{id:"InputJax",version:"2.2",directory:g.directory+"/input",extensionDir:g.extensionDir});b.OutputJax=g.Subclass({copyTranslate:true,preProcess:function(j){var i,h=this.directory+"/"+this.JAXFILE;this.constructor.prototype.preProcess=function(k){if(!i.called){return i}throw Error(h+" failed to load properly")};i=a.Require(h);return i},Register:function(i){var h=c.outputJax;if(!h[i]){h[i]=[]}if(h[i].length&&(this.id===c.config.menuSettings.renderer||(h.order[this.id]||0)<(h.order[h[i][0].id]||0))){h[i].unshift(this)}else{h[i].push(this)}if(!this.require){this.require=[]}else{if(!(this.require instanceof Array)){this.require=[this.require]}}this.require.push(b.ElementJax.directory+"/"+(i.split(/\//)[1])+"/"+this.JAXFILE)},Remove:function(h){}},{id:"OutputJax",version:"2.2",directory:g.directory+"/output",extensionDir:g.extensionDir,fontDir:e+(b.isPacked?"":"/..")+"/fonts",imageDir:e+(b.isPacked?"":"/..")+"/images"});b.ElementJax=g.Subclass({Init:function(i,h){return this.constructor.Subclass(i,h)},inputJax:null,outputJax:null,inputID:null,originalText:"",mimeType:"",sourceMenuTitle:["MathMLcode","MathML Code"],Text:function(i,j){var h=this.SourceElement();b.HTML.setScript(h,i);h.MathJax.state=this.STATE.UPDATE;return c.Update(h,j)},Reprocess:function(i){var h=this.SourceElement();h.MathJax.state=this.STATE.UPDATE;return c.Reprocess(h,i)},Update:function(h){return this.Rerender(h)},Rerender:function(i){var h=this.SourceElement();h.MathJax.state=this.STATE.OUTPUT;return c.Process(h,i)},Remove:function(h){if(this.hover){this.hover.clear(this)}b.OutputJax[this.outputJax].Remove(this);if(!h){c.signal.Post(["Remove Math",this.inputID]);this.Detach()}},needsUpdate:function(){return b.InputJax[this.inputJax].needsUpdate(this)},SourceElement:function(){return document.getElementById(this.inputID)},Attach:function(i,j){var h=i.MathJax.elementJax;if(i.MathJax.state===this.STATE.UPDATE){h.Clone(this)}else{h=i.MathJax.elementJax=this;if(i.id){this.inputID=i.id}else{i.id=this.inputID=b.ElementJax.GetID();this.newID=1}}h.originalText=b.HTML.getScript(i);h.inputJax=j;if(h.root){h.root.inputID=h.inputID}return h},Detach:function(){var h=this.SourceElement();if(!h){return}try{delete h.MathJax}catch(i){h.MathJax=null}if(this.newID){h.id=""}},Clone:function(h){var i;for(i in this){if(!this.hasOwnProperty(i)){continue}if(typeof(h[i])==="undefined"&&i!=="newID"){delete this[i]}}for(i in h){if(!h.hasOwnProperty(i)){continue}if(typeof(this[i])==="undefined"||(this[i]!==h[i]&&i!=="inputID")){this[i]=h[i]}}}},{id:"ElementJax",version:"2.2",directory:g.directory+"/element",extensionDir:g.extensionDir,ID:0,STATE:{PENDING:1,PROCESSED:2,UPDATE:3,OUTPUT:4},GetID:function(){this.ID++;return"MathJax-Element-"+this.ID},Subclass:function(){var h=g.Subclass.apply(this,arguments);h.loadComplete=this.prototype.loadComplete;return h}});b.ElementJax.prototype.STATE=b.ElementJax.STATE;b.OutputJax.Error={id:"Error",version:"2.2",config:{},ContextMenu:function(){return b.Extension.MathEvents.Event.ContextMenu.apply(b.Extension.MathEvents.Event,arguments)},Mousedown:function(){return b.Extension.MathEvents.Event.AltContextMenu.apply(b.Extension.MathEvents.Event,arguments)},getJaxFromMath:function(h){return(h.nextSibling.MathJax||{}).error},Jax:function(j,i){var h=MathJax.Hub.inputJax[i.type.replace(/ *;(.|\s)*/,"")];return{inputJax:(h||{id:"Error"}).id,outputJax:"Error",sourceMenuTitle:["ErrorMessage","Error Message"],sourceMenuFormat:"Error",originalText:MathJax.HTML.getScript(i),errorText:j}}};b.InputJax.Error={id:"Error",version:"2.2",config:{},sourceMenuTitle:["OriginalForm","Original Form"]}})("MathJax");(function(l){var f=window[l];if(!f){f=window[l]={}}var c=f.Hub;var q=c.Startup;var u=c.config;var e=document.getElementsByTagName("head")[0];if(!e){e=document.childNodes[0]}var b=(document.documentElement||document).getElementsByTagName("script");var d=new RegExp("(^|/)"+l+"\\.js(\\?.*)?$");for(var o=b.length-1;o>=0;o--){if((b[o].src||"").match(d)){q.script=b[o].innerHTML;if(RegExp.$2){var r=RegExp.$2.substr(1).split(/\&/);for(var n=0,h=r.length;n<h;n++){var k=r[n].match(/(.*)=(.*)/);if(k){q.params[unescape(k[1])]=unescape(k[2])}}}u.root=b[o].src.replace(/(^|\/)[^\/]*(\?.*)?$/,"");break}}f.Ajax.config=u;var a={isMac:(navigator.platform.substr(0,3)==="Mac"),isPC:(navigator.platform.substr(0,3)==="Win"),isMSIE:(window.ActiveXObject!=null&&window.clipboardData!=null),isFirefox:(navigator.userAgent.match(/Gecko/)!=null&&navigator.userAgent.match(/KHTML/)==null),isSafari:(navigator.userAgent.match(/ (Apple)?WebKit\//)!=null&&(!window.chrome||window.chrome.loadTimes==null)),isChrome:(window.chrome!=null&&window.chrome.loadTimes!=null),isOpera:(window.opera!=null&&window.opera.version!=null),isKonqueror:(window.hasOwnProperty&&window.hasOwnProperty("konqueror")&&navigator.vendor=="KDE"),versionAtLeast:function(x){var w=(this.version).split(".");x=(new String(x)).split(".");for(var y=0,j=x.length;y<j;y++){if(w[y]!=x[y]){return parseInt(w[y]||"0")>=parseInt(x[y])}}return true},Select:function(j){var i=j[c.Browser];if(i){return i(c.Browser)}return null}};var g=navigator.userAgent.replace(/^Mozilla\/(\d+\.)+\d+ /,"").replace(/[a-z][-a-z0-9._: ]+\/\d+[^ ]*-[^ ]*\.([a-z][a-z])?\d+ /i,"").replace(/Gentoo |Ubuntu\/(\d+\.)*\d+ (\([^)]*\) )?/,"");c.Browser=c.Insert(c.Insert(new String("Unknown"),{version:"0.0"}),a);for(var t in a){if(a.hasOwnProperty(t)){if(a[t]&&t.substr(0,2)==="is"){t=t.slice(2);if(t==="Mac"||t==="PC"){continue}c.Browser=c.Insert(new String(t),a);var p=new RegExp(".*(Version)/((?:\\d+\\.)+\\d+)|.*("+t+")"+(t=="MSIE"?" ":"/")+"((?:\\d+\\.)*\\d+)|(?:^|\\(| )([a-z][-a-z0-9._: ]+|(?:Apple)?WebKit)/((?:\\d+\\.)+\\d+)");var s=p.exec(g)||["","","","unknown","0.0"];c.Browser.name=(s[1]=="Version"?t:(s[3]||s[5]));c.Browser.version=s[2]||s[4]||s[6];break}}}c.Browser.Select({Safari:function(j){var i=parseInt((String(j.version).split("."))[0]);if(i>85){j.webkit=j.version}if(i>=534){j.version="5.1"}else{if(i>=533){j.version="5.0"}else{if(i>=526){j.version="4.0"}else{if(i>=525){j.version="3.1"}else{if(i>500){j.version="3.0"}else{if(i>400){j.version="2.0"}else{if(i>85){j.version="1.0"}}}}}}}j.isMobile=(navigator.appVersion.match(/Mobile/i)!=null);j.noContextMenu=j.isMobile},Firefox:function(j){if((j.version==="0.0"||navigator.userAgent.match(/Firefox/)==null)&&navigator.product==="Gecko"){var m=navigator.userAgent.match(/[\/ ]rv:(\d+\.\d.*?)[\) ]/);if(m){j.version=m[1]}else{var i=(navigator.buildID||navigator.productSub||"0").substr(0,8);if(i>="20111220"){j.version="9.0"}else{if(i>="20111120"){j.version="8.0"}else{if(i>="20110927"){j.version="7.0"}else{if(i>="20110816"){j.version="6.0"}else{if(i>="20110621"){j.version="5.0"}else{if(i>="20110320"){j.version="4.0"}else{if(i>="20100121"){j.version="3.6"}else{if(i>="20090630"){j.version="3.5"}else{if(i>="20080617"){j.version="3.0"}else{if(i>="20061024"){j.version="2.0"}}}}}}}}}}}}j.isMobile=(navigator.appVersion.match(/Android/i)!=null||navigator.userAgent.match(/ Fennec\//)!=null||navigator.userAgent.match(/Mobile/)!=null)},Opera:function(i){i.version=opera.version()},MSIE:function(j){j.isIE9=!!(document.documentMode&&(window.performance||window.msPerformance));MathJax.HTML.setScriptBug=!j.isIE9||document.documentMode<9;var v=false;try{new ActiveXObject("MathPlayer.Factory.1");j.hasMathPlayer=v=true}catch(m){}try{if(v&&!q.params.NoMathPlayer){var i=document.createElement("object");i.id="mathplayer";i.classid="clsid:32F66A20-7614-11D4-BD11-00104BD3F987";document.getElementsByTagName("head")[0].appendChild(i);document.namespaces.add("m","http://www.w3.org/1998/Math/MathML");j.mpNamespace=true;if(document.readyState&&(document.readyState==="loading"||document.readyState==="interactive")){document.write('<?import namespace="m" implementation="#MathPlayer">');j.mpImported=true}}else{document.namespaces.add("mjx_IE_fix","http://www.w3.org/1999/xlink")}}catch(m){}}});c.Browser.Select(MathJax.Message.browsers);c.queue=f.Callback.Queue();c.queue.Push(["Post",q.signal,"Begin"],["Config",q],["Cookie",q],["Styles",q],["Message",q],function(){var i=f.Callback.Queue(q.Jax(),q.Extensions());return i.Push({})},["Menu",q],q.onLoad(),function(){MathJax.isReady=true},["Typeset",q],["Hash",q],["MenuZoom",q],["Post",q.signal,"End"])})("MathJax")}};
-
-// Exports for component.
-module.exports = window.MathJax;
-
-});
-require.register("segmentio-rainbow/index.js", function(exports, require, module){
-
-/**
- * Dependencies.
- */
-
-var Rainbow = require('./js/rainbow')
-  , languages = [
-      require('./js/language/c.js'),
-      require('./js/language/coffeescript.js'),
-      require('./js/language/csharp.js'),
-      require('./js/language/css.js'),
-      require('./js/language/d.js'),
-      require('./js/language/generic.js'),
-      require('./js/language/go.js'),
-      require('./js/language/haskell.js'),
-      require('./js/language/html.js'),
-      require('./js/language/java.js'),
-      require('./js/language/javascript.js'),
-      require('./js/language/lua.js'),
-      require('./js/language/php.js'),
-      require('./js/language/python.js'),
-      require('./js/language/r.js'),
-      require('./js/language/ruby.js'),
-      require('./js/language/scheme.js'),
-      require('./js/language/shell.js'),
-      require('./js/language/smalltalk.js')
-    ];
-
-
-/**
- * Extend Rainbow with each language.
- */
-
-for (var i = 0, settings; settings = languages[i]; i++) {
-  Rainbow.extend.apply(Rainbow, settings);
-}
-
-
-/**
- * Exports.
- */
-
-module.exports = Rainbow;
-});
-require.register("segmentio-rainbow/js/rainbow.js", function(exports, require, module){
-/**
- * Copyright 2013 Craig Campbell
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Rainbow is a simple code syntax highlighter
- *
- * @preserve @version 1.2
- * @url rainbowco.de
- */
-module.exports = (function() {
-
-    /**
-     * array of replacements to process at the end
-     *
-     * @type {Object}
-     */
-    var replacements = {},
-
-        /**
-         * an array of start and end positions of blocks to be replaced
-         *
-         * @type {Object}
-         */
-        replacement_positions = {},
-
-        /**
-         * an array of the language patterns specified for each language
-         *
-         * @type {Object}
-         */
-        language_patterns = {},
-
-        /**
-         * an array of languages and whether they should bypass the default patterns
-         *
-         * @type {Object}
-         */
-        bypass_defaults = {},
-
-        /**
-         * processing level
-         *
-         * replacements are stored at this level so if there is a sub block of code
-         * (for example php inside of html) it runs at a different level
-         *
-         * @type {number}
-         */
-        CURRENT_LEVEL = 0,
-
-        /**
-         * constant used to refer to the default language
-         *
-         * @type {number}
-         */
-        DEFAULT_LANGUAGE = 0,
-
-        /**
-         * used as counters so we can selectively call setTimeout
-         * after processing a certain number of matches/replacements
-         *
-         * @type {number}
-         */
-        match_counter = 0,
-
-        /**
-         * @type {number}
-         */
-        replacement_counter = 0,
-
-        /**
-         * @type {null|string}
-         */
-        global_class,
-
-        /**
-         * @type {null|Function}
-         */
-        onHighlight;
-
-    /**
-     * cross browser get attribute for an element
-     *
-     * @see http://stackoverflow.com/questions/3755227/cross-browser-javascript-getattribute-method
-     *
-     * @param {Node} el
-     * @param {string} attr     attribute you are trying to get
-     * @returns {string|number}
-     */
-    function _attr(el, attr, attrs, i) {
-        var result = (el.getAttribute && el.getAttribute(attr)) || 0;
-
-        if (!result) {
-            attrs = el.attributes;
-
-            for (i = 0; i < attrs.length; ++i) {
-                if (attrs[i].nodeName === attr) {
-                    return attrs[i].nodeValue;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * adds a class to a given code block
-     *
-     * @param {Element} el
-     * @param {string} class_name   class name to add
-     * @returns void
-     */
-    function _addClass(el, class_name) {
-        el.className += el.className ? ' ' + class_name : class_name;
-    }
-
-    /**
-     * checks if a block has a given class
-     *
-     * @param {Element} el
-     * @param {string} class_name   class name to check for
-     * @returns {boolean}
-     */
-    function _hasClass(el, class_name) {
-        return (' ' + el.className + ' ').indexOf(' ' + class_name + ' ') > -1;
-    }
-
-    /**
-     * gets the language for this block of code
-     *
-     * @param {Element} block
-     * @returns {string|null}
-     */
-    function _getLanguageForBlock(block) {
-
-        // if this doesn't have a language but the parent does then use that
-        // this means if for example you have: <pre data-language="php">
-        // with a bunch of <code> blocks inside then you do not have
-        // to specify the language for each block
-        var language = _attr(block, 'data-language') || _attr(block.parentNode, 'data-language');
-
-        // this adds support for specifying language via a css class
-        // you can use the Google Code Prettify style: <pre class="lang-php">
-        // or the HTML5 style: <pre><code class="language-php">
-        if (!language) {
-            var pattern = /\blang(?:uage)?-(\w+)/,
-                match = block.className.match(pattern) || block.parentNode.className.match(pattern);
-
-            if (match) {
-                language = match[1];
-            }
-        }
-
-        return language;
-    }
-
-    /**
-     * makes sure html entities are always used for tags
-     *
-     * @param {string} code
-     * @returns {string}
-     */
-    function _htmlEntities(code) {
-        return code.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&(?![\w\#]+;)/g, '&amp;');
-    }
-
-    /**
-     * determines if a new match intersects with an existing one
-     *
-     * @param {number} start1    start position of existing match
-     * @param {number} end1      end position of existing match
-     * @param {number} start2    start position of new match
-     * @param {number} end2      end position of new match
-     * @returns {boolean}
-     */
-    function _intersects(start1, end1, start2, end2) {
-        if (start2 >= start1 && start2 < end1) {
-            return true;
-        }
-
-        return end2 > start1 && end2 < end1;
-    }
-
-    /**
-     * determines if two different matches have complete overlap with each other
-     *
-     * @param {number} start1   start position of existing match
-     * @param {number} end1     end position of existing match
-     * @param {number} start2   start position of new match
-     * @param {number} end2     end position of new match
-     * @returns {boolean}
-     */
-    function _hasCompleteOverlap(start1, end1, start2, end2) {
-
-        // if the starting and end positions are exactly the same
-        // then the first one should stay and this one should be ignored
-        if (start2 == start1 && end2 == end1) {
-            return false;
-        }
-
-        return start2 <= start1 && end2 >= end1;
-    }
-
-    /**
-     * determines if the match passed in falls inside of an existing match
-     * this prevents a regex pattern from matching inside of a bigger pattern
-     *
-     * @param {number} start - start position of new match
-     * @param {number} end - end position of new match
-     * @returns {boolean}
-     */
-    function _matchIsInsideOtherMatch(start, end) {
-        for (var key in replacement_positions[CURRENT_LEVEL]) {
-            key = parseInt(key, 10);
-
-            // if this block completely overlaps with another block
-            // then we should remove the other block and return false
-            if (_hasCompleteOverlap(key, replacement_positions[CURRENT_LEVEL][key], start, end)) {
-                delete replacement_positions[CURRENT_LEVEL][key];
-                delete replacements[CURRENT_LEVEL][key];
-            }
-
-            if (_intersects(key, replacement_positions[CURRENT_LEVEL][key], start, end)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * takes a string of code and wraps it in a span tag based on the name
-     *
-     * @param {string} name     name of the pattern (ie keyword.regex)
-     * @param {string} code     block of code to wrap
-     * @returns {string}
-     */
-    function _wrapCodeInSpan(name, code) {
-        return '<span class="' + name.replace(/\./g, ' ') + (global_class ? ' ' + global_class : '') + '">' + code + '</span>';
-    }
-
-    /**
-     * finds out the position of group match for a regular expression
-     *
-     * @see http://stackoverflow.com/questions/1985594/how-to-find-index-of-groups-in-match
-     *
-     * @param {Object} match
-     * @param {number} group_number
-     * @returns {number}
-     */
-    function _indexOfGroup(match, group_number) {
-        var index = 0,
-            i;
-
-        for (i = 1; i < group_number; ++i) {
-            if (match[i]) {
-                index += match[i].length;
-            }
-        }
-
-        return index;
-    }
-
-    /**
-     * matches a regex pattern against a block of code
-     * finds all matches that should be processed and stores the positions
-     * of where they should be replaced within the string
-     *
-     * this is where pretty much all the work is done but it should not
-     * be called directly
-     *
-     * @param {RegExp} pattern
-     * @param {string} code
-     * @returns void
-     */
-    function _processPattern(regex, pattern, code, callback)
-    {
-        var match = regex.exec(code);
-
-        if (!match) {
-            return callback();
-        }
-
-        ++match_counter;
-
-        // treat match 0 the same way as name
-        if (!pattern['name'] && typeof pattern['matches'][0] == 'string') {
-            pattern['name'] = pattern['matches'][0];
-            delete pattern['matches'][0];
-        }
-
-        var replacement = match[0],
-            start_pos = match.index,
-            end_pos = match[0].length + start_pos,
-
-            /**
-             * callback to process the next match of this pattern
-             */
-            processNext = function() {
-                var nextCall = function() {
-                    _processPattern(regex, pattern, code, callback);
-                };
-
-                // every 100 items we process let's call set timeout
-                // to let the ui breathe a little
-                return match_counter % 100 > 0 ? nextCall() : setTimeout(nextCall, 0);
-            };
-
-        // if this is not a child match and it falls inside of another
-        // match that already happened we should skip it and continue processing
-        if (_matchIsInsideOtherMatch(start_pos, end_pos)) {
-            return processNext();
-        }
-
-        /**
-         * callback for when a match was successfully processed
-         *
-         * @param {string} replacement
-         * @returns void
-         */
-        var onMatchSuccess = function(replacement) {
-                // if this match has a name then wrap it in a span tag
-                if (pattern['name']) {
-                    replacement = _wrapCodeInSpan(pattern['name'], replacement);
-                }
-
-                // console.log('LEVEL', CURRENT_LEVEL, 'replace', match[0], 'with', replacement, 'at position', start_pos, 'to', end_pos);
-
-                // store what needs to be replaced with what at this position
-                if (!replacements[CURRENT_LEVEL]) {
-                    replacements[CURRENT_LEVEL] = {};
-                    replacement_positions[CURRENT_LEVEL] = {};
-                }
-
-                replacements[CURRENT_LEVEL][start_pos] = {
-                    'replace': match[0],
-                    'with': replacement
-                };
-
-                // store the range of this match so we can use it for comparisons
-                // with other matches later
-                replacement_positions[CURRENT_LEVEL][start_pos] = end_pos;
-
-                // process the next match
-                processNext();
-            },
-
-            // if this pattern has sub matches for different groups in the regex
-            // then we should process them one at a time by rerunning them through
-            // this function to generate the new replacement
-            //
-            // we run through them backwards because the match position of earlier
-            // matches will not change depending on what gets replaced in later
-            // matches
-            group_keys = keys(pattern['matches']),
-
-            /**
-             * callback for processing a sub group
-             *
-             * @param {number} i
-             * @param {Array} group_keys
-             * @param {Function} callback
-             */
-            processGroup = function(i, group_keys, callback) {
-                if (i >= group_keys.length) {
-                    return callback(replacement);
-                }
-
-                var processNextGroup = function() {
-                        processGroup(++i, group_keys, callback);
-                    },
-                    block = match[group_keys[i]];
-
-                // if there is no match here then move on
-                if (!block) {
-                    return processNextGroup();
-                }
-
-                var group = pattern['matches'][group_keys[i]],
-                    language = group['language'],
-
-                    /**
-                     * process group is what group we should use to actually process
-                     * this match group
-                     *
-                     * for example if the subgroup pattern looks like this
-                     * 2: {
-                     *     'name': 'keyword',
-                     *     'pattern': /true/g
-                     * }
-                     *
-                     * then we use that as is, but if it looks like this
-                     *
-                     * 2: {
-                     *     'name': 'keyword',
-                     *     'matches': {
-                     *          'name': 'special',
-                     *          'pattern': /whatever/g
-                     *      }
-                     * }
-                     *
-                     * we treat the 'matches' part as the pattern and keep
-                     * the name around to wrap it with later
-                     */
-                    process_group = group['name'] && group['matches'] ? group['matches'] : group,
-
-                    /**
-                     * takes the code block matched at this group, replaces it
-                     * with the highlighted block, and optionally wraps it with
-                     * a span with a name
-                     *
-                     * @param {string} block
-                     * @param {string} replace_block
-                     * @param {string|null} match_name
-                     */
-                    _replaceAndContinue = function(block, replace_block, match_name) {
-                        replacement = _replaceAtPosition(_indexOfGroup(match, group_keys[i]), block, match_name ? _wrapCodeInSpan(match_name, replace_block) : replace_block, replacement);
-                        processNextGroup();
-                    };
-
-                // if this is a sublanguage go and process the block using that language
-                if (language) {
-                    return _highlightBlockForLanguage(block, language, function(code) {
-                        _replaceAndContinue(block, code);
-                    });
-                }
-
-                // if this is a string then this match is directly mapped to selector
-                // so all we have to do is wrap it in a span and continue
-                if (typeof group === 'string') {
-                    return _replaceAndContinue(block, block, group);
-                }
-
-                // the process group can be a single pattern or an array of patterns
-                // _processCodeWithPatterns always expects an array so we convert it here
-                _processCodeWithPatterns(block, process_group.length ? process_group : [process_group], function(code) {
-                    _replaceAndContinue(block, code, group['matches'] ? group['name'] : 0);
-                });
-            };
-
-        processGroup(0, group_keys, onMatchSuccess);
-    }
-
-    /**
-     * should a language bypass the default patterns?
-     *
-     * if you call Rainbow.extend() and pass true as the third argument
-     * it will bypass the defaults
-     */
-    function _bypassDefaultPatterns(language)
-    {
-        return bypass_defaults[language];
-    }
-
-    /**
-     * returns a list of regex patterns for this language
-     *
-     * @param {string} language
-     * @returns {Array}
-     */
-    function _getPatternsForLanguage(language) {
-        var patterns = language_patterns[language] || [],
-            default_patterns = language_patterns[DEFAULT_LANGUAGE] || [];
-
-        return _bypassDefaultPatterns(language) ? patterns : patterns.concat(default_patterns);
-    }
-
-    /**
-     * substring replace call to replace part of a string at a certain position
-     *
-     * @param {number} position         the position where the replacement should happen
-     * @param {string} replace          the text we want to replace
-     * @param {string} replace_with     the text we want to replace it with
-     * @param {string} code             the code we are doing the replacing in
-     * @returns {string}
-     */
-    function _replaceAtPosition(position, replace, replace_with, code) {
-        var sub_string = code.substr(position);
-        return code.substr(0, position) + sub_string.replace(replace, replace_with);
-    }
-
-   /**
-     * sorts an object by index descending
-     *
-     * @param {Object} object
-     * @return {Array}
-     */
-    function keys(object) {
-        var locations = [],
-            replacement,
-            pos;
-
-        for(var location in object) {
-            if (object.hasOwnProperty(location)) {
-                locations.push(location);
-            }
-        }
-
-        // numeric descending
-        return locations.sort(function(a, b) {
-            return b - a;
-        });
-    }
-
-    /**
-     * processes a block of code using specified patterns
-     *
-     * @param {string} code
-     * @param {Array} patterns
-     * @returns void
-     */
-    function _processCodeWithPatterns(code, patterns, callback)
-    {
-        // we have to increase the level here so that the
-        // replacements will not conflict with each other when
-        // processing sub blocks of code
-        ++CURRENT_LEVEL;
-
-        // patterns are processed one at a time through this function
-        function _workOnPatterns(patterns, i)
-        {
-            // still have patterns to process, keep going
-            if (i < patterns.length) {
-                return _processPattern(patterns[i]['pattern'], patterns[i], code, function() {
-                    _workOnPatterns(patterns, ++i);
-                });
-            }
-
-            // we are done processing the patterns
-            // process the replacements and update the DOM
-            _processReplacements(code, function(code) {
-
-                // when we are done processing replacements
-                // we are done at this level so we can go back down
-                delete replacements[CURRENT_LEVEL];
-                delete replacement_positions[CURRENT_LEVEL];
-                --CURRENT_LEVEL;
-                callback(code);
-            });
-        }
-
-        _workOnPatterns(patterns, 0);
-    }
-
-    /**
-     * process replacements in the string of code to actually update the markup
-     *
-     * @param {string} code         the code to process replacements in
-     * @param {Function} onComplete   what to do when we are done processing
-     * @returns void
-     */
-    function _processReplacements(code, onComplete) {
-
-        /**
-         * processes a single replacement
-         *
-         * @param {string} code
-         * @param {Array} positions
-         * @param {number} i
-         * @param {Function} onComplete
-         * @returns void
-         */
-        function _processReplacement(code, positions, i, onComplete) {
-            if (i < positions.length) {
-                ++replacement_counter;
-                var pos = positions[i],
-                    replacement = replacements[CURRENT_LEVEL][pos];
-                code = _replaceAtPosition(pos, replacement['replace'], replacement['with'], code);
-
-                // process next function
-                var next = function() {
-                    _processReplacement(code, positions, ++i, onComplete);
-                };
-
-                // use a timeout every 250 to not freeze up the UI
-                return replacement_counter % 250 > 0 ? next() : setTimeout(next, 0);
-            }
-
-            onComplete(code);
-        }
-
-        var string_positions = keys(replacements[CURRENT_LEVEL]);
-        _processReplacement(code, string_positions, 0, onComplete);
-    }
-
-    /**
-     * takes a string of code and highlights it according to the language specified
-     *
-     * @param {string} code
-     * @param {string} language
-     * @param {Function} onComplete
-     * @returns void
-     */
-    function _highlightBlockForLanguage(code, language, onComplete) {
-        var patterns = _getPatternsForLanguage(language);
-        _processCodeWithPatterns(_htmlEntities(code), patterns, onComplete);
-    }
-
-    /**
-     * highlight an individual code block
-     *
-     * @param {Array} code_blocks
-     * @param {number} i
-     * @returns void
-     */
-    function _highlightCodeBlock(code_blocks, i, onComplete) {
-        if (i < code_blocks.length) {
-            var block = code_blocks[i],
-                language = _getLanguageForBlock(block);
-
-            if (!_hasClass(block, 'rainbow') && language) {
-                language = language.toLowerCase();
-
-                _addClass(block, 'rainbow');
-
-                return _highlightBlockForLanguage(block.innerHTML, language, function(code) {
-                    block.innerHTML = code;
-
-                    // reset the replacement arrays
-                    replacements = {};
-                    replacement_positions = {};
-
-                    // if you have a listener attached tell it that this block is now highlighted
-                    if (onHighlight) {
-                        onHighlight(block, language);
-                    }
-
-                    // process the next block
-                    setTimeout(function() {
-                        _highlightCodeBlock(code_blocks, ++i, onComplete);
-                    }, 0);
-                });
-            }
-            return _highlightCodeBlock(code_blocks, ++i, onComplete);
-        }
-
-        if (onComplete) {
-            onComplete();
-        }
-    }
-
-    /**
-     * start highlighting all the code blocks
-     *
-     * @returns void
-     */
-    function _highlight(node, onComplete) {
-
-        // the first argument can be an Event or a DOM Element
-        // I was originally checking instanceof Event but that makes it break
-        // when using mootools
-        //
-        // @see https://github.com/ccampbell/rainbow/issues/32
-        //
-        node = node && typeof node.getElementsByTagName == 'function' ? node : document;
-
-        var pre_blocks = node.getElementsByTagName('pre'),
-            code_blocks = node.getElementsByTagName('code'),
-            i,
-            final_pre_blocks = [],
-            final_code_blocks = [];
-
-        // first loop through all pre blocks to find which ones to highlight
-        // also strip whitespace
-        for (i = 0; i < pre_blocks.length; ++i) {
-
-            // strip whitespace around code tags when they are inside of a pre tag
-            // this makes the themes look better because you can't accidentally
-            // add extra linebreaks at the start and end
-            //
-            // when the pre tag contains a code tag then strip any extra whitespace
-            // for example
-            // <pre>
-            //      <code>var foo = true;</code>
-            // </pre>
-            //
-            // will become
-            // <pre><code>var foo = true;</code></pre>
-            //
-            // if you want to preserve whitespace you can use a pre tag on its own
-            // without a code tag inside of it
-            if (pre_blocks[i].getElementsByTagName('code').length) {
-                pre_blocks[i].innerHTML = pre_blocks[i].innerHTML.replace(/^\s+/, '').replace(/\s+$/, '');
-                continue;
-            }
-
-            // if the pre block has no code blocks then we are going to want to
-            // process it directly
-            final_pre_blocks.push(pre_blocks[i]);
-        }
-
-        // @see http://stackoverflow.com/questions/2735067/how-to-convert-a-dom-node-list-to-an-array-in-javascript
-        // we are going to process all <code> blocks
-        for (i = 0; i < code_blocks.length; ++i) {
-            final_code_blocks.push(code_blocks[i]);
-        }
-
-        _highlightCodeBlock(final_code_blocks.concat(final_pre_blocks), 0, onComplete);
-    }
-
-    /**
-     * public methods
-     */
-    return {
-
-        /**
-         * extends the language pattern matches
-         *
-         * @param {*} language     name of language
-         * @param {*} patterns      array of patterns to add on
-         * @param {boolean|null} bypass      if true this will bypass the default language patterns
-         */
-        extend: function(language, patterns, bypass) {
-
-            // if there is only one argument then we assume that we want to
-            // extend the default language rules
-            if (arguments.length == 1) {
-                patterns = language;
-                language = DEFAULT_LANGUAGE;
-            }
-
-            bypass_defaults[language] = bypass;
-            language_patterns[language] = patterns.concat(language_patterns[language] || []);
-        },
-
-        /**
-         * call back to let you do stuff in your app after a piece of code has been highlighted
-         *
-         * @param {Function} callback
-         */
-        onHighlight: function(callback) {
-            onHighlight = callback;
-        },
-
-        /**
-         * method to set a global class that will be applied to all spans
-         *
-         * @param {string} class_name
-         */
-        addClass: function(class_name) {
-            global_class = class_name;
-        },
-
-        /**
-         * starts the magic rainbow
-         *
-         * @returns void
-         */
-        color: function() {
-
-            // if you want to straight up highlight a string you can pass the string of code,
-            // the language, and a callback function
-            if (typeof arguments[0] == 'string') {
-                return _highlightBlockForLanguage(arguments[0], arguments[1], arguments[2]);
-            }
-
-            // if you pass a callback function then we rerun the color function
-            // on all the code and call the callback function on complete
-            if (typeof arguments[0] == 'function') {
-                return _highlight(0, arguments[0]);
-            }
-
-            // otherwise we use whatever node you passed in with an optional
-            // callback function as the second parameter
-            _highlight(arguments[0], arguments[1]);
-        }
-    };
-}) ();
-});
-require.register("segmentio-rainbow/js/language/c.js", function(exports, require, module){
-/**
- * C patterns
- *
- * @author Daniel Holden
- * @author Craig Campbell
- * @version 1.0.7
- */
-module.exports = ['c', [
-    {
-        'name': 'meta.preprocessor',
-        'matches': {
-            1: [
-                {
-                    'matches': {
-                        1: 'keyword.define',
-                        2: 'entity.name'
-                    },
-                    'pattern': /(\w+)\s(\w+)\b/g
-                },
-                {
-                    'name': 'keyword.define',
-                    'pattern': /endif/g
-                },
-                {
-                    'name': 'constant.numeric',
-                    'pattern': /\d+/g
-                },
-                {
-                    'matches': {
-                        1: 'keyword.include',
-                        2: 'string'
-                    },
-                    'pattern': /(include)\s(.*?)$/g
-                }
-            ]
-        },
-        'pattern': /\#([\S\s]*?)$/gm
-    },
-    {
-        'name': 'keyword',
-        'pattern': /\b(do|goto|typedef)\b/g
-    },
-    {
-        'name': 'entity.label',
-        'pattern': /\w+:/g
-    },
-    {
-        'matches': {
-            1: 'storage.type',
-            3: 'storage.type',
-            4: 'entity.name.function'
-        },
-        'pattern': /\b((un)?signed|const)? ?(void|char|short|int|long|float|double)\*? +((\w+)(?= ?\())?/g
-    },
-    {
-        'matches': {
-            2: 'entity.name.function'
-        },
-        'pattern': /(\w|\*) +((\w+)(?= ?\())/g
-    },
-    {
-        'name': 'storage.modifier',
-        'pattern': /\b(static|extern|auto|register|volatile|inline)\b/g
-    },
-    {
-        'name': 'support.type',
-        'pattern': /\b(struct|union|enum)\b/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/coffeescript.js", function(exports, require, module){
-/**
- * Coffeescript patterns
- *
- * @author Craig Campbell
- * @version 1.0
- */
-module.exports = ['coffeescript', [
-    {
-        'name': 'comment.block',
-        'pattern': /(\#{3})[\s\S]*\1/gm
-    },
-    {
-        'name': 'string.block',
-        'pattern': /('{3}|"{3})[\s\S]*\1/gm
-    },
-
-    /**
-     * multiline regex with comments
-     */
-    {
-        'name': 'string.regex',
-        'matches': {
-            2: {
-                'name': 'comment',
-                'pattern': /\#(.*?)\n/g
-            }
-        },
-        'pattern': /(\/{3})([\s\S]*)\1/gm
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\b(in|when|is|isnt|of|not|unless|until|super)(?=\b)/gi
-    },
-    {
-        'name': 'keyword.operator',
-        'pattern': /\?/g
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /\b(undefined|yes|on|no|off)\b/g
-    },
-    {
-        'name': 'keyword.variable.coffee',
-        'pattern': /@(\w+)/gi
-    },
-
-    /**
-     * reset global keywards from generic
-     */
-    {
-        'name': 'reset',
-        'pattern': /object|class|print/gi
-    },
-
-    /**
-     * named function
-     */
-    {
-        'matches' : {
-            1: 'entity.name.function',
-            2: 'keyword.operator',
-            3: {
-                    'name': 'function.argument.coffee',
-                    'pattern': /([\@\w]+)/g
-            },
-            4: 'keyword.function'
-        },
-        'pattern': /(\w+)\s{0,}(=|:)\s{0,}\((.*?)((-|=)&gt;)/gi
-    },
-
-    /**
-     * anonymous function
-     */
-    {
-        'matches': {
-            1: {
-                    'name': 'function.argument.coffee',
-                    'pattern': /([\@\w]+)/g
-            },
-            2: 'keyword.function'
-        },
-        'pattern': /\s\((.*?)\)\s{0,}((-|=)&gt;)/gi
-    },
-
-    /**
-     * direct function no arguments
-     */
-    {
-        'matches' : {
-            1: 'entity.name.function',
-            2: 'keyword.operator',
-            3: 'keyword.function'
-        },
-        'pattern': /(\w+)\s{0,}(=|:)\s{0,}((-|=)&gt;)/gi
-    },
-
-    /**
-     * class definitions
-     */
-    {
-        'matches': {
-            1: 'storage.class',
-            2: 'entity.name.class',
-            3: 'storage.modifier.extends',
-            4: 'entity.other.inherited-class'
-        },
-        'pattern': /\b(class)\s(\w+)(\sextends\s)?([\w\\]*)?\b/g
-    },
-
-    /**
-     * object instantiation
-     */
-    {
-        'matches': {
-            1: 'keyword.new',
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /\b(new)\s(.*?)(?=\s)/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/csharp.js", function(exports, require, module){
-/**
-* C# patterns
-*
-* @author Dan Stewart
-* @version 1.0.1
-*/
-module.exports = ['csharp', [
-	{
-        // @see http://msdn.microsoft.com/en-us/library/23954zh5.aspx
-		'name': 'constant',
-		'pattern': /\b(false|null|true)\b/g
-	},
-	{
-		// @see http://msdn.microsoft.com/en-us/library/x53a06bb%28v=vs.100%29.aspx
-		// Does not support putting an @ in front of a keyword which makes it not a keyword anymore.
-		'name': 'keyword',
-		'pattern': /\b(abstract|add|alias|ascending|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|descending|double|do|dynamic|else|enum|event|explicit|extern|false|finally|fixed|float|foreach|for|from|get|global|goto|group|if|implicit|int|interface|internal|into|in|is|join|let|lock|long|namespace|new|object|operator|orderby|out|override|params|partial|private|protected|public|readonly|ref|remove|return|sbyte|sealed|select|set|short|sizeof|stackalloc|static|string|struct|switch|this|throw|try|typeof|uint|unchecked|ulong|unsafe|ushort|using|value|var|virtual|void|volatile|where|while|yield)\b/g
-	},
-    {
-        'matches': {
-            1: 'keyword',
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /(typeof)\s([^\$].*?)(\)|;)/g
-    },
-    {
-        'matches': {
-            1: 'keyword.namespace',
-            2: {
-                'name': 'support.namespace',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /\b(namespace)\s(.*?);/g
-    },
-    {
-        'matches': {
-            1: 'storage.modifier',
-            2: 'storage.class',
-            3: 'entity.name.class',
-            4: 'storage.modifier.extends',
-            5: 'entity.other.inherited-class'
-        },
-        'pattern': /\b(abstract|sealed)?\s?(class)\s(\w+)(\sextends\s)?([\w\\]*)?\s?\{?(\n|\})/g
-    },
-    {
-        'name': 'keyword.static',
-        'pattern': /\b(static)\b/g
-    },
-    {
-        'matches': {
-            1: 'keyword.new',
-			2: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            }
-
-        },
-        'pattern': /\b(new)\s([^\$].*?)(?=\)|\(|;|&)/g
-    },
-	{
-		'name': 'string',
-		'pattern': /(")(.*?)\1/g
-	},
-	{
-		'name': 'integer',
-		'pattern': /\b(0x[\da-f]+|\d+)\b/g
-	},
-	{
-        'name': 'comment',
-        'pattern': /\/\*[\s\S]*?\*\/|(\/\/)[\s\S]*?$/gm
-    },
-	{
-		'name': 'operator',
-		// @see http://msdn.microsoft.com/en-us/library/6a71f45d%28v=vs.100%29.aspx
-		// ++ += + -- -= - <<= << <= => >>= >> >= != ! ~ ^ || && &= & ?? :: : *= * |= %= |= == =
-		'pattern': /(\+\+|\+=|\+|--|-=|-|&lt;&lt;=|&lt;&lt;|&lt;=|=&gt;|&gt;&gt;=|&gt;&gt;|&gt;=|!=|!|~|\^|\|\||&amp;&amp;|&amp;=|&amp;|\?\?|::|:|\*=|\*|\/=|%=|\|=|==|=)/g
-	},
-    {
-		// @see http://msdn.microsoft.com/en-us/library/ed8yd1ha%28v=vs.100%29.aspx
-		'name': 'preprocessor',
-		'pattern': /(\#if|\#else|\#elif|\#endif|\#define|\#undef|\#warning|\#error|\#line|\#region|\#endregion|\#pragma)[\s\S]*?$/gm
-	}
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/css.js", function(exports, require, module){
-/**
- * CSS patterns
- *
- * @author Craig Campbell
- * @version 1.0.8
- */
-module.exports = ['css', [
-    {
-        'name': 'comment',
-        'pattern': /\/\*[\s\S]*?\*\//gm
-    },
-    {
-        'name': 'constant.hex-color',
-        'pattern': /#([a-f0-9]{3}|[a-f0-9]{6})(?=;|\s|,|\))/gi
-    },
-    {
-        'matches': {
-            1: 'constant.numeric',
-            2: 'keyword.unit'
-        },
-        'pattern': /(\d+)(px|em|cm|s|%)?/g
-    },
-    {
-        'name': 'string',
-        'pattern': /('|")(.*?)\1/g
-    },
-    {
-        'name': 'support.css-property',
-        'matches': {
-            1: 'support.vendor-prefix'
-        },
-        'pattern': /(-o-|-moz-|-webkit-|-ms-)?[\w-]+(?=\s?:)(?!.*\{)/g
-    },
-    {
-        'matches': {
-            1: [
-                {
-                    'name': 'entity.name.sass',
-                    'pattern': /&amp;/g
-                },
-                {
-                    'name': 'direct-descendant',
-                    'pattern': /&gt;/g
-                },
-                {
-                    'name': 'entity.name.class',
-                    'pattern': /\.[\w\-_]+/g
-                },
-                {
-                    'name': 'entity.name.id',
-                    'pattern': /\#[\w\-_]+/g
-                },
-                {
-                    'name': 'entity.name.pseudo',
-                    'pattern': /:[\w\-_]+/g
-                },
-                {
-                    'name': 'entity.name.tag',
-                    'pattern': /\w+/g
-                }
-            ]
-        },
-        'pattern': /([\w\ ,:\.\#\&\;\-_]+)(?=.*\{)/g
-    },
-    {
-        'matches': {
-            2: 'support.vendor-prefix',
-            3: 'support.css-value'
-        },
-        'pattern': /(:|,)\s*(-o-|-moz-|-webkit-|-ms-)?([a-zA-Z-]*)(?=\b)(?!.*\{)/g
-    },
-    {
-        'matches': {
-            1: 'support.tag.style',
-            2: [
-                {
-                    'name': 'string',
-                    'pattern': /('|")(.*?)(\1)/g
-                },
-                {
-                    'name': 'entity.tag.style',
-                    'pattern': /(\w+)/g
-                }
-            ],
-            3: 'support.tag.style'
-        },
-        'pattern': /(&lt;\/?)(style.*?)(&gt;)/g
-    }
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/d.js", function(exports, require, module){
-/**
-* D patterns
-*
-* @author Matthew Brennan Jones
-* @version 1.0.1
-*/
-module.exports = ['d', [
-    {
-        'name': 'constant',
-        'pattern': /\b(false|null|true)\b/gm
-    },
-    {
-        // http://dlang.org/lex.html
-        'name': 'keyword',
-        'pattern': /\b(abstract|alias|align|asm|assert|auto|body|bool|break|byte|case|cast|catch|cdouble|cent|cfloat|char|class|const|continue|creal|dchar|debug|default|delegate|delete|deprecated|do|double|else|enum|export|extern|final|finally|float|for|foreach|foreach_reverse|function|goto|idouble|if|ifloat|immutable|import|in|inout|int|interface|invariant|ireal|is|lazy|long|macro|mixin|module|new|nothrow|null|out|override|package|pragma|private|protected|public|pure|real|ref|return|scope|shared|short|size_t|static|string|struct|super|switch|synchronized|template|this|throw|try|typedef|typeid|typeof|ubyte|ucent|uint|ulong|union|unittest|ushort|version|void|volatile|wchar|while|with|__FILE__|__LINE__|__gshared|__traits|__vector|__parameters)\b/gm
-    },
-    {
-        'matches': {
-            1: 'keyword',
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/gm
-            }
-        },
-        'pattern': /(typeof)\s([^\$].*?)(\)|;)/gm
-    },
-    {
-        'matches': {
-            1: 'keyword.namespace',
-            2: {
-                'name': 'support.namespace',
-                'pattern': /\w+/gm
-            }
-        },
-        'pattern': /\b(namespace)\s(.*?);/gm
-    },
-    {
-        'matches': {
-            1: 'storage.modifier',
-            2: 'storage.class',
-            3: 'entity.name.class',
-            4: 'storage.modifier.extends',
-            5: 'entity.other.inherited-class'
-        },
-        'pattern': /\b(abstract|sealed)?\s?(class)\s(\w+)(\sextends\s)?([\w\\]*)?\s?\{?(\n|\})/gm
-    },
-    {
-        'name': 'keyword.static',
-        'pattern': /\b(static)\b/gm
-    },
-    {
-        'matches': {
-            1: 'keyword.new',
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/gm
-            }
-
-        },
-        'pattern': /\b(new)\s([^\$].*?)(?=\)|\(|;|&)/gm
-    },
-    {
-        'name': 'string',
-        'pattern': /("|')(.*?)\1/gm
-    },
-    {
-        'name': 'integer',
-        'pattern': /\b(0x[\da-f]+|\d+)\b/gm
-    },
-    {
-        'name': 'comment',
-        'pattern': /\/\*[\s\S]*?\*\/|\/\+[\s\S]*?\+\/|(\/\/)[\s\S]*?$/gm
-    },
-    {
-        // http://dlang.org/operatoroverloading.html
-        'name': 'operator',
-        //  / /= &= && & |= || | -= -- - += ++ + <= << < <<= <>= <> > >>>= >>= >= >> >>> != !<>= !<> !<= !< !>= !> ! [ ] $ == = *= * %= % ^^= ^= ^^ ^ ~= ~ @ => :
-        'pattern': /(\/|\/=|&amp;=|&amp;&amp;|&amp;|\|=|\|\|\||\-=|\-\-|\-|\+=|\+\+|\+|&lt;=|&lt;&lt;|&lt;|&lt;&lt;=|&lt;&gt;=|&lt;&gt;|&gt;|&gt;&gt;&gt;=|&gt;&gt;=|&gt;=|&gt;&gt;|&gt;&gt;&gt;|!=|!&lt;&gt;=|!&lt;&gt;|!&lt;=|!&lt;|!&gt;=|!&gt;|!|[|]|\$|==|=|\*=|\*|%=|%|\^\^=|\^=|\^\^|\^|~=|~|@|=&gt;|\:)/gm
-    }
-], true];
-
-
-});
-require.register("segmentio-rainbow/js/language/generic.js", function(exports, require, module){
-/**
- * Generic language patterns
- *
- * @author Craig Campbell
- * @version 1.0.10
- */
-module.exports = [[
-    {
-        'matches': {
-            1: {
-                'name': 'keyword.operator',
-                'pattern': /\=/g
-            },
-            2: {
-                'name': 'string',
-                'matches': {
-                    'name': 'constant.character.escape',
-                    'pattern': /\\('|"){1}/g
-                }
-            }
-        },
-        'pattern': /(\(|\s|\[|\=|:)(('|")([^\\\1]|\\.)*?(\3))/gm
-    },
-    {
-        'name': 'comment',
-        'pattern': /\/\*[\s\S]*?\*\/|(\/\/|\#)[\s\S]*?$/gm
-    },
-    {
-        'name': 'constant.numeric',
-        'pattern': /\b(\d+(\.\d+)?(e(\+|\-)?\d+)?(f|d)?|0x[\da-f]+)\b/gi
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\b(and|array|as|b(ool(ean)?|reak)|c(ase|atch|har|lass|on(st|tinue))|d(ef|elete|o(uble)?)|e(cho|lse(if)?|xit|xtends|xcept)|f(inally|loat|or(each)?|unction)|global|if|import|int(eger)?|long|new|object|or|pr(int|ivate|otected)|public|return|self|st(ring|ruct|atic)|switch|th(en|is|row)|try|(un)?signed|var|void|while)(?=\(|\b)/gi
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /true|false|null/g
-    },
-    {
-        'name': 'keyword.operator',
-        'pattern': /\+|\!|\-|&(gt|lt|amp);|\||\*|\=/g
-    },
-    {
-        'matches': {
-            1: 'function.call'
-        },
-        'pattern': /(\w+?)(?=\()/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'entity.name.function'
-        },
-        'pattern': /(function)\s(.*?)(?=\()/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/go.js", function(exports, require, module){
-/**
- * GO Language
- *
- * @author Javier Aguirre
- * @version 1.0
- */
-module.exports = ['go', [
-    {
-        'matches': {
-            1: {
-                'name': 'keyword.operator',
-                'pattern': /\=/g
-            },
-            2: {
-                'name': 'string',
-                'matches': {
-                    'name': 'constant.character.escape',
-                    'pattern': /\\(`|"){1}/g
-                }
-            }
-        },
-        'pattern': /(\(|\s|\[|\=|:)((`|")([^\\\1]|\\.)*?(\3))/gm
-    },
-    {
-        'name': 'comment',
-        'pattern': /\/\*[\s\S]*?\*\/|(\/\/)[\s\S]*?$/gm
-    },
-    {
-        'name': 'constant.numeric',
-        'pattern': /\b(\d+(\.\d+)?(e(\+|\-)?\d+)?(f|d)?|0x[\da-f]+)\b/gi
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\b(break|c(ase|onst|ontinue)|d(efault|efer)|else|fallthrough|for|go(to)?|if|import|interface|map|package|range|return|select|struct|switch|type|var)(?=\(|\b)/gi
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /true|false|null|string|byte|rune|u?int(8|16|32|64)?|float(32|64)|complex(64|128)/g
-    },
-    {
-        'name': 'keyword.operator',
-        'pattern': /\+|\!|\-|&(gt|lt|amp);|\||\*|\:?=/g
-    },
-    {
-        'matches': {
-            1: 'function.call'
-        },
-        'pattern': /(\w+?)(?=\()/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'entity.name.function'
-        },
-        'pattern': /(func)\s(.*?)(?=\()/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/haskell.js", function(exports, require, module){
-/**
- * Haskell patterns
- *
- * @author Bruno Dias
- * @version 1.0.1
- */
-//TODO: {-# ... #-} stuff...
-module.exports = ['haskell', [
-	///- Comments
-	{
-		'name': 'comment',
-		'pattern': /\{\-\-[\s\S(\w+)]+[\-\-][\}$]/gm
-		// /\{\-{2}[\s\S(.*)]+[\-\-][\}$]/gm [multiple lines]
-	},
-	{
-		'name': 'comment',
-		'pattern': /\-\-(.*)/g
-		// /\-\-\s(.+)$/gm [single]
-	},
-	///- End Comments
-
-	///- Namespace (module)
-	{
-		'matches': {
-			1: 'keyword',
-			2: 'support.namespace'
-		},
-		'pattern': /\b(module)\s(\w+)\s[\(]?(\w+)?[\)?]\swhere/g
-	},
-	///- End Namespace (module)
-
-	///- Keywords and Operators
-	{
-		'name': 'keyword.operator',
-		'pattern': /\+|\!|\-|&(gt|lt|amp);|\/\=|\||\@|\:|\.|\+{2}|\:|\*|\=|#|\.{2}|(\\)[a-zA-Z_]/g
-	},
-	{
-		'name': 'keyword',
-		'pattern': /\b(case|class|foreign|hiding|qualified|data|family|default|deriving|do|else|if|import|in|infix|infixl|infixr|instance|let|in|otherwise|module|newtype|of|then|type|where)\b/g
-	},
-	{
-		'name': 'keyword',
-		'pattern': /[\`][a-zA-Z_']*?[\`]/g
-	},
-	///- End Keywords and Operators
-
-
-	///- Infix|Infixr|Infixl
-	{
-		'matches': {
-			1: 'keyword',
-			2: 'keyword.operator'
-		},
-		'pattern': /\b(infix|infixr|infixl)+\s\d+\s(\w+)*/g
-	},
-	///- End Infix|Infixr|Infixl
-
-	{
-		'name': 'entity.class',
-		'pattern': /\b([A-Z][A-Za-z0-9_']*)/g
-	},
-
-	// From c.js
-	{
-		'name': 'meta.preprocessor',
-		'matches': {
-			1: [
-				{
-					'matches': {
-						1: 'keyword.define',
-						2: 'entity.name'
-					},
-					'pattern': /(\w+)\s(\w+)\b/g
-				},
-				{
-					'name': 'keyword.define',
-					'pattern': /endif/g
-				},
-				{
-					'name': 'constant.numeric',
-					'pattern': /\d+/g
-				},
-				{
-					'matches': {
-						1: 'keyword.include',
-						2: 'string'
-					},
-				 'pattern': /(include)\s(.*?)$/g
-				}
-			]
-		},
-		'pattern': /^\#([\S\s]*?)$/gm
-	}
-]];
-
-});
-require.register("segmentio-rainbow/js/language/html.js", function(exports, require, module){
-/**
- * HTML patterns
- *
- * @author Craig Campbell
- * @version 1.0.7
- */
-module.exports = ['html', [
-    {
-        'name': 'source.php.embedded',
-        'matches': {
-            2: {
-                'language': 'php'
-            }
-        },
-        'pattern': /&lt;\?=?(?!xml)(php)?([\s\S]*?)(\?&gt;)/gm
-    },
-    {
-        'name': 'source.css.embedded',
-        'matches': {
-            0: {
-                'language': 'css'
-            }
-        },
-        'pattern': /&lt;style(.*?)&gt;([\s\S]*?)&lt;\/style&gt;/gm
-    },
-    {
-        'name': 'source.js.embedded',
-        'matches': {
-            0: {
-                'language': 'javascript'
-            }
-        },
-        'pattern': /&lt;script(?! src)(.*?)&gt;([\s\S]*?)&lt;\/script&gt;/gm
-    },
-    {
-        'name': 'comment.html',
-        'pattern': /&lt;\!--[\S\s]*?--&gt;/g
-    },
-    {
-        'matches': {
-            1: 'support.tag.open',
-            2: 'support.tag.close'
-        },
-        'pattern': /(&lt;)|(\/?\??&gt;)/g
-    },
-    {
-        'name': 'support.tag',
-        'matches': {
-            1: 'support.tag',
-            2: 'support.tag.special',
-            3: 'support.tag-name'
-        },
-        'pattern': /(&lt;\??)(\/|\!?)(\w+)/g
-    },
-    {
-        'matches': {
-            1: 'support.attribute'
-        },
-        'pattern': /([a-z-]+)(?=\=)/gi
-    },
-    {
-        'matches': {
-            1: 'support.operator',
-            2: 'string.quote',
-            3: 'string.value',
-            4: 'string.quote'
-        },
-        'pattern': /(=)('|")(.*?)(\2)/g
-    },
-    {
-        'matches': {
-            1: 'support.operator',
-            2: 'support.value'
-        },
-        'pattern': /(=)([a-zA-Z\-0-9]*)\b/g
-    },
-    {
-        'matches': {
-            1: 'support.attribute'
-        },
-        'pattern': /\s(\w+)(?=\s|&gt;)(?![\s\S]*&lt;)/g
-    }
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/java.js", function(exports, require, module){
-/**
-* Java patterns
-*
-* @author Leo Accend
-* @version 1.0.0
-*/
-module.exports = [ "java", [
-  {
-    name: "constant",
-    pattern: /\b(false|null|true|[A-Z_]+)\b/g
-  },
-  {
-    matches: {
-      1: "keyword",
-      2: "support.namespace"
-    },
-    pattern: /(import|package)\s(.+)/g
-  },
-  {
-    // see http://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html
-    name: "keyword",
-    pattern: /\b(abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while)\b/g
-  },
-  {
-    name: "string",
-    pattern: /(".*?")/g
-  },
-  {
-    name: "char",
-    pattern: /(')(.|\\.|\\u[\dA-Fa-f]{4})\1/g
-  },
-  {
-    name: "integer",
-    pattern: /\b(0x[\da-f]+|\d+)L?\b/g
-  },
-  {
-    name: "comment",
-    pattern: /\/\*[\s\S]*?\*\/|(\/\/).*?$/gm
-  },
-  {
-    name: "support.annotation",
-    pattern: /@\w+/g
-  },
-  {
-    matches: {
-      1: "entity.function"
-    },
-    pattern: /([^@\.\s]+)\(/g
-  },
-  {
-    name: "entity.class",
-    pattern: /\b([A-Z]\w*)\b/g
-  },
-  {
-    // see http://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html
-    name: "operator",
-    pattern: /(\+{1,2}|-{1,2}|~|!|\*|\/|%|(?:&lt;){1,2}|(?:&gt;){1,3}|instanceof|(?:&amp;){1,2}|\^|\|{1,2}|\?|:|(?:=|!|\+|-|\*|\/|%|\^|\||(?:&lt;){1,2}|(?:&gt;){1,3})?=)/g
-  }
-], true ];
-
-});
-require.register("segmentio-rainbow/js/language/javascript.js", function(exports, require, module){
-/**
- * Javascript patterns
- *
- * @author Craig Campbell
- * @version 1.0.8
- */
-module.exports = ['javascript', [
-
-    /**
-     * matches $. or $(
-     */
-    {
-        'name': 'selector',
-        'pattern': /(\s|^)\$(?=\.|\()/g
-    },
-    {
-        'name': 'support',
-        'pattern': /\b(window|document)\b/g
-    },
-    {
-        'matches': {
-            1: 'support.property'
-        },
-        'pattern': /\.(length|node(Name|Value))\b/g
-    },
-    {
-        'matches': {
-            1: 'support.function'
-        },
-        'pattern': /(setTimeout|setInterval)(?=\()/g
-
-    },
-    {
-        'matches': {
-            1: 'support.method'
-        },
-        'pattern': /\.(getAttribute|push|getElementById|getElementsByClassName|log|setTimeout|setInterval)(?=\()/g
-    },
-    {
-        'matches': {
-            1: 'support.tag.script',
-            2: [
-                {
-                    'name': 'string',
-                    'pattern': /('|")(.*?)(\1)/g
-                },
-                {
-                    'name': 'entity.tag.script',
-                    'pattern': /(\w+)/g
-                }
-            ],
-            3: 'support.tag.script'
-        },
-        'pattern': /(&lt;\/?)(script.*?)(&gt;)/g
-    },
-
-    /**
-     * matches any escaped characters inside of a js regex pattern
-     *
-     * @see https://github.com/ccampbell/rainbow/issues/22
-     *
-     * this was causing single line comments to fail so it now makes sure
-     * the opening / is not directly followed by a *
-     *
-     * @todo check that there is valid regex in match group 1
-     */
-    {
-        'name': 'string.regexp',
-        'matches': {
-            1: 'string.regexp.open',
-            2: {
-                'name': 'constant.regexp.escape',
-                'pattern': /\\(.){1}/g
-            },
-            3: 'string.regexp.close',
-            4: 'string.regexp.modifier'
-        },
-        'pattern': /(\/)(?!\*)(.+)(\/)([igm]{0,3})/g
-    },
-
-    /**
-     * matches runtime function declarations
-     */
-    {
-        'matches': {
-            1: 'storage',
-            3: 'entity.function'
-        },
-        'pattern': /(var)?(\s|^)(\S*)(?=\s?=\s?function\()/g
-    },
-
-    /**
-     * matches constructor call
-     */
-    {
-        'matches': {
-            1: 'keyword',
-            2: 'entity.function'
-        },
-        'pattern': /(new)\s+(.*)(?=\()/g
-    },
-
-    /**
-     * matches any function call in the style functionName: function()
-     */
-    {
-        'name': 'entity.function',
-        'pattern': /(\w+)(?=:\s{0,}function)/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/lua.js", function(exports, require, module){
-/**
- * Lua patterns
- *
- * @author Javier Aguirre
- * @version 1.0.1
- */
-module.exports = ['lua', [
-    {
-        'matches': {
-            1: {
-                'name': 'keyword.operator',
-                'pattern': /\=/g
-            },
-            2: {
-                'name': 'string',
-                'matches': {
-                    'name': 'constant.character.escape',
-                    'pattern': /\\('|"){1}/g
-                }
-            }
-        },
-        'pattern': /(\(|\s|\[|\=)(('|")([^\\\1]|\\.)*?(\3))/gm
-    },
-    {
-        'name': 'comment',
-        'pattern': /\-{2}\[{2}\-{2}[\s\S]*?\-{2}\]{2}\-{2}|(\-{2})[\s\S]*?$/gm
-    },
-    {
-        'name': 'constant.numeric',
-        'pattern': /\b(\d+(\.\d+)?(e(\+|\-)?\d+)?(f|d)?|0x[\da-f]+)\b/gi
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\b((a|e)nd|in|repeat|break|local|return|do|for|then|else(if)?|function|not|if|or|until|while)(?=\(|\b)/gi
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /true|false|nil/g
-    },
-    {
-        'name': 'keyword.operator',
-        'pattern': /\+|\!|\-|&(gt|lt|amp);|\||\*|\=|#|\.{2}/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'entity.name.function'
-        },
-        'pattern': /(function)\s+(\w+[\:|\.]?\w+?)(?=\()/g
-    },
-    {
-        'matches': {
-            1: 'support.function'
-        },
-        'pattern': /\b(print|require|module|\w+\.\w+)(?=\()/g
-    }
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/php.js", function(exports, require, module){
-/**
- * PHP patterns
- *
- * @author Craig Campbell
- * @version 1.0.8
- */
-module.exports = ['php', [
-    {
-        'name': 'support',
-        'pattern': /\becho\b/g
-    },
-    {
-        'matches': {
-            1: 'variable.dollar-sign',
-            2: 'variable'
-        },
-        'pattern': /(\$)(\w+)\b/g
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /true|false|null/ig
-    },
-    {
-        'name': 'constant',
-        'pattern': /\b[A-Z0-9_]{2,}\b/g
-    },
-    {
-        'name': 'keyword.dot',
-        'pattern': /\./g
-    },
-    {
-        'name': 'keyword',
-        'pattern': /\b(die|end(for(each)?|switch|if)|case|require(_once)?|include(_once)?)(?=\(|\b)/g
-    },
-    {
-        'matches': {
-            1: 'keyword',
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /(instanceof)\s([^\$].*?)(\)|;)/g
-    },
-
-    /**
-     * these are the top 50 most used PHP functions
-     * found from running a script and checking the frequency of each function
-     * over a bunch of popular PHP frameworks then combining the results
-     */
-    {
-        'matches': {
-            1: 'support.function'
-        },
-        'pattern': /\b(array(_key_exists|_merge|_keys|_shift)?|isset|count|empty|unset|printf|is_(array|string|numeric|object)|sprintf|each|date|time|substr|pos|str(len|pos|tolower|_replace|totime)?|ord|trim|in_array|implode|end|preg_match|explode|fmod|define|link|list|get_class|serialize|file|sort|mail|dir|idate|log|intval|header|chr|function_exists|dirname|preg_replace|file_exists)(?=\()/g
-    },
-    {
-        'name': 'variable.language.php-tag',
-        'pattern': /(&lt;\?(php)?|\?&gt;)/g
-    },
-    {
-        'matches': {
-            1: 'keyword.namespace',
-            2: {
-                'name': 'support.namespace',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /\b(namespace|use)\s(.*?);/g
-    },
-    {
-        'matches': {
-            1: 'storage.modifier',
-            2: 'storage.class',
-            3: 'entity.name.class',
-            4: 'storage.modifier.extends',
-            5: 'entity.other.inherited-class',
-            6: 'storage.modifier.extends',
-            7: 'entity.other.inherited-class'
-        },
-        'pattern': /\b(abstract|final)?\s?(class|interface|trait)\s(\w+)(\sextends\s)?([\w\\]*)?(\simplements\s)?([\w\\]*)?\s?\{?(\n|\})/g
-    },
-    {
-        'name': 'keyword.static',
-        'pattern': /self::|static::/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'support.magic'
-        },
-        'pattern': /(function)\s(__.*?)(?=\()/g
-    },
-    {
-        'matches': {
-            1: 'keyword.new',
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /\b(new)\s([^\$].*?)(?=\)|\(|;)/g
-    },
-    {
-        'matches': {
-            1: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            },
-            2: 'keyword.static'
-        },
-        'pattern': /([\w\\]*?)(::)(?=\b|\$)/g
-    },
-    {
-        'matches': {
-            2: {
-                'name': 'support.class',
-                'pattern': /\w+/g
-            }
-        },
-        'pattern': /(\(|,\s?)([\w\\]*?)(?=\s\$)/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/python.js", function(exports, require, module){
-/**
- * Python patterns
- *
- * @author Craig Campbell
- * @version 1.0.9
- */
-module.exports = ['python', [
-    /**
-     * don't highlight self as a keyword
-     */
-    {
-        'name': 'variable.self',
-        'pattern': /self/g
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /None|True|False|NotImplemented|\.\.\./g
-    },
-    {
-        'name': 'support.object',
-        'pattern': /object/g
-    },
-
-    /**
-     * built in python functions
-     *
-     * this entire list is 580 bytes minified / 379 bytes gzipped
-     *
-     * @see http://docs.python.org/library/functions.html
-     *
-     * @todo strip some out or consolidate the regexes with matching patterns?
-     */
-    {
-        'name': 'support.function.python',
-        'pattern': /\b(bs|divmod|input|open|staticmethod|all|enumerate|int|ord|str|any|eval|isinstance|pow|sum|basestring|execfile|issubclass|print|super|bin|file|iter|property|tuple|bool|filter|len|range|type|bytearray|float|list|raw_input|unichr|callable|format|locals|reduce|unicode|chr|frozenset|long|reload|vars|classmethod|getattr|map|repr|xrange|cmp|globals|max|reversed|zip|compile|hasattr|memoryview|round|__import__|complex|hash|min|set|apply|delattr|help|next|setattr|buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern)(?=\()/g
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\b(pass|lambda|with|is|not|in|from|elif|raise|del)(?=\(|\b)/g
-    },
-    {
-        'matches': {
-            1: 'storage.class',
-            2: 'entity.name.class',
-            3: 'entity.other.inherited-class'
-        },
-        'pattern': /(class)\s+(\w+)\((\w+?)\)/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'support.magic'
-        },
-        'pattern': /(def)\s+(__\w+)(?=\()/g
-    },
-    {
-        'name': 'support.magic',
-        'pattern': /__(name)__/g
-    },
-    {
-        'matches': {
-            1: 'keyword.control',
-            2: 'support.exception.type'
-        },
-        'pattern': /(except) (\w+):/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'entity.name.function'
-        },
-        'pattern': /(def)\s+(\w+)(?=\()/g
-    },
-    {
-        'name': 'entity.name.function.decorator',
-        'pattern': /@([\w\.]+)/g
-    },
-    {
-        'name': 'comment.docstring',
-        'pattern': /('{3}|"{3})[\s\S]*?\1/gm
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/r.js", function(exports, require, module){
-/**
- * R language patterns
- *
- * @author Simon Potter
- * @version 1.0
- */
-module.exports = ['r', [
-    /**
-     * Note that a valid variable name is of the form:
-     * [.a-zA-Z][0-9a-zA-Z._]*
-     */
-    {
-        'matches': {
-            1: {
-                'name': 'keyword.operator',
-                'pattern': /\=|<\-|&lt;-/g
-            },
-            2: {
-                'name': 'string',
-                'matches': {
-                    'name': 'constant.character.escape',
-                    'pattern': /\\('|"){1}/g
-                }
-            }
-        },
-        'pattern': /(\(|\s|\[|\=|:)(('|")([^\\\1]|\\.)*?(\3))/gm
-    },
-
-    /**
-     * Most of these are known via the Language Reference.
-     * The built-in constant symbols are known via ?Constants.
-     */
-    {
-        'matches': {
-            1: 'constant.language'
-        },
-        'pattern': /\b(NULL|NA|TRUE|FALSE|T|F|NaN|Inf|NA_integer_|NA_real_|NA_complex_|NA_character_)\b/g
-    },
-    {
-        'matches': {
-            1: 'constant.symbol'
-        },
-        'pattern': /[^0-9a-zA-Z\._](LETTERS|letters|month\.(abb|name)|pi)/g
-    },
-
-    /**
-     * @todo: The list subsetting operator isn't quite working properly.
-     *        It includes the previous variable when it should only match [[
-     */
-    {
-        'name': 'keyword.operator',
-        'pattern': /&lt;-|<-|-|==|&lt;=|<=|&gt;>|>=|<|>|&amp;&amp;|&&|&amp;|&|!=|\|\|?|\*|\+|\^|\/|%%|%\/%|\=|%in%|%\*%|%o%|%x%|\$|:|~|\[{1,2}|\]{1,2}/g
-    },
-    {
-        'matches': {
-            1: 'storage',
-            3: 'entity.function'
-        },
-        'pattern': /(\s|^)(.*)(?=\s?=\s?function\s\()/g
-    },
-    {
-        'matches': {
-            1: 'storage.function'
-        },
-        'pattern': /[^a-zA-Z0-9._](function)(?=\s*\()/g
-    },
-    {
-        'matches': {
-            1: 'namespace',
-            2: 'keyword.operator',
-            3: 'function.call'
-        },
-        'pattern': /([a-zA-Z][a-zA-Z0-9._]+)([:]{2,3})([.a-zA-Z][a-zA-Z0-9._]*(?=\s*\())\b/g
-    },
-
-    /*
-     * Note that we would perhaps match more builtin functions and
-     * variables, but there are so many that most are ommitted for now.
-     * See ?builtins for more info.
-     *
-     * @todo: Fix the case where we have a function like tmp.logical().
-     *        This should just be a function call, at the moment it's
-     *        only partly a function all.
-     */
-    {
-        'name': 'support.function',
-        'pattern': /(^|[^0-9a-zA-Z\._])(array|character|complex|data\.frame|double|integer|list|logical|matrix|numeric|vector)(?=\s*\()/g
-    }
-]];
-
-});
-require.register("segmentio-rainbow/js/language/ruby.js", function(exports, require, module){
-/**
- * Ruby patterns
- *
- * @author Matthew King
- * @author Jesse Farmer <jesse@20bits.com>
- * @author actsasflinn
- * @version 1.0.5
- */
-
-module.exports = ['ruby', [
-    /**
-     * Strings
-     *   1. No support for multi-line strings
-     */
-    {
-        'name': 'string',
-        'matches': {
-            1: 'string.open',
-            2: {
-                'name': 'string.keyword',
-                'pattern': /(\#\{.*?\})/g
-            },
-            3: 'string.close'
-        },
-        'pattern': /("|`)(.*?[^\\\1])?(\1)/g
-    },
-    {
-        'name': 'string',
-        'pattern': /('|"|`)([^\\\1\n]|\\.)*\1/g
-    },
-    {
-        'name': 'string',
-        'pattern': /%[qQ](?=(\(|\[|\{|&lt;|.)(.*?)(?:'|\)|\]|\}|&gt;|\1))(?:\(\2\)|\[\2\]|\{\2\}|\&lt;\2&gt;|\1\2\1)/g
-    },
-    /**
-     * Heredocs
-     * Heredocs of the form `<<'HTML' ... HTML` are unsupported.
-     */
-    {
-        'matches': {
-            1: 'string',
-            2: 'string',
-            3: 'string'
-        },
-        'pattern': /(&lt;&lt;)(\w+).*?$([\s\S]*?^\2)/gm
-    },
-    {
-        'matches': {
-            1: 'string',
-            2: 'string',
-            3: 'string'
-        },
-        'pattern': /(&lt;&lt;\-)(\w+).*?$([\s\S]*?\2)/gm
-    },
-    /**
-     * Regular expressions
-     * Escaped delimiter (`/\//`) is unsupported.
-     */
-    {
-        'name': 'string.regexp',
-        'matches': {
-            1: 'string.regexp',
-            2: {
-                'name': 'string.regexp',
-                'pattern': /\\(.){1}/g
-            },
-            3: 'string.regexp',
-            4: 'string.regexp'
-        },
-        'pattern': /(\/)(.*?)(\/)([a-z]*)/g
-    },
-    {
-        'name': 'string.regexp',
-        'matches': {
-            1: 'string.regexp',
-            2: {
-                'name': 'string.regexp',
-                'pattern': /\\(.){1}/g
-            },
-            3: 'string.regexp',
-            4: 'string.regexp'
-        },
-        'pattern': /%r(?=(\(|\[|\{|&lt;|.)(.*?)('|\)|\]|\}|&gt;|\1))(?:\(\2\)|\[\2\]|\{\2\}|\&lt;\2&gt;|\1\2\1)([a-z]*)/g
-    },
-    /**
-     * Comments
-     */
-    {
-        'name': 'comment',
-        'pattern': /#.*$/gm
-    },
-    {
-        'name': 'comment',
-        'pattern': /^\=begin[\s\S]*?\=end$/gm
-    },
-    /**
-     * Symbols
-     */
-    {
-        'matches': {
-            1: 'constant'
-        },
-        'pattern': /(\w+:)[^:]/g
-    },
-    {
-        'matches': {
-            1: 'constant.symbol'
-        },
-        'pattern': /[^:](:(?:\w+|(?=['"](.*?)['"])(?:"\2"|'\2')))/g
-    },
-    {
-        'name': 'constant.numeric',
-        'pattern': /\b(0x[\da-f]+|\d+)\b/g
-    },
-    {
-        'name': 'support.class',
-        'pattern': /\b[A-Z]\w*(?=((\.|::)[A-Za-z]|\[))/g
-    },
-    {
-        'name': 'constant',
-        'pattern': /\b[A-Z]\w*\b/g
-    },
-    /**
-     * Keywords, variables, constants, and operators
-     *   In Ruby some keywords are valid method names, e.g., MyClass#yield
-     *   Don't mark those instances as "keywords"
-     */
-    {
-        'matches': {
-            1: 'storage.class',
-            2: 'entity.name.class',
-            3: 'entity.other.inherited-class'
-        },
-        'pattern': /\s*(class)\s+((?:(?:::)?[A-Z]\w*)+)(?:\s+&lt;\s+((?:(?:::)?[A-Z]\w*)+))?/g
-    },
-    {
-        'matches': {
-            1: 'storage.module',
-            2: 'entity.name.class'
-        },
-        'pattern': /\s*(module)\s+((?:(?:::)?[A-Z]\w*)+)/g
-    },
-    {
-        'name': 'variable.global',
-        'pattern': /\$([a-zA-Z_]\w*)\b/g
-    },
-    {
-        'name': 'variable.class',
-        'pattern': /@@([a-zA-Z_]\w*)\b/g
-    },
-    {
-        'name': 'variable.instance',
-        'pattern': /@([a-zA-Z_]\w*)\b/g
-    },
-    {
-        'matches': {
-            1: 'keyword.control'
-        },
-        'pattern': /[^\.]\b(BEGIN|begin|case|class|do|else|elsif|END|end|ensure|for|if|in|module|rescue|then|unless|until|when|while)\b(?![?!])/g
-    },
-    {
-        'matches': {
-            1: 'keyword.control.pseudo-method'
-        },
-        'pattern': /[^\.]\b(alias|alias_method|break|next|redo|retry|return|super|undef|yield)\b(?![?!])|\bdefined\?|\bblock_given\?/g
-    },
-    {
-        'matches': {
-            1: 'constant.language'
-        },
-        'pattern': /\b(nil|true|false)\b(?![?!])/g
-    },
-    {
-        'matches': {
-            1: 'variable.language'
-        },
-        'pattern': /\b(__(FILE|LINE)__|self)\b(?![?!])/g
-    },
-    {
-        'matches': {
-            1: 'keyword.special-method'
-        },
-        'pattern': /\b(require|gem|initialize|new|loop|include|extend|raise|attr_reader|attr_writer|attr_accessor|attr|catch|throw|private|module_function|public|protected)\b(?![?!])/g
-    },
-    {
-        'name': 'keyword.operator',
-        'pattern': /\s\?\s|=|&lt;&lt;|&lt;&lt;=|%=|&=|\*=|\*\*=|\+=|\-=|\^=|\|{1,2}=|&lt;&lt;|&lt;=&gt;|&lt;(?!&lt;|=)|&gt;(?!&lt;|=|&gt;)|&lt;=|&gt;=|===|==|=~|!=|!~|%|&amp;|\*\*|\*|\+|\-|\/|\||~|&gt;&gt;/g
-    },
-    {
-        'matches': {
-            1: 'keyword.operator.logical'
-        },
-        'pattern': /[^\.]\b(and|not|or)\b/g
-    },
-
-    /**
-    * Functions
-    *   1. No support for marking function parameters
-    */
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'entity.name.function'
-        },
-        'pattern': /(def)\s(.*?)(?=(\s|\())/g
-    }
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/scheme.js", function(exports, require, module){
-/**
- * Scheme patterns
- *
- * @author Alex Queiroz <alex@artisancoder.com>
- * @version 1.0
- */
-module.exports = ['scheme', [
-    {
-        /* making peace with HTML */
-        'name': 'plain',
-        'pattern': /&gt;|&lt;/g
-    },
-    {
-        'name': 'comment',
-        'pattern': /;.*$/gm
-    },
-    {
-        'name': 'constant.language',
-        'pattern': /#t|#f|'\(\)/g
-    },
-    {
-        'name': 'constant.symbol',
-        'pattern': /'[^()\s#]+/g
-    },
-    {
-        'name': 'constant.number',
-        'pattern': /\b\d+(?:\.\d*)?\b/g
-    },
-    {
-        'name': 'string',
-        'pattern': /".+?"/g
-    },
-    {
-        'matches': {
-            1: 'storage.function',
-            2: 'variable'
-        },
-        'pattern': /\(\s*(define)\s+\(?(\S+)/g
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\(\s*(begin|define\-syntax|if|lambda|quasiquote|quote|set!|syntax\-rules|and|and\-let\*|case|cond|delay|do|else|or|let|let\*|let\-syntax|letrec|letrec\-syntax)(?=[\]()\s#])/g
-    },
-    {
-        'matches': {
-            1: 'entity.function'
-        },
-        'pattern': /\(\s*(eqv\?|eq\?|equal\?|number\?|complex\?|real\?|rational\?|integer\?|exact\?|inexact\?|=|<|>|<=|>=|zero\?|positive\?|negative\?|odd\?|even\?|max|min|\+|\-|\*|\/|abs|quotient|remainder|modulo|gcd|lcm|numerator|denominator|floor|ceiling|truncate|round|rationalize|exp|log|sin|cos|tan|asin|acos|atan|sqrt|expt|make\-rectangular|make\-polar|real\-part|imag\-part|magnitude|angle|exact\->inexact|inexact\->exact|number\->string|string\->number|not|boolean\?|pair\?|cons|car|cdr|set\-car!|set\-cdr!|caar|cadr|cdar|cddr|caaar|caadr|cadar|caddr|cdaar|cdadr|cddar|cdddr|caaaar|caaadr|caadar|caaddr|cadaar|cadadr|caddar|cadddr|cdaaar|cdaadr|cdadar|cdaddr|cddaar|cddadr|cdddar|cddddr|null\?|list\?|list|length|append|reverse|list\-tail|list\-ref|memq|memv|member|assq|assv|assoc|symbol\?|symbol\->string|string\->symbol|char\?|char=\?|char<\?|char>\?|char<=\?|char>=\?|char\-ci=\?|char\-ci<\?|char\-ci>\?|char\-ci<=\?|char\-ci>=\?|char\-alphabetic\?|char\-numeric\?|char\-whitespace\?|char\-upper\-case\?|char\-lower\-case\?|char\->integer|integer\->char|char\-upcase|char\-downcase|string\?|make\-string|string|string\-length|string\-ref|string\-set!|string=\?|string\-ci=\?|string<\?|string>\?|string<=\?|string>=\?|string\-ci<\?|string\-ci>\?|string\-ci<=\?|string\-ci>=\?|substring|string\-append|string\->list|list\->string|string\-copy|string\-fill!|vector\?|make\-vector|vector|vector\-length|vector\-ref|vector\-set!|vector\->list|list\->vector|vector\-fill!|procedure\?|apply|map|for\-each|force|call\-with\-current\-continuation|call\/cc|values|call\-with\-values|dynamic\-wind|eval|scheme\-report\-environment|null\-environment|interaction\-environment|call\-with\-input\-file|call\-with\-output\-file|input\-port\?|output\-port\?|current\-input\-port|current\-output\-port|with\-input\-from\-file|with\-output\-to\-file|open\-input\-file|open\-output\-file|close\-input\-port|close\-output\-port|read|read\-char|peek\-char|eof\-object\?|char\-ready\?|write|display|newline|write\-char|load|transcript\-on|transcript\-off)(?=[\]()\s#])/g
-    }
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/shell.js", function(exports, require, module){
-/**
- * Shell patterns
- *
- * @author Matthew King
- * @author Craig Campbell
- * @version 1.0.3
- */
-module.exports = ['shell', [
-    /**
-     * This handles the case where subshells contain quotes.
-     * For example: `"$(resolve_link "$name" || true)"`.
-     *
-     * Caveat: This really should match balanced parentheses, but cannot.
-     * @see http://stackoverflow.com/questions/133601/can-regular-expressions-be-used-to-match-nested-patterns
-     */
-    {
-        'name': 'shell',
-        'matches': {
-            1: {
-                'language': 'shell'
-            }
-        },
-        'pattern': /\$\(([\s\S]*?)\)/gm
-    },
-    {
-        'matches': {
-            2: 'string'
-        },
-        'pattern': /(\(|\s|\[|\=)(('|")[\s\S]*?(\3))/gm
-    },
-    {
-        'name': 'keyword.operator',
-        'pattern': /&lt;|&gt;|&amp;/g
-    },
-    {
-        'name': 'comment',
-        'pattern': /\#[\s\S]*?$/gm
-    },
-    {
-        'name': 'storage.function',
-        'pattern': /(.+?)(?=\(\)\s{0,}\{)/g
-    },
-    /**
-     * Environment variables
-     */
-    {
-        'name': 'support.command',
-        'pattern': /\b(echo|rm|ls|(mk|rm)dir|cd|find|cp|exit|pwd|exec|trap|source|shift|unset)/g
-    },
-    {
-        'matches': {
-            1: 'keyword'
-        },
-        'pattern': /\b(break|case|continue|do|done|elif|else|esac|eval|export|fi|for|function|if|in|local|return|set|then|unset|until|while)(?=\(|\b)/g
-    }
-], true];
-
-});
-require.register("segmentio-rainbow/js/language/smalltalk.js", function(exports, require, module){
-/**
- * Smalltalk patterns
- *
- * @author Frank Shearar <frank@angband.za.org>
- * @version 1.0
- */
-module.exports = ['smalltalk', [
-    {
-        'name': 'keyword.pseudovariable',
-        'pattern': /self|thisContext/g
-    },
-    {
-        'name': 'keyword.constant',
-        'pattern': /false|nil|true/g
-    },
-    {
-        'name': 'string',
-        'pattern': /'([^']|'')*'/g
-    },
-    {
-        'name': 'string.symbol',
-        'pattern': /#\w+|#'([^']|'')*'/g
-    },
-    {
-        'name': 'string.character',
-        'pattern': /\$\w+/g
-    },
-    {
-        'name': 'comment',
-        'pattern': /"([^"]|"")*"/g
-    },
-    {
-        'name': 'constant.numeric',
-        'pattern': /-?\d+(\.\d+)?((r-?|s)[A-Za-z0-9]+|e-?[0-9]+)?/g
-    },
-    {
-        'name': 'entity.name.class',
-        'pattern': /\b[A-Z]\w*/g
-    },
-    {
-        'name': 'entity.name.function',
-        'pattern': /\b[a-z]\w*:?/g
-    },
-    {
-        'name': 'entity.name.binary',
-        'pattern': /(&lt;|&gt;|&amp;|[=~\|\\\/!@*\-_+])+/g
-    },
-    {
-        'name': 'operator.delimiter',
-        'pattern': /;[\(\)\[\]\{\}]|#\[|#\(^\./g
-    }
-], true];
-
-});
-require.register("solutionio-async/index.js", function(exports, require, module){
-/*global setTimeout: false, console: false */
-(function () {
-
-    var async = {};
-
-    // global on the server, window in the browser
-    var root = this,
-        previous_async = root.async;
-
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = async;
-    }
-    else {
-        root.async = async;
-    }
-
-    async.noConflict = function () {
-        root.async = previous_async;
-        return async;
-    };
-
-    //// cross-browser compatiblity functions ////
-
-    var _forEach = function (arr, iterator) {
-        if (arr.forEach) {
-            return arr.forEach(iterator);
-        }
-        for (var i = 0; i < arr.length; i += 1) {
-            iterator(arr[i], i, arr);
-        }
-    };
-
-    var _map = function (arr, iterator) {
-        if (arr.map) {
-            return arr.map(iterator);
-        }
-        var results = [];
-        _forEach(arr, function (x, i, a) {
-            results.push(iterator(x, i, a));
-        });
-        return results;
-    };
-
-    var _reduce = function (arr, iterator, memo) {
-        if (arr.reduce) {
-            return arr.reduce(iterator, memo);
-        }
-        _forEach(arr, function (x, i, a) {
-            memo = iterator(memo, x, i, a);
-        });
-        return memo;
-    };
-
-    var _keys = function (obj) {
-        if (Object.keys) {
-            return Object.keys(obj);
-        }
-        var keys = [];
-        for (var k in obj) {
-            if (obj.hasOwnProperty(k)) {
-                keys.push(k);
-            }
-        }
-        return keys;
-    };
-
-    //// exported async module functions ////
-
-    //// nextTick implementation with browser-compatible fallback ////
-    if (typeof process === 'undefined' || !(process.nextTick)) {
-        async.nextTick = function (fn) {
-            setTimeout(fn, 0);
-        };
-    }
-    else {
-        async.nextTick = process.nextTick;
-    }
-
-    async.forEach = function (arr, iterator, callback) {
-        callback = callback || function () {};
-        if (!arr.length) {
-            return callback();
-        }
-        var completed = 0;
-        _forEach(arr, function (x) {
-            iterator(x, function (err) {
-                if (err) {
-                    callback(err);
-                    callback = function () {};
-                }
-                else {
-                    completed += 1;
-                    if (completed === arr.length) {
-                        callback(null);
-                    }
-                }
-            });
-        });
-    };
-
-    async.forEachSeries = function (arr, iterator, callback) {
-        callback = callback || function () {};
-        if (!arr.length) {
-            return callback();
-        }
-        var completed = 0;
-        var iterate = function () {
-            iterator(arr[completed], function (err) {
-                if (err) {
-                    callback(err);
-                    callback = function () {};
-                }
-                else {
-                    completed += 1;
-                    if (completed === arr.length) {
-                        callback(null);
-                    }
-                    else {
-                        iterate();
-                    }
-                }
-            });
-        };
-        iterate();
-    };
-
-    async.forEachLimit = function (arr, limit, iterator, callback) {
-        callback = callback || function () {};
-        if (!arr.length || limit <= 0) {
-            return callback();
-        }
-        var completed = 0;
-        var started = 0;
-        var running = 0;
-
-        (function replenish () {
-            if (completed === arr.length) {
-                return callback();
-            }
-
-            while (running < limit && started < arr.length) {
-                started += 1;
-                running += 1;
-                iterator(arr[started - 1], function (err) {
-                    if (err) {
-                        callback(err);
-                        callback = function () {};
-                    }
-                    else {
-                        completed += 1;
-                        running -= 1;
-                        if (completed === arr.length) {
-                            callback();
-                        }
-                        else {
-                            replenish();
-                        }
-                    }
-                });
-            }
-        })();
-    };
-
-
-    var doParallel = function (fn) {
-        return function () {
-            var args = Array.prototype.slice.call(arguments);
-            return fn.apply(null, [async.forEach].concat(args));
-        };
-    };
-    var doSeries = function (fn) {
-        return function () {
-            var args = Array.prototype.slice.call(arguments);
-            return fn.apply(null, [async.forEachSeries].concat(args));
-        };
-    };
-
-
-    var _asyncMap = function (eachfn, arr, iterator, callback) {
-        var results = [];
-        arr = _map(arr, function (x, i) {
-            return {index: i, value: x};
-        });
-        eachfn(arr, function (x, callback) {
-            iterator(x.value, function (err, v) {
-                results[x.index] = v;
-                callback(err);
-            });
-        }, function (err) {
-            callback(err, results);
-        });
-    };
-    async.map = doParallel(_asyncMap);
-    async.mapSeries = doSeries(_asyncMap);
-
-
-    // reduce only has a series version, as doing reduce in parallel won't
-    // work in many situations.
-    async.reduce = function (arr, memo, iterator, callback) {
-        async.forEachSeries(arr, function (x, callback) {
-            iterator(memo, x, function (err, v) {
-                memo = v;
-                callback(err);
-            });
-        }, function (err) {
-            callback(err, memo);
-        });
-    };
-    // inject alias
-    async.inject = async.reduce;
-    // foldl alias
-    async.foldl = async.reduce;
-
-    async.reduceRight = function (arr, memo, iterator, callback) {
-        var reversed = _map(arr, function (x) {
-            return x;
-        }).reverse();
-        async.reduce(reversed, memo, iterator, callback);
-    };
-    // foldr alias
-    async.foldr = async.reduceRight;
-
-    var _filter = function (eachfn, arr, iterator, callback) {
-        var results = [];
-        arr = _map(arr, function (x, i) {
-            return {index: i, value: x};
-        });
-        eachfn(arr, function (x, callback) {
-            iterator(x.value, function (v) {
-                if (v) {
-                    results.push(x);
-                }
-                callback();
-            });
-        }, function (err) {
-            callback(_map(results.sort(function (a, b) {
-                return a.index - b.index;
-            }), function (x) {
-                return x.value;
-            }));
-        });
-    };
-    async.filter = doParallel(_filter);
-    async.filterSeries = doSeries(_filter);
-    // select alias
-    async.select = async.filter;
-    async.selectSeries = async.filterSeries;
-
-    var _reject = function (eachfn, arr, iterator, callback) {
-        var results = [];
-        arr = _map(arr, function (x, i) {
-            return {index: i, value: x};
-        });
-        eachfn(arr, function (x, callback) {
-            iterator(x.value, function (v) {
-                if (!v) {
-                    results.push(x);
-                }
-                callback();
-            });
-        }, function (err) {
-            callback(_map(results.sort(function (a, b) {
-                return a.index - b.index;
-            }), function (x) {
-                return x.value;
-            }));
-        });
-    };
-    async.reject = doParallel(_reject);
-    async.rejectSeries = doSeries(_reject);
-
-    var _detect = function (eachfn, arr, iterator, main_callback) {
-        eachfn(arr, function (x, callback) {
-            iterator(x, function (result) {
-                if (result) {
-                    main_callback(x);
-                    main_callback = function () {};
-                }
-                else {
-                    callback();
-                }
-            });
-        }, function (err) {
-            main_callback();
-        });
-    };
-    async.detect = doParallel(_detect);
-    async.detectSeries = doSeries(_detect);
-
-    async.some = function (arr, iterator, main_callback) {
-        async.forEach(arr, function (x, callback) {
-            iterator(x, function (v) {
-                if (v) {
-                    main_callback(true);
-                    main_callback = function () {};
-                }
-                callback();
-            });
-        }, function (err) {
-            main_callback(false);
-        });
-    };
-    // any alias
-    async.any = async.some;
-
-    async.every = function (arr, iterator, main_callback) {
-        async.forEach(arr, function (x, callback) {
-            iterator(x, function (v) {
-                if (!v) {
-                    main_callback(false);
-                    main_callback = function () {};
-                }
-                callback();
-            });
-        }, function (err) {
-            main_callback(true);
-        });
-    };
-    // all alias
-    async.all = async.every;
-
-    async.sortBy = function (arr, iterator, callback) {
-        async.map(arr, function (x, callback) {
-            iterator(x, function (err, criteria) {
-                if (err) {
-                    callback(err);
-                }
-                else {
-                    callback(null, {value: x, criteria: criteria});
-                }
-            });
-        }, function (err, results) {
-            if (err) {
-                return callback(err);
-            }
-            else {
-                var fn = function (left, right) {
-                    var a = left.criteria, b = right.criteria;
-                    return a < b ? -1 : a > b ? 1 : 0;
-                };
-                callback(null, _map(results.sort(fn), function (x) {
-                    return x.value;
-                }));
-            }
-        });
-    };
-
-    async.auto = function (tasks, callback) {
-        callback = callback || function () {};
-        var keys = _keys(tasks);
-        if (!keys.length) {
-            return callback(null);
-        }
-
-        var results = {};
-
-        var listeners = [];
-        var addListener = function (fn) {
-            listeners.unshift(fn);
-        };
-        var removeListener = function (fn) {
-            for (var i = 0; i < listeners.length; i += 1) {
-                if (listeners[i] === fn) {
-                    listeners.splice(i, 1);
-                    return;
-                }
-            }
-        };
-        var taskComplete = function () {
-            _forEach(listeners.slice(0), function (fn) {
-                fn();
-            });
-        };
-
-        addListener(function () {
-            if (_keys(results).length === keys.length) {
-                callback(null, results);
-                callback = function () {};
-            }
-        });
-
-        _forEach(keys, function (k) {
-            var task = (tasks[k] instanceof Function) ? [tasks[k]]: tasks[k];
-            var taskCallback = function (err) {
-                if (err) {
-                    callback(err);
-                    // stop subsequent errors hitting callback multiple times
-                    callback = function () {};
-                }
-                else {
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    if (args.length <= 1) {
-                        args = args[0];
-                    }
-                    results[k] = args;
-                    taskComplete();
-                }
-            };
-            var requires = task.slice(0, Math.abs(task.length - 1)) || [];
-            var ready = function () {
-                return _reduce(requires, function (a, x) {
-                    return (a && results.hasOwnProperty(x));
-                }, true) && !results.hasOwnProperty(k);
-            };
-            if (ready()) {
-                task[task.length - 1](taskCallback, results);
-            }
-            else {
-                var listener = function () {
-                    if (ready()) {
-                        removeListener(listener);
-                        task[task.length - 1](taskCallback, results);
-                    }
-                };
-                addListener(listener);
-            }
-        });
-    };
-
-    async.waterfall = function (tasks, callback) {
-        callback = callback || function () {};
-        if (!tasks.length) {
-            return callback();
-        }
-        var wrapIterator = function (iterator) {
-            return function (err) {
-                if (err) {
-                    callback(err);
-                    callback = function () {};
-                }
-                else {
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    var next = iterator.next();
-                    if (next) {
-                        args.push(wrapIterator(next));
-                    }
-                    else {
-                        args.push(callback);
-                    }
-                    async.nextTick(function () {
-                        iterator.apply(null, args);
-                    });
-                }
-            };
-        };
-        wrapIterator(async.iterator(tasks))();
-    };
-
-    async.parallel = function (tasks, callback) {
-        callback = callback || function () {};
-        if (tasks.constructor === Array) {
-            async.map(tasks, function (fn, callback) {
-                if (fn) {
-                    fn(function (err) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        if (args.length <= 1) {
-                            args = args[0];
-                        }
-                        callback.call(null, err, args);
-                    });
-                }
-            }, callback);
-        }
-        else {
-            var results = {};
-            async.forEach(_keys(tasks), function (k, callback) {
-                tasks[k](function (err) {
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    if (args.length <= 1) {
-                        args = args[0];
-                    }
-                    results[k] = args;
-                    callback(err);
-                });
-            }, function (err) {
-                callback(err, results);
-            });
-        }
-    };
-
-    async.series = function (tasks, callback) {
-        callback = callback || function () {};
-        if (tasks.constructor === Array) {
-            async.mapSeries(tasks, function (fn, callback) {
-                if (fn) {
-                    fn(function (err) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        if (args.length <= 1) {
-                            args = args[0];
-                        }
-                        callback.call(null, err, args);
-                    });
-                }
-            }, callback);
-        }
-        else {
-            var results = {};
-            async.forEachSeries(_keys(tasks), function (k, callback) {
-                tasks[k](function (err) {
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    if (args.length <= 1) {
-                        args = args[0];
-                    }
-                    results[k] = args;
-                    callback(err);
-                });
-            }, function (err) {
-                callback(err, results);
-            });
-        }
-    };
-
-    async.iterator = function (tasks) {
-        var makeCallback = function (index) {
-            var fn = function () {
-                if (tasks.length) {
-                    tasks[index].apply(null, arguments);
-                }
-                return fn.next();
-            };
-            fn.next = function () {
-                return (index < tasks.length - 1) ? makeCallback(index + 1): null;
-            };
-            return fn;
-        };
-        return makeCallback(0);
-    };
-
-    async.apply = function (fn) {
-        var args = Array.prototype.slice.call(arguments, 1);
-        return function () {
-            return fn.apply(
-                null, args.concat(Array.prototype.slice.call(arguments))
-            );
-        };
-    };
-
-    var _concat = function (eachfn, arr, fn, callback) {
-        var r = [];
-        eachfn(arr, function (x, cb) {
-            fn(x, function (err, y) {
-                r = r.concat(y || []);
-                cb(err);
-            });
-        }, function (err) {
-            callback(err, r);
-        });
-    };
-    async.concat = doParallel(_concat);
-    async.concatSeries = doSeries(_concat);
-
-    async.whilst = function (test, iterator, callback) {
-        if (test()) {
-            iterator(function (err) {
-                if (err) {
-                    return callback(err);
-                }
-                async.whilst(test, iterator, callback);
-            });
-        }
-        else {
-            callback();
-        }
-    };
-
-    async.until = function (test, iterator, callback) {
-        if (!test()) {
-            iterator(function (err) {
-                if (err) {
-                    return callback(err);
-                }
-                async.until(test, iterator, callback);
-            });
-        }
-        else {
-            callback();
-        }
-    };
-
-    async.queue = function (worker, concurrency) {
-        var workers = 0;
-        var q = {
-            tasks: [],
-            concurrency: concurrency,
-            saturated: null,
-            empty: null,
-            drain: null,
-            push: function (data, callback) {
-                if(data.constructor !== Array) {
-                    data = [data];
-                }
-                _forEach(data, function(task) {
-                    q.tasks.push({
-                        data: task,
-                        callback: typeof callback === 'function' ? callback : null
-                    });
-                    if (q.saturated && q.tasks.length == concurrency) {
-                        q.saturated();
-                    }
-                    async.nextTick(q.process);
-                });
-            },
-            process: function () {
-                if (workers < q.concurrency && q.tasks.length) {
-                    var task = q.tasks.shift();
-                    if(q.empty && q.tasks.length == 0) q.empty();
-                    workers += 1;
-                    worker(task.data, function () {
-                        workers -= 1;
-                        if (task.callback) {
-                            task.callback.apply(task, arguments);
-                        }
-                        if(q.drain && q.tasks.length + workers == 0) q.drain();
-                        q.process();
-                    });
-                }
-            },
-            length: function () {
-                return q.tasks.length;
-            },
-            running: function () {
-                return workers;
-            }
-        };
-        return q;
-    };
-
-    var _console_fn = function (name) {
-        return function (fn) {
-            var args = Array.prototype.slice.call(arguments, 1);
-            fn.apply(null, args.concat([function (err) {
-                var args = Array.prototype.slice.call(arguments, 1);
-                if (typeof console !== 'undefined') {
-                    if (err) {
-                        if (console.error) {
-                            console.error(err);
-                        }
-                    }
-                    else if (console[name]) {
-                        _forEach(args, function (x) {
-                            console[name](x);
-                        });
-                    }
-                }
-            }]));
-        };
-    };
-    async.log = _console_fn('log');
-    async.dir = _console_fn('dir');
-    /*async.info = _console_fn('info');
-    async.warn = _console_fn('warn');
-    async.error = _console_fn('error');*/
-
-    async.memoize = function (fn, hasher) {
-        var memo = {};
-        var queues = {};
-        hasher = hasher || function (x) {
-            return x;
-        };
-        var memoized = function () {
-            var args = Array.prototype.slice.call(arguments);
-            var callback = args.pop();
-            var key = hasher.apply(null, args);
-            if (key in memo) {
-                callback.apply(null, memo[key]);
-            }
-            else if (key in queues) {
-                queues[key].push(callback);
-            }
-            else {
-                queues[key] = [callback];
-                fn.apply(null, args.concat([function () {
-                    memo[key] = arguments;
-                    var q = queues[key];
-                    delete queues[key];
-                    for (var i = 0, l = q.length; i < l; i++) {
-                      q[i].apply(null, arguments);
-                    }
-                }]));
-            }
-        };
-        memoized.unmemoized = fn;
-        return memoized;
-    };
-
-    async.unmemoize = function (fn) {
-      return function () {
-        return (fn.unmemoized || fn).apply(null, arguments);
-      };
-    };
-	module.exports = async;
-}());
-
-});
-require.register("timoxley-next-tick/index.js", function(exports, require, module){
-"use strict"
-
-if (typeof setImmediate == 'function') {
-  module.exports = function(f){ setImmediate(f) }
-}
-// legacy node.js
-else if (typeof process != 'undefined' && typeof process.nextTick == 'function') {
-  module.exports = process.nextTick
-}
-// fallback for other environments / postMessage behaves badly on IE8
-else if (typeof window == 'undefined' || window.ActiveXObject || !window.postMessage) {
-  module.exports = function(f){ setTimeout(f) };
-} else {
-  var q = [];
-
-  window.addEventListener('message', function(){
-    var i = 0;
-    while (i < q.length) {
-      try { q[i++](); }
-      catch (e) {
-        q = q.slice(i);
-        window.postMessage('tic!', '*');
-        throw e;
-      }
-    }
-    q.length = 0;
-  }, true);
-
-  module.exports = function(fn){
-    if (!q.length) window.postMessage('tic!', '*');
-    q.push(fn);
-  }
-}
-
-});
-require.register("timoxley-async-compose/index.js", function(exports, require, module){
-var async = require('async.js')
-var nextTick = require('next-tick')
-
-module.exports = function compose(fns) {
-  return function(obj, done) {
-    async.reduce(fns, obj, function(obj, fn, callback){
-      fn = requireCallback(fn)
-      fn(obj, callback)
-    }, function(err, results) {
-      nextTick(function() {
-        done(err, results)
-      })
-    })
-  }
-}
-
-/**
- * Require function to return results in callback.
- *
- * @param {Function:obj, Function} fn
- * @return {Function}
- * @api private
- */
-
-function requireCallback(fn) {
-  if (fn.length !== 1) return fn
-  return function(obj, next) {
-    next(null, fn(obj))
-  }
-}
-
-});
-require.register("editor/index.js", function(exports, require, module){
-
-var bind = require('event').bind
-  , classes = require('classes')
-  , compose = require('async-compose')
-  , dom = require('dom')
-  , domify = require('domify')
-  , debounce = require('debounce')
-  , filters = require('./filters')
-  , history = require('history')
-  , marked = require('marked')
-  , template = require('./index.html')
-  , value = require('value');
-
-
-/**
- * Set some default markdown options.
- */
-
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  smartypants: true,
-  tables: true
-});
-
-
-/**
- * Expose `Editor`.
- */
-
-module.exports = Editor;
-
-
-/**
- * Initialize a new `Editor`.
- *
- * @param {Object} doc
- */
-
-function Editor (doc) {
-  this.model = doc;
-  this.el = domify(template);
-  this.input = this.el.querySelector('.editor-input');
-  this.output = this.el.querySelector('.editor-output');
-  this.bind();
-  this.render();
-}
-
-
-/**
- * Add a plugin.
- *
- * @param {Function} plugin
- */
-
-Editor.use = function (plugin) {
-  plugin(this);
-  return this;
-};
-
-
-/**
- * Add a filter, for transforming text, html or DOM elements.
- *
- * @param {String} name
- * @param {Function} callback
- */
-
-Editor.filter = function (name, callback) {
-  this._filters || (this._filters = {});
-  this._filters[name] || (this._filters[name] = []);
-  this._filters[name].push(callback);
-};
-
-
-/**
- * Bind to events.
- *
- * @return {Editor}
- */
-
-Editor.prototype.bind = function () {
-  var self = this;
-
-  // model change
-  this.model.on('change', this.render.bind(this));
-
-  // keyup
-  bind(this.input, 'keyup', this.onkeyup.bind(this));
-
-  // write button
-  var write = this.el.querySelector('.editor-write-button');
-  bind(write, 'click', function (e) {
-    'writing' === self._mode
-      ? self.mode(null)
-      : self.mode('writing');
-  });
-
-  // read button
-  var read = this.el.querySelector('.editor-read-button');
-  bind(read, 'click', function (e) {
-    'reading' === self._mode
-      ? self.mode(null)
-      : self.mode('reading');
-  });
-
-  return this;
-};
-
-
-/**
- * Render settings into the DOM.
- *
- * @param {Function} callback
- * @return {Editor}
- */
-
-Editor.prototype.render = function (callback) {
-  var attrs = this.model.toJSON();
-  var text = attrs.body;
-  if (!text) return;
-  value(this.input, text);
-
-  var self = this;
-  self.filter('text', text, function (err, text) {
-    if (err) throw err;
-    var html = marked(text);
-
-    self.filter('html', html, function (err, html) {
-      if (err) throw err;
-      var els = domify('<div>' + html + '</div>');
-
-      self.filter('dom', els, function (err, els) {
-        if (err) throw err;
-        dom(self.output).empty().append(els);
-        if ('function' === typeof callback) callback();
-      });
-    });
-  });
-
-  return this;
-};
-
-
-/**
- * Runs all the filters for a given `type`, and `callback`.
- *
- * @param {String} name
- * @param {Mixed} input
- * @param {Function} callback
- * @return {Editor}
- */
-
-Editor.prototype.filter = function (type, input, callback) {
-  var filter = compose(Editor._filters[type] || []);
-  filter(input, callback);
-  return this;
-};
-
-
-/**
- * Save settings to Firebase.
- *
- * @param {Object} attrs
- * @return {Editor}
- */
-
-Editor.prototype.save = function (attrs) {
-  this.model.set(attrs).save();
-  return this;
-};
-
-
-/**
- * Set the editor's mode.
- *
- * @param {String} mode - 'reading' or 'writing'
- */
-
-Editor.prototype.mode = function (mode) {
-  this._mode = mode;
-  classes(this.el).remove('writing').remove('reading');
-  if (mode) classes(this.el).add(mode);
-  history.replace('/' + this.model.primary() + '/' + (mode || ''));
-  return this;
-};
-
-
-/**
- * On keyup, take the textarea contents and save them to firebase.
- *
- * Debounced 100ms.
- */
-
-Editor.prototype.onkeyup = debounce(function (e) {
-  this.model.body(value(this.input));
-  var self = this;
-  this.render(function () {
-    self.save({ title: self.title() }); // grab the newest title
-  });
-}, 100);
-
-
-/**
- * Generate a title based on the body and date of the document.
- *
- * @param  {String} markdown
- * @param  {Date} created
- * @return {String}
- */
-
-Editor.prototype.title = function () {
-  var headings = dom(this.output).find('h1, h2, h3, h4, h5, h6');
-  return headings.length()
-    ? headings.first().text()
-    : '';
-};
-
-
-/**
- * Apply filters.
- */
-
-for (var key in filters) Editor.use(filters[key]);
-});
-require.register("editor/filters/index.js", function(exports, require, module){
-
-/**
- * Code highlighting.
- */
-
-exports.rainbow = require('./rainbow');
-
-
-/**
- * Latex support.
- */
-
-// exports.mathjax = require('./mathjax');
-});
-require.register("editor/filters/mathjax.js", function(exports, require, module){
-
-var MathJax = require('mathjax');
-
-
-/**
- * Configure.
- *
- * http://docs.mathjax.org/en/latest/config-files.html#the-tex-ams-mml-htmlormml-configuration-file
- */
-
-MathJax.Hub.Config({
-  config: ["MMLorHTML.js"],
-  jax: ["input/TeX","input/MathML","output/HTML-CSS","output/NativeMML"],
-  extensions: ["tex2jax.js","mml2jax.js","MathMenu.js","MathZoom.js"],
-  TeX: {
-    extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"]
-  },
-  tex2jax : {
-    displayMath : [['$$','$$'], ['\\[','\\]']],
-    inlineMath  : [['\\(','\\)']]
-  }
-});
-
-
-/**
- * Filter dom and turn it into MathJax.
- */
-
-module.exports = function (Editor) {
-  Editor.filter('dom', function (dom, done) {
-    MathJax.Hub.Queue(['Typeset'], MathJax.Hub, dom);
-    MathJax.Hub.Queue(function () {
-      done(null, dom);
-    });
-  });
-};
-});
-require.register("editor/filters/rainbow.js", function(exports, require, module){
-
-var Rainbow = require('rainbow');
-
-
-/**
- * Export our plugin.
- */
-
-module.exports = function (Editor) {
-  Editor.filter('dom', function (dom, done) {
-    Rainbow.color(dom, function () {
-      done(null, dom);
-    });
-  });
-};
-});
-require.register("component-keyname/index.js", function(exports, require, module){
-
-/**
- * Key name map.
- */
-
-var map = {
-  8: 'backspace',
-  9: 'tab',
-  13: 'enter',
-  16: 'shift',
-  17: 'ctrl',
-  18: 'alt',
-  20: 'capslock',
-  27: 'esc',
-  32: 'space',
-  33: 'pageup',
-  34: 'pagedown',
-  35: 'end',
-  36: 'home',
-  37: 'left',
-  38: 'up',
-  39: 'right',
-  40: 'down',
-  45: 'ins',
-  46: 'del',
-  91: 'meta',
-  93: 'meta',
-  224: 'meta'
-};
-
-/**
- * Return key name for `n`.
- *
- * @param {Number} n
- * @return {String}
- * @api public
- */
-
-module.exports = function(n){
-  return map[n];
-};
-});
-require.register("component-moment/index.js", function(exports, require, module){
-// moment.js
-// version : 2.0.0
-// author : Tim Wood
-// license : MIT
-// momentjs.com
-
-(function (undefined) {
-
-    /************************************
-        Constants
-    ************************************/
-
-    var moment,
-        VERSION = "2.0.0",
-        round = Math.round, i,
-        // internal storage for language config files
-        languages = {},
-
-        // check for nodeJS
-        hasModule = (typeof module !== 'undefined' && module.exports),
-
-        // ASP.NET json date format regex
-        aspNetJsonRegex = /^\/?Date\((\-?\d+)/i,
-
-        // format tokens
-        formattingTokens = /(\[[^\[]*\])|(\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|YYYYY|YYYY|YY|a|A|hh?|HH?|mm?|ss?|SS?S?|X|zz?|ZZ?|.)/g,
-        localFormattingTokens = /(\[[^\[]*\])|(\\)?(LT|LL?L?L?|l{1,4})/g,
-
-        // parsing tokens
-        parseMultipleFormatChunker = /([0-9a-zA-Z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)/gi,
-
-        // parsing token regexes
-        parseTokenOneOrTwoDigits = /\d\d?/, // 0 - 99
-        parseTokenOneToThreeDigits = /\d{1,3}/, // 0 - 999
-        parseTokenThreeDigits = /\d{3}/, // 000 - 999
-        parseTokenFourDigits = /\d{1,4}/, // 0 - 9999
-        parseTokenSixDigits = /[+\-]?\d{1,6}/, // -999,999 - 999,999
-        parseTokenWord = /[0-9]*[a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF]+\s*?[\u0600-\u06FF]+/i, // any word (or two) characters or numbers including two word month in arabic.
-        parseTokenTimezone = /Z|[\+\-]\d\d:?\d\d/i, // +00:00 -00:00 +0000 -0000 or Z
-        parseTokenT = /T/i, // T (ISO seperator)
-        parseTokenTimestampMs = /[\+\-]?\d+(\.\d{1,3})?/, // 123456789 123456789.123
-
-        // preliminary iso regex
-        // 0000-00-00 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000
-        isoRegex = /^\s*\d{4}-\d\d-\d\d((T| )(\d\d(:\d\d(:\d\d(\.\d\d?\d?)?)?)?)?([\+\-]\d\d:?\d\d)?)?/,
-        isoFormat = 'YYYY-MM-DDTHH:mm:ssZ',
-
-        // iso time formats and regexes
-        isoTimes = [
-            ['HH:mm:ss.S', /(T| )\d\d:\d\d:\d\d\.\d{1,3}/],
-            ['HH:mm:ss', /(T| )\d\d:\d\d:\d\d/],
-            ['HH:mm', /(T| )\d\d:\d\d/],
-            ['HH', /(T| )\d\d/]
-        ],
-
-        // timezone chunker "+10:00" > ["10", "00"] or "-1530" > ["-15", "30"]
-        parseTimezoneChunker = /([\+\-]|\d\d)/gi,
-
-        // getter and setter names
-        proxyGettersAndSetters = 'Month|Date|Hours|Minutes|Seconds|Milliseconds'.split('|'),
-        unitMillisecondFactors = {
-            'Milliseconds' : 1,
-            'Seconds' : 1e3,
-            'Minutes' : 6e4,
-            'Hours' : 36e5,
-            'Days' : 864e5,
-            'Months' : 2592e6,
-            'Years' : 31536e6
-        },
-
-        // format function strings
-        formatFunctions = {},
-
-        // tokens to ordinalize and pad
-        ordinalizeTokens = 'DDD w W M D d'.split(' '),
-        paddedTokens = 'M D H h m s w W'.split(' '),
-
-        formatTokenFunctions = {
-            M    : function () {
-                return this.month() + 1;
-            },
-            MMM  : function (format) {
-                return this.lang().monthsShort(this, format);
-            },
-            MMMM : function (format) {
-                return this.lang().months(this, format);
-            },
-            D    : function () {
-                return this.date();
-            },
-            DDD  : function () {
-                return this.dayOfYear();
-            },
-            d    : function () {
-                return this.day();
-            },
-            dd   : function (format) {
-                return this.lang().weekdaysMin(this, format);
-            },
-            ddd  : function (format) {
-                return this.lang().weekdaysShort(this, format);
-            },
-            dddd : function (format) {
-                return this.lang().weekdays(this, format);
-            },
-            w    : function () {
-                return this.week();
-            },
-            W    : function () {
-                return this.isoWeek();
-            },
-            YY   : function () {
-                return leftZeroFill(this.year() % 100, 2);
-            },
-            YYYY : function () {
-                return leftZeroFill(this.year(), 4);
-            },
-            YYYYY : function () {
-                return leftZeroFill(this.year(), 5);
-            },
-            a    : function () {
-                return this.lang().meridiem(this.hours(), this.minutes(), true);
-            },
-            A    : function () {
-                return this.lang().meridiem(this.hours(), this.minutes(), false);
-            },
-            H    : function () {
-                return this.hours();
-            },
-            h    : function () {
-                return this.hours() % 12 || 12;
-            },
-            m    : function () {
-                return this.minutes();
-            },
-            s    : function () {
-                return this.seconds();
-            },
-            S    : function () {
-                return ~~(this.milliseconds() / 100);
-            },
-            SS   : function () {
-                return leftZeroFill(~~(this.milliseconds() / 10), 2);
-            },
-            SSS  : function () {
-                return leftZeroFill(this.milliseconds(), 3);
-            },
-            Z    : function () {
-                var a = -this.zone(),
-                    b = "+";
-                if (a < 0) {
-                    a = -a;
-                    b = "-";
-                }
-                return b + leftZeroFill(~~(a / 60), 2) + ":" + leftZeroFill(~~a % 60, 2);
-            },
-            ZZ   : function () {
-                var a = -this.zone(),
-                    b = "+";
-                if (a < 0) {
-                    a = -a;
-                    b = "-";
-                }
-                return b + leftZeroFill(~~(10 * a / 6), 4);
-            },
-            X    : function () {
-                return this.unix();
-            }
-        };
-
-    function padToken(func, count) {
-        return function (a) {
-            return leftZeroFill(func.call(this, a), count);
-        };
-    }
-    function ordinalizeToken(func) {
-        return function (a) {
-            return this.lang().ordinal(func.call(this, a));
-        };
-    }
-
-    while (ordinalizeTokens.length) {
-        i = ordinalizeTokens.pop();
-        formatTokenFunctions[i + 'o'] = ordinalizeToken(formatTokenFunctions[i]);
-    }
-    while (paddedTokens.length) {
-        i = paddedTokens.pop();
-        formatTokenFunctions[i + i] = padToken(formatTokenFunctions[i], 2);
-    }
-    formatTokenFunctions.DDDD = padToken(formatTokenFunctions.DDD, 3);
-
-
-    /************************************
-        Constructors
-    ************************************/
-
-    function Language() {
-
-    }
-
-    // Moment prototype object
-    function Moment(config) {
-        extend(this, config);
-    }
-
-    // Duration Constructor
-    function Duration(duration) {
-        var data = this._data = {},
-            years = duration.years || duration.year || duration.y || 0,
-            months = duration.months || duration.month || duration.M || 0,
-            weeks = duration.weeks || duration.week || duration.w || 0,
-            days = duration.days || duration.day || duration.d || 0,
-            hours = duration.hours || duration.hour || duration.h || 0,
-            minutes = duration.minutes || duration.minute || duration.m || 0,
-            seconds = duration.seconds || duration.second || duration.s || 0,
-            milliseconds = duration.milliseconds || duration.millisecond || duration.ms || 0;
-
-        // representation for dateAddRemove
-        this._milliseconds = milliseconds +
-            seconds * 1e3 + // 1000
-            minutes * 6e4 + // 1000 * 60
-            hours * 36e5; // 1000 * 60 * 60
-        // Because of dateAddRemove treats 24 hours as different from a
-        // day when working around DST, we need to store them separately
-        this._days = days +
-            weeks * 7;
-        // It is impossible translate months into days without knowing
-        // which months you are are talking about, so we have to store
-        // it separately.
-        this._months = months +
-            years * 12;
-
-        // The following code bubbles up values, see the tests for
-        // examples of what that means.
-        data.milliseconds = milliseconds % 1000;
-        seconds += absRound(milliseconds / 1000);
-
-        data.seconds = seconds % 60;
-        minutes += absRound(seconds / 60);
-
-        data.minutes = minutes % 60;
-        hours += absRound(minutes / 60);
-
-        data.hours = hours % 24;
-        days += absRound(hours / 24);
-
-        days += weeks * 7;
-        data.days = days % 30;
-
-        months += absRound(days / 30);
-
-        data.months = months % 12;
-        years += absRound(months / 12);
-
-        data.years = years;
-    }
-
-
-    /************************************
-        Helpers
-    ************************************/
-
-
-    function extend(a, b) {
-        for (var i in b) {
-            if (b.hasOwnProperty(i)) {
-                a[i] = b[i];
-            }
-        }
-        return a;
-    }
-
-    function absRound(number) {
-        if (number < 0) {
-            return Math.ceil(number);
-        } else {
-            return Math.floor(number);
-        }
-    }
-
-    // left zero fill a number
-    // see http://jsperf.com/left-zero-filling for performance comparison
-    function leftZeroFill(number, targetLength) {
-        var output = number + '';
-        while (output.length < targetLength) {
-            output = '0' + output;
-        }
-        return output;
-    }
-
-    // helper function for _.addTime and _.subtractTime
-    function addOrSubtractDurationFromMoment(mom, duration, isAdding) {
-        var ms = duration._milliseconds,
-            d = duration._days,
-            M = duration._months,
-            currentDate;
-
-        if (ms) {
-            mom._d.setTime(+mom + ms * isAdding);
-        }
-        if (d) {
-            mom.date(mom.date() + d * isAdding);
-        }
-        if (M) {
-            currentDate = mom.date();
-            mom.date(1)
-                .month(mom.month() + M * isAdding)
-                .date(Math.min(currentDate, mom.daysInMonth()));
-        }
-    }
-
-    // check if is an array
-    function isArray(input) {
-        return Object.prototype.toString.call(input) === '[object Array]';
-    }
-
-    // compare two arrays, return the number of differences
-    function compareArrays(array1, array2) {
-        var len = Math.min(array1.length, array2.length),
-            lengthDiff = Math.abs(array1.length - array2.length),
-            diffs = 0,
-            i;
-        for (i = 0; i < len; i++) {
-            if (~~array1[i] !== ~~array2[i]) {
-                diffs++;
-            }
-        }
-        return diffs + lengthDiff;
-    }
-
-
-    /************************************
-        Languages
-    ************************************/
-
-
-    Language.prototype = {
-        set : function (config) {
-            var prop, i;
-            for (i in config) {
-                prop = config[i];
-                if (typeof prop === 'function') {
-                    this[i] = prop;
-                } else {
-                    this['_' + i] = prop;
-                }
-            }
-        },
-
-        _months : "January_February_March_April_May_June_July_August_September_October_November_December".split("_"),
-        months : function (m) {
-            return this._months[m.month()];
-        },
-
-        _monthsShort : "Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec".split("_"),
-        monthsShort : function (m) {
-            return this._monthsShort[m.month()];
-        },
-
-        monthsParse : function (monthName) {
-            var i, mom, regex, output;
-
-            if (!this._monthsParse) {
-                this._monthsParse = [];
-            }
-
-            for (i = 0; i < 12; i++) {
-                // make the regex if we don't have it already
-                if (!this._monthsParse[i]) {
-                    mom = moment([2000, i]);
-                    regex = '^' + this.months(mom, '') + '|^' + this.monthsShort(mom, '');
-                    this._monthsParse[i] = new RegExp(regex.replace('.', ''), 'i');
-                }
-                // test the regex
-                if (this._monthsParse[i].test(monthName)) {
-                    return i;
-                }
-            }
-        },
-
-        _weekdays : "Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),
-        weekdays : function (m) {
-            return this._weekdays[m.day()];
-        },
-
-        _weekdaysShort : "Sun_Mon_Tue_Wed_Thu_Fri_Sat".split("_"),
-        weekdaysShort : function (m) {
-            return this._weekdaysShort[m.day()];
-        },
-
-        _weekdaysMin : "Su_Mo_Tu_We_Th_Fr_Sa".split("_"),
-        weekdaysMin : function (m) {
-            return this._weekdaysMin[m.day()];
-        },
-
-        _longDateFormat : {
-            LT : "h:mm A",
-            L : "MM/DD/YYYY",
-            LL : "MMMM D YYYY",
-            LLL : "MMMM D YYYY LT",
-            LLLL : "dddd, MMMM D YYYY LT"
-        },
-        longDateFormat : function (key) {
-            var output = this._longDateFormat[key];
-            if (!output && this._longDateFormat[key.toUpperCase()]) {
-                output = this._longDateFormat[key.toUpperCase()].replace(/MMMM|MM|DD|dddd/g, function (val) {
-                    return val.slice(1);
-                });
-                this._longDateFormat[key] = output;
-            }
-            return output;
-        },
-
-        meridiem : function (hours, minutes, isLower) {
-            if (hours > 11) {
-                return isLower ? 'pm' : 'PM';
-            } else {
-                return isLower ? 'am' : 'AM';
-            }
-        },
-
-        _calendar : {
-            sameDay : '[Today at] LT',
-            nextDay : '[Tomorrow at] LT',
-            nextWeek : 'dddd [at] LT',
-            lastDay : '[Yesterday at] LT',
-            lastWeek : '[last] dddd [at] LT',
-            sameElse : 'L'
-        },
-        calendar : function (key, mom) {
-            var output = this._calendar[key];
-            return typeof output === 'function' ? output.apply(mom) : output;
-        },
-
-        _relativeTime : {
-            future : "in %s",
-            past : "%s ago",
-            s : "a few seconds",
-            m : "a minute",
-            mm : "%d minutes",
-            h : "an hour",
-            hh : "%d hours",
-            d : "a day",
-            dd : "%d days",
-            M : "a month",
-            MM : "%d months",
-            y : "a year",
-            yy : "%d years"
-        },
-        relativeTime : function (number, withoutSuffix, string, isFuture) {
-            var output = this._relativeTime[string];
-            return (typeof output === 'function') ?
-                output(number, withoutSuffix, string, isFuture) :
-                output.replace(/%d/i, number);
-        },
-        pastFuture : function (diff, output) {
-            var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-            return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);
-        },
-
-        ordinal : function (number) {
-            return this._ordinal.replace("%d", number);
-        },
-        _ordinal : "%d",
-
-        preparse : function (string) {
-            return string;
-        },
-
-        postformat : function (string) {
-            return string;
-        },
-
-        week : function (mom) {
-            return weekOfYear(mom, this._week.dow, this._week.doy);
-        },
-        _week : {
-            dow : 0, // Sunday is the first day of the week.
-            doy : 6  // The week that contains Jan 1st is the first week of the year.
-        }
-    };
-
-    // Loads a language definition into the `languages` cache.  The function
-    // takes a key and optionally values.  If not in the browser and no values
-    // are provided, it will load the language file module.  As a convenience,
-    // this function also returns the language values.
-    function loadLang(key, values) {
-        values.abbr = key;
-        if (!languages[key]) {
-            languages[key] = new Language();
-        }
-        languages[key].set(values);
-        return languages[key];
-    }
-
-    // Determines which language definition to use and returns it.
-    //
-    // With no parameters, it will return the global language.  If you
-    // pass in a language key, such as 'en', it will return the
-    // definition for 'en', so long as 'en' has already been loaded using
-    // moment.lang.
-    function getLangDefinition(key) {
-        if (!key) {
-            return moment.fn._lang;
-        }
-        if (!languages[key] && hasModule) {
-            require('./lang/' + key);
-        }
-        return languages[key];
-    }
-
-
-    /************************************
-        Formatting
-    ************************************/
-
-
-    function removeFormattingTokens(input) {
-        if (input.match(/\[.*\]/)) {
-            return input.replace(/^\[|\]$/g, "");
-        }
-        return input.replace(/\\/g, "");
-    }
-
-    function makeFormatFunction(format) {
-        var array = format.match(formattingTokens), i, length;
-
-        for (i = 0, length = array.length; i < length; i++) {
-            if (formatTokenFunctions[array[i]]) {
-                array[i] = formatTokenFunctions[array[i]];
-            } else {
-                array[i] = removeFormattingTokens(array[i]);
-            }
-        }
-
-        return function (mom) {
-            var output = "";
-            for (i = 0; i < length; i++) {
-                output += typeof array[i].call === 'function' ? array[i].call(mom, format) : array[i];
-            }
-            return output;
-        };
-    }
-
-    // format date using native date object
-    function formatMoment(m, format) {
-        var i = 5;
-
-        function replaceLongDateFormatTokens(input) {
-            return m.lang().longDateFormat(input) || input;
-        }
-
-        while (i-- && localFormattingTokens.test(format)) {
-            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);
-        }
-
-        if (!formatFunctions[format]) {
-            formatFunctions[format] = makeFormatFunction(format);
-        }
-
-        return formatFunctions[format](m);
-    }
-
-
-    /************************************
-        Parsing
-    ************************************/
-
-
-    // get the regex to find the next token
-    function getParseRegexForToken(token) {
-        switch (token) {
-        case 'DDDD':
-            return parseTokenThreeDigits;
-        case 'YYYY':
-            return parseTokenFourDigits;
-        case 'YYYYY':
-            return parseTokenSixDigits;
-        case 'S':
-        case 'SS':
-        case 'SSS':
-        case 'DDD':
-            return parseTokenOneToThreeDigits;
-        case 'MMM':
-        case 'MMMM':
-        case 'dd':
-        case 'ddd':
-        case 'dddd':
-        case 'a':
-        case 'A':
-            return parseTokenWord;
-        case 'X':
-            return parseTokenTimestampMs;
-        case 'Z':
-        case 'ZZ':
-            return parseTokenTimezone;
-        case 'T':
-            return parseTokenT;
-        case 'MM':
-        case 'DD':
-        case 'YY':
-        case 'HH':
-        case 'hh':
-        case 'mm':
-        case 'ss':
-        case 'M':
-        case 'D':
-        case 'd':
-        case 'H':
-        case 'h':
-        case 'm':
-        case 's':
-            return parseTokenOneOrTwoDigits;
-        default :
-            return new RegExp(token.replace('\\', ''));
-        }
-    }
-
-    // function to convert string input to date
-    function addTimeToArrayFromToken(token, input, config) {
-        var a, b,
-            datePartArray = config._a;
-
-        switch (token) {
-        // MONTH
-        case 'M' : // fall through to MM
-        case 'MM' :
-            datePartArray[1] = (input == null) ? 0 : ~~input - 1;
-            break;
-        case 'MMM' : // fall through to MMMM
-        case 'MMMM' :
-            a = getLangDefinition(config._l).monthsParse(input);
-            // if we didn't find a month name, mark the date as invalid.
-            if (a != null) {
-                datePartArray[1] = a;
-            } else {
-                config._isValid = false;
-            }
-            break;
-        // DAY OF MONTH
-        case 'D' : // fall through to DDDD
-        case 'DD' : // fall through to DDDD
-        case 'DDD' : // fall through to DDDD
-        case 'DDDD' :
-            if (input != null) {
-                datePartArray[2] = ~~input;
-            }
-            break;
-        // YEAR
-        case 'YY' :
-            datePartArray[0] = ~~input + (~~input > 68 ? 1900 : 2000);
-            break;
-        case 'YYYY' :
-        case 'YYYYY' :
-            datePartArray[0] = ~~input;
-            break;
-        // AM / PM
-        case 'a' : // fall through to A
-        case 'A' :
-            config._isPm = ((input + '').toLowerCase() === 'pm');
-            break;
-        // 24 HOUR
-        case 'H' : // fall through to hh
-        case 'HH' : // fall through to hh
-        case 'h' : // fall through to hh
-        case 'hh' :
-            datePartArray[3] = ~~input;
-            break;
-        // MINUTE
-        case 'm' : // fall through to mm
-        case 'mm' :
-            datePartArray[4] = ~~input;
-            break;
-        // SECOND
-        case 's' : // fall through to ss
-        case 'ss' :
-            datePartArray[5] = ~~input;
-            break;
-        // MILLISECOND
-        case 'S' :
-        case 'SS' :
-        case 'SSS' :
-            datePartArray[6] = ~~ (('0.' + input) * 1000);
-            break;
-        // UNIX TIMESTAMP WITH MS
-        case 'X':
-            config._d = new Date(parseFloat(input) * 1000);
-            break;
-        // TIMEZONE
-        case 'Z' : // fall through to ZZ
-        case 'ZZ' :
-            config._useUTC = true;
-            a = (input + '').match(parseTimezoneChunker);
-            if (a && a[1]) {
-                config._tzh = ~~a[1];
-            }
-            if (a && a[2]) {
-                config._tzm = ~~a[2];
-            }
-            // reverse offsets
-            if (a && a[0] === '+') {
-                config._tzh = -config._tzh;
-                config._tzm = -config._tzm;
-            }
-            break;
-        }
-
-        // if the input is null, the date is not valid
-        if (input == null) {
-            config._isValid = false;
-        }
-    }
-
-    // convert an array to a date.
-    // the array should mirror the parameters below
-    // note: all values past the year are optional and will default to the lowest possible value.
-    // [year, month, day , hour, minute, second, millisecond]
-    function dateFromArray(config) {
-        var i, date, input = [];
-
-        if (config._d) {
-            return;
-        }
-
-        for (i = 0; i < 7; i++) {
-            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];
-        }
-
-        // add the offsets to the time to be parsed so that we can have a clean array for checking isValid
-        input[3] += config._tzh || 0;
-        input[4] += config._tzm || 0;
-
-        date = new Date(0);
-
-        if (config._useUTC) {
-            date.setUTCFullYear(input[0], input[1], input[2]);
-            date.setUTCHours(input[3], input[4], input[5], input[6]);
-        } else {
-            date.setFullYear(input[0], input[1], input[2]);
-            date.setHours(input[3], input[4], input[5], input[6]);
-        }
-
-        config._d = date;
-    }
-
-    // date from string and format string
-    function makeDateFromStringAndFormat(config) {
-        // This array is used to make a Date, either with `new Date` or `Date.UTC`
-        var tokens = config._f.match(formattingTokens),
-            string = config._i,
-            i, parsedInput;
-
-        config._a = [];
-
-        for (i = 0; i < tokens.length; i++) {
-            parsedInput = (getParseRegexForToken(tokens[i]).exec(string) || [])[0];
-            if (parsedInput) {
-                string = string.slice(string.indexOf(parsedInput) + parsedInput.length);
-            }
-            // don't parse if its not a known token
-            if (formatTokenFunctions[tokens[i]]) {
-                addTimeToArrayFromToken(tokens[i], parsedInput, config);
-            }
-        }
-        // handle am pm
-        if (config._isPm && config._a[3] < 12) {
-            config._a[3] += 12;
-        }
-        // if is 12 am, change hours to 0
-        if (config._isPm === false && config._a[3] === 12) {
-            config._a[3] = 0;
-        }
-        // return
-        dateFromArray(config);
-    }
-
-    // date from string and array of format strings
-    function makeDateFromStringAndArray(config) {
-        var tempConfig,
-            tempMoment,
-            bestMoment,
-
-            scoreToBeat = 99,
-            i,
-            currentScore;
-
-        for (i = config._f.length; i > 0; i--) {
-            tempConfig = extend({}, config);
-            tempConfig._f = config._f[i - 1];
-            makeDateFromStringAndFormat(tempConfig);
-            tempMoment = new Moment(tempConfig);
-
-            if (tempMoment.isValid()) {
-                bestMoment = tempMoment;
-                break;
-            }
-
-            currentScore = compareArrays(tempConfig._a, tempMoment.toArray());
-
-            if (currentScore < scoreToBeat) {
-                scoreToBeat = currentScore;
-                bestMoment = tempMoment;
-            }
-        }
-
-        extend(config, bestMoment);
-    }
-
-    // date from iso format
-    function makeDateFromString(config) {
-        var i,
-            string = config._i;
-        if (isoRegex.exec(string)) {
-            config._f = 'YYYY-MM-DDT';
-            for (i = 0; i < 4; i++) {
-                if (isoTimes[i][1].exec(string)) {
-                    config._f += isoTimes[i][0];
-                    break;
-                }
-            }
-            if (parseTokenTimezone.exec(string)) {
-                config._f += " Z";
-            }
-            makeDateFromStringAndFormat(config);
-        } else {
-            config._d = new Date(string);
-        }
-    }
-
-    function makeDateFromInput(config) {
-        var input = config._i,
-            matched = aspNetJsonRegex.exec(input);
-
-        if (input === undefined) {
-            config._d = new Date();
-        } else if (matched) {
-            config._d = new Date(+matched[1]);
-        } else if (typeof input === 'string') {
-            makeDateFromString(config);
-        } else if (isArray(input)) {
-            config._a = input.slice(0);
-            dateFromArray(config);
-        } else {
-            config._d = input instanceof Date ? new Date(+input) : new Date(input);
-        }
-    }
-
-
-    /************************************
-        Relative Time
-    ************************************/
-
-
-    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize
-    function substituteTimeAgo(string, number, withoutSuffix, isFuture, lang) {
-        return lang.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
-    }
-
-    function relativeTime(milliseconds, withoutSuffix, lang) {
-        var seconds = round(Math.abs(milliseconds) / 1000),
-            minutes = round(seconds / 60),
-            hours = round(minutes / 60),
-            days = round(hours / 24),
-            years = round(days / 365),
-            args = seconds < 45 && ['s', seconds] ||
-                minutes === 1 && ['m'] ||
-                minutes < 45 && ['mm', minutes] ||
-                hours === 1 && ['h'] ||
-                hours < 22 && ['hh', hours] ||
-                days === 1 && ['d'] ||
-                days <= 25 && ['dd', days] ||
-                days <= 45 && ['M'] ||
-                days < 345 && ['MM', round(days / 30)] ||
-                years === 1 && ['y'] || ['yy', years];
-        args[2] = withoutSuffix;
-        args[3] = milliseconds > 0;
-        args[4] = lang;
-        return substituteTimeAgo.apply({}, args);
-    }
-
-
-    /************************************
-        Week of Year
-    ************************************/
-
-
-    // firstDayOfWeek       0 = sun, 6 = sat
-    //                      the day of the week that starts the week
-    //                      (usually sunday or monday)
-    // firstDayOfWeekOfYear 0 = sun, 6 = sat
-    //                      the first week is the week that contains the first
-    //                      of this day of the week
-    //                      (eg. ISO weeks use thursday (4))
-    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {
-        var end = firstDayOfWeekOfYear - firstDayOfWeek,
-            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day();
-
-
-        if (daysToDayOfWeek > end) {
-            daysToDayOfWeek -= 7;
-        }
-
-        if (daysToDayOfWeek < end - 7) {
-            daysToDayOfWeek += 7;
-        }
-
-        return Math.ceil(moment(mom).add('d', daysToDayOfWeek).dayOfYear() / 7);
-    }
-
-
-    /************************************
-        Top Level Functions
-    ************************************/
-
-    function makeMoment(config) {
-        var input = config._i,
-            format = config._f;
-
-        if (input === null || input === '') {
-            return null;
-        }
-
-        if (typeof input === 'string') {
-            config._i = input = getLangDefinition().preparse(input);
-        }
-
-        if (moment.isMoment(input)) {
-            config = extend({}, input);
-            config._d = new Date(+input._d);
-        } else if (format) {
-            if (isArray(format)) {
-                makeDateFromStringAndArray(config);
-            } else {
-                makeDateFromStringAndFormat(config);
-            }
-        } else {
-            makeDateFromInput(config);
-        }
-
-        return new Moment(config);
-    }
-
-    moment = function (input, format, lang) {
-        return makeMoment({
-            _i : input,
-            _f : format,
-            _l : lang,
-            _isUTC : false
-        });
-    };
-
-    // creating with utc
-    moment.utc = function (input, format, lang) {
-        return makeMoment({
-            _useUTC : true,
-            _isUTC : true,
-            _l : lang,
-            _i : input,
-            _f : format
-        });
-    };
-
-    // creating with unix timestamp (in seconds)
-    moment.unix = function (input) {
-        return moment(input * 1000);
-    };
-
-    // duration
-    moment.duration = function (input, key) {
-        var isDuration = moment.isDuration(input),
-            isNumber = (typeof input === 'number'),
-            duration = (isDuration ? input._data : (isNumber ? {} : input)),
-            ret;
-
-        if (isNumber) {
-            if (key) {
-                duration[key] = input;
-            } else {
-                duration.milliseconds = input;
-            }
-        }
-
-        ret = new Duration(duration);
-
-        if (isDuration && input.hasOwnProperty('_lang')) {
-            ret._lang = input._lang;
-        }
-
-        return ret;
-    };
-
-    // version number
-    moment.version = VERSION;
-
-    // default format
-    moment.defaultFormat = isoFormat;
-
-    // This function will load languages and then set the global language.  If
-    // no arguments are passed in, it will simply return the current global
-    // language key.
-    moment.lang = function (key, values) {
-        var i;
-
-        if (!key) {
-            return moment.fn._lang._abbr;
-        }
-        if (values) {
-            loadLang(key, values);
-        } else if (!languages[key]) {
-            getLangDefinition(key);
-        }
-        moment.duration.fn._lang = moment.fn._lang = getLangDefinition(key);
-    };
-
-    // returns language data
-    moment.langData = function (key) {
-        if (key && key._lang && key._lang._abbr) {
-            key = key._lang._abbr;
-        }
-        return getLangDefinition(key);
-    };
-
-    // compare moment object
-    moment.isMoment = function (obj) {
-        return obj instanceof Moment;
-    };
-
-    // for typechecking Duration objects
-    moment.isDuration = function (obj) {
-        return obj instanceof Duration;
-    };
-
-
-    /************************************
-        Moment Prototype
-    ************************************/
-
-
-    moment.fn = Moment.prototype = {
-
-        clone : function () {
-            return moment(this);
-        },
-
-        valueOf : function () {
-            return +this._d;
-        },
-
-        unix : function () {
-            return Math.floor(+this._d / 1000);
-        },
-
-        toString : function () {
-            return this.format("ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
-        },
-
-        toDate : function () {
-            return this._d;
-        },
-
-        toJSON : function () {
-            return moment.utc(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
-        },
-
-        toArray : function () {
-            var m = this;
-            return [
-                m.year(),
-                m.month(),
-                m.date(),
-                m.hours(),
-                m.minutes(),
-                m.seconds(),
-                m.milliseconds()
-            ];
-        },
-
-        isValid : function () {
-            if (this._isValid == null) {
-                if (this._a) {
-                    this._isValid = !compareArrays(this._a, (this._isUTC ? moment.utc(this._a) : moment(this._a)).toArray());
-                } else {
-                    this._isValid = !isNaN(this._d.getTime());
-                }
-            }
-            return !!this._isValid;
-        },
-
-        utc : function () {
-            this._isUTC = true;
-            return this;
-        },
-
-        local : function () {
-            this._isUTC = false;
-            return this;
-        },
-
-        format : function (inputString) {
-            var output = formatMoment(this, inputString || moment.defaultFormat);
-            return this.lang().postformat(output);
-        },
-
-        add : function (input, val) {
-            var dur;
-            // switch args to support add('s', 1) and add(1, 's')
-            if (typeof input === 'string') {
-                dur = moment.duration(+val, input);
-            } else {
-                dur = moment.duration(input, val);
-            }
-            addOrSubtractDurationFromMoment(this, dur, 1);
-            return this;
-        },
-
-        subtract : function (input, val) {
-            var dur;
-            // switch args to support subtract('s', 1) and subtract(1, 's')
-            if (typeof input === 'string') {
-                dur = moment.duration(+val, input);
-            } else {
-                dur = moment.duration(input, val);
-            }
-            addOrSubtractDurationFromMoment(this, dur, -1);
-            return this;
-        },
-
-        diff : function (input, units, asFloat) {
-            var that = this._isUTC ? moment(input).utc() : moment(input).local(),
-                zoneDiff = (this.zone() - that.zone()) * 6e4,
-                diff, output;
-
-            if (units) {
-                // standardize on singular form
-                units = units.replace(/s$/, '');
-            }
-
-            if (units === 'year' || units === 'month') {
-                diff = (this.daysInMonth() + that.daysInMonth()) * 432e5; // 24 * 60 * 60 * 1000 / 2
-                output = ((this.year() - that.year()) * 12) + (this.month() - that.month());
-                output += ((this - moment(this).startOf('month')) - (that - moment(that).startOf('month'))) / diff;
-                if (units === 'year') {
-                    output = output / 12;
-                }
-            } else {
-                diff = (this - that) - zoneDiff;
-                output = units === 'second' ? diff / 1e3 : // 1000
-                    units === 'minute' ? diff / 6e4 : // 1000 * 60
-                    units === 'hour' ? diff / 36e5 : // 1000 * 60 * 60
-                    units === 'day' ? diff / 864e5 : // 1000 * 60 * 60 * 24
-                    units === 'week' ? diff / 6048e5 : // 1000 * 60 * 60 * 24 * 7
-                    diff;
-            }
-            return asFloat ? output : absRound(output);
-        },
-
-        from : function (time, withoutSuffix) {
-            return moment.duration(this.diff(time)).lang(this.lang()._abbr).humanize(!withoutSuffix);
-        },
-
-        fromNow : function (withoutSuffix) {
-            return this.from(moment(), withoutSuffix);
-        },
-
-        calendar : function () {
-            var diff = this.diff(moment().startOf('day'), 'days', true),
-                format = diff < -6 ? 'sameElse' :
-                diff < -1 ? 'lastWeek' :
-                diff < 0 ? 'lastDay' :
-                diff < 1 ? 'sameDay' :
-                diff < 2 ? 'nextDay' :
-                diff < 7 ? 'nextWeek' : 'sameElse';
-            return this.format(this.lang().calendar(format, this));
-        },
-
-        isLeapYear : function () {
-            var year = this.year();
-            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-        },
-
-        isDST : function () {
-            return (this.zone() < moment([this.year()]).zone() ||
-                this.zone() < moment([this.year(), 5]).zone());
-        },
-
-        day : function (input) {
-            var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
-            return input == null ? day :
-                this.add({ d : input - day });
-        },
-
-        startOf: function (units) {
-            units = units.replace(/s$/, '');
-            // the following switch intentionally omits break keywords
-            // to utilize falling through the cases.
-            switch (units) {
-            case 'year':
-                this.month(0);
-                /* falls through */
-            case 'month':
-                this.date(1);
-                /* falls through */
-            case 'week':
-            case 'day':
-                this.hours(0);
-                /* falls through */
-            case 'hour':
-                this.minutes(0);
-                /* falls through */
-            case 'minute':
-                this.seconds(0);
-                /* falls through */
-            case 'second':
-                this.milliseconds(0);
-                /* falls through */
-            }
-
-            // weeks are a special case
-            if (units === 'week') {
-                this.day(0);
-            }
-
-            return this;
-        },
-
-        endOf: function (units) {
-            return this.startOf(units).add(units.replace(/s?$/, 's'), 1).subtract('ms', 1);
-        },
-
-        isAfter: function (input, units) {
-            units = typeof units !== 'undefined' ? units : 'millisecond';
-            return +this.clone().startOf(units) > +moment(input).startOf(units);
-        },
-
-        isBefore: function (input, units) {
-            units = typeof units !== 'undefined' ? units : 'millisecond';
-            return +this.clone().startOf(units) < +moment(input).startOf(units);
-        },
-
-        isSame: function (input, units) {
-            units = typeof units !== 'undefined' ? units : 'millisecond';
-            return +this.clone().startOf(units) === +moment(input).startOf(units);
-        },
-
-        zone : function () {
-            return this._isUTC ? 0 : this._d.getTimezoneOffset();
-        },
-
-        daysInMonth : function () {
-            return moment.utc([this.year(), this.month() + 1, 0]).date();
-        },
-
-        dayOfYear : function (input) {
-            var dayOfYear = round((moment(this).startOf('day') - moment(this).startOf('year')) / 864e5) + 1;
-            return input == null ? dayOfYear : this.add("d", (input - dayOfYear));
-        },
-
-        isoWeek : function (input) {
-            var week = weekOfYear(this, 1, 4);
-            return input == null ? week : this.add("d", (input - week) * 7);
-        },
-
-        week : function (input) {
-            var week = this.lang().week(this);
-            return input == null ? week : this.add("d", (input - week) * 7);
-        },
-
-        // If passed a language key, it will set the language for this
-        // instance.  Otherwise, it will return the language configuration
-        // variables for this instance.
-        lang : function (key) {
-            if (key === undefined) {
-                return this._lang;
-            } else {
-                this._lang = getLangDefinition(key);
-                return this;
-            }
-        }
-    };
-
-    // helper for adding shortcuts
-    function makeGetterAndSetter(name, key) {
-        moment.fn[name] = moment.fn[name + 's'] = function (input) {
-            var utc = this._isUTC ? 'UTC' : '';
-            if (input != null) {
-                this._d['set' + utc + key](input);
-                return this;
-            } else {
-                return this._d['get' + utc + key]();
-            }
-        };
-    }
-
-    // loop through and add shortcuts (Month, Date, Hours, Minutes, Seconds, Milliseconds)
-    for (i = 0; i < proxyGettersAndSetters.length; i ++) {
-        makeGetterAndSetter(proxyGettersAndSetters[i].toLowerCase().replace(/s$/, ''), proxyGettersAndSetters[i]);
-    }
-
-    // add shortcut for year (uses different syntax than the getter/setter 'year' == 'FullYear')
-    makeGetterAndSetter('year', 'FullYear');
-
-    // add plural methods
-    moment.fn.days = moment.fn.day;
-    moment.fn.weeks = moment.fn.week;
-    moment.fn.isoWeeks = moment.fn.isoWeek;
-
-    /************************************
-        Duration Prototype
-    ************************************/
-
-
-    moment.duration.fn = Duration.prototype = {
-        weeks : function () {
-            return absRound(this.days() / 7);
-        },
-
-        valueOf : function () {
-            return this._milliseconds +
-              this._days * 864e5 +
-              this._months * 2592e6;
-        },
-
-        humanize : function (withSuffix) {
-            var difference = +this,
-                output = relativeTime(difference, !withSuffix, this.lang());
-
-            if (withSuffix) {
-                output = this.lang().pastFuture(difference, output);
-            }
-
-            return this.lang().postformat(output);
-        },
-
-        lang : moment.fn.lang
-    };
-
-    function makeDurationGetter(name) {
-        moment.duration.fn[name] = function () {
-            return this._data[name];
-        };
-    }
-
-    function makeDurationAsGetter(name, factor) {
-        moment.duration.fn['as' + name] = function () {
-            return +this / factor;
-        };
-    }
-
-    for (i in unitMillisecondFactors) {
-        if (unitMillisecondFactors.hasOwnProperty(i)) {
-            makeDurationAsGetter(i, unitMillisecondFactors[i]);
-            makeDurationGetter(i.toLowerCase());
-        }
-    }
-
-    makeDurationAsGetter('Weeks', 6048e5);
-
-
-    /************************************
-        Default Lang
-    ************************************/
-
-
-    // Set default language, other languages will inherit from English.
-    moment.lang('en', {
-        ordinal : function (number) {
-            var b = number % 10,
-                output = (~~ (number % 100 / 10) === 1) ? 'th' :
-                (b === 1) ? 'st' :
-                (b === 2) ? 'nd' :
-                (b === 3) ? 'rd' : 'th';
-            return number + output;
-        }
-    });
-
-
-    /************************************
-        Exposing Moment
-    ************************************/
-
-
-    // CommonJS module is defined
-    if (hasModule) {
-        module.exports = moment;
-    }
-    /*global ender:false */
-    if (typeof ender === 'undefined') {
-        // here, `this` means `window` in the browser, or `global` on the server
-        // add `moment` as a global object via a string identifier,
-        // for Closure Compiler "advanced" mode
-        this['moment'] = moment;
-    }
-    /*global define:false */
-    if (typeof define === "function" && define.amd) {
-        define("moment", [], function () {
-            return moment;
-        });
-    }
-}).call(this);
-
-});
-require.register("component-events/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var events = require('event');
-var delegate = require('delegate');
-
-/**
- * Expose `Events`.
- */
-
-module.exports = Events;
-
-/**
- * Initialize an `Events` with the given
- * `el` object which events will be bound to,
- * and the `obj` which will receive method calls.
- *
- * @param {Object} el
- * @param {Object} obj
- * @api public
- */
-
-function Events(el, obj) {
-  if (!(this instanceof Events)) return new Events(el, obj);
-  if (!el) throw new Error('element required');
-  if (!obj) throw new Error('object required');
-  this.el = el;
-  this.obj = obj;
-  this._events = {};
-}
-
-/**
- * Subscription helper.
- */
-
-Events.prototype.sub = function(event, method, cb){
-  this._events[event] = this._events[event] || {};
-  this._events[event][method] = cb;
-};
-
-/**
- * Bind to `event` with optional `method` name.
- * When `method` is undefined it becomes `event`
- * with the "on" prefix.
- *
- * Examples:
- *
- *  Direct event handling:
- *
- *    events.bind('click') // implies "onclick"
- *    events.bind('click', 'remove')
- *    events.bind('click', 'sort', 'asc')
- *
- *  Delegated event handling:
- *
- *    events.bind('click li > a')
- *    events.bind('click li > a', 'remove')
- *    events.bind('click a.sort-ascending', 'sort', 'asc')
- *    events.bind('click a.sort-descending', 'sort', 'desc')
- *
- * @param {String} event
- * @param {String|function} [method]
- * @return {Function} callback
- * @api public
- */
-
-Events.prototype.bind = function(event, method){
-  var e = parse(event);
-  var el = this.el;
-  var obj = this.obj;
-  var name = e.name;
-  var method = method || 'on' + name;
-  var args = [].slice.call(arguments, 2);
-
-  // callback
-  function cb(){
-    var a = [].slice.call(arguments).concat(args);
-    obj[method].apply(obj, a);
-  }
-
-  // bind
-  if (e.selector) {
-    cb = delegate.bind(el, e.selector, name, cb);
-  } else {
-    events.bind(el, name, cb);
-  }
-
-  // subscription for unbinding
-  this.sub(name, method, cb);
-
-  return cb;
-};
-
-/**
- * Unbind a single binding, all bindings for `event`,
- * or all bindings within the manager.
- *
- * Examples:
- *
- *  Unbind direct handlers:
- *
- *     events.unbind('click', 'remove')
- *     events.unbind('click')
- *     events.unbind()
- *
- * Unbind delegate handlers:
- *
- *     events.unbind('click', 'remove')
- *     events.unbind('click')
- *     events.unbind()
- *
- * @param {String|Function} [event]
- * @param {String|Function} [method]
- * @api public
- */
-
-Events.prototype.unbind = function(event, method){
-  if (0 == arguments.length) return this.unbindAll();
-  if (1 == arguments.length) return this.unbindAllOf(event);
-
-  // no bindings for this event
-  var bindings = this._events[event];
-  if (!bindings) return;
-
-  // no bindings for this method
-  var cb = bindings[method];
-  if (!cb) return;
-
-  events.unbind(this.el, event, cb);
-};
-
-/**
- * Unbind all events.
- *
- * @api private
- */
-
-Events.prototype.unbindAll = function(){
-  for (var event in this._events) {
-    this.unbindAllOf(event);
-  }
-};
-
-/**
- * Unbind all events for `event`.
- *
- * @param {String} event
- * @api private
- */
-
-Events.prototype.unbindAllOf = function(event){
-  var bindings = this._events[event];
-  if (!bindings) return;
-
-  for (var method in bindings) {
-    this.unbind(event, method);
-  }
-};
-
-/**
- * Parse `event`.
- *
- * @param {String} event
- * @return {Object}
- * @api private
- */
-
-function parse(event) {
-  var parts = event.split(/ +/);
-  return {
-    name: parts.shift(),
-    selector: parts.join(' ')
-  }
-}
-
-});
-require.register("component-inherit/index.js", function(exports, require, module){
-
-module.exports = function(a, b){
-  var fn = function(){};
-  fn.prototype = b.prototype;
-  a.prototype = new fn;
-  a.prototype.constructor = a;
-};
-});
-require.register("component-format-parser/index.js", function(exports, require, module){
-
-/**
- * Parse the given format `str`.
- *
- * @param {String} str
- * @return {Array}
- * @api public
- */
-
-module.exports = function(str){
-	return str.split(/ *\| */).map(function(call){
-		var parts = call.split(':');
-		var name = parts.shift();
-		var args = parseArgs(parts.join(':'));
-
-		return {
-			name: name,
-			args: args
-		};
-	});
-};
-
-/**
- * Parse args `str`.
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-function parseArgs(str) {
-	var args = [];
-	var re = /"([^"]*)"|'([^']*)'|([^ \t,]+)/g;
-	var m;
-	
-	while (m = re.exec(str)) {
-		args.push(m[2] || m[1] || m[0]);
-	}
-	
-	return args;
-}
-
-});
-require.register("component-props/index.js", function(exports, require, module){
-
-/**
- * Return immediate identifiers parsed from `str`.
- *
- * @param {String} str
- * @return {Array}
- * @api public
- */
-
-module.exports = function(str, prefix){
-  var p = unique(props(str));
-  if (prefix) return prefixed(str, p, prefix);
-  return p;
-};
-
-/**
- * Return immediate identifiers in `str`.
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-function props(str) {
-  return str
-    .replace(/\.\w+|\w+ *\(|"[^"]*"|'[^']*'|\/([^/]+)\//g, '')
-    .match(/[a-zA-Z_]\w*/g)
-    || [];
-}
-
-/**
- * Return `str` with `props` prefixed with `prefix`.
- *
- * @param {String} str
- * @param {Array} props
- * @param {String} prefix
- * @return {String}
- * @api private
- */
-
-function prefixed(str, props, prefix) {
-  var re = /\.\w+|\w+ *\(|"[^"]*"|'[^']*'|\/([^/]+)\/|[a-zA-Z_]\w*/g;
-  return str.replace(re, function(_){
-    if ('(' == _[_.length - 1]) return prefix + _;
-    if (!~props.indexOf(_)) return _;
-    return prefix + _;
-  });
-}
-
-/**
- * Return unique array.
- *
- * @param {Array} arr
- * @return {Array}
- * @api private
- */
-
-function unique(arr) {
-  var ret = [];
-
-  for (var i = 0; i < arr.length; i++) {
-    if (~ret.indexOf(arr[i])) continue;
-    ret.push(arr[i]);
-  }
-
-  return ret;
-}
-
-});
-require.register("visionmedia-debug/index.js", function(exports, require, module){
-if ('undefined' == typeof window) {
-  module.exports = require('./lib/debug');
-} else {
-  module.exports = require('./debug');
-}
-
-});
-require.register("visionmedia-debug/debug.js", function(exports, require, module){
-
-/**
- * Expose `debug()` as the module.
- */
-
-module.exports = debug;
-
-/**
- * Create a debugger with the given `name`.
- *
- * @param {String} name
- * @return {Type}
- * @api public
- */
-
-function debug(name) {
-  if (!debug.enabled(name)) return function(){};
-
-  return function(fmt){
-    fmt = coerce(fmt);
-
-    var curr = new Date;
-    var ms = curr - (debug[name] || curr);
-    debug[name] = curr;
-
-    fmt = name
-      + ' '
-      + fmt
-      + ' +' + debug.humanize(ms);
-
-    // This hackery is required for IE8
-    // where `console.log` doesn't have 'apply'
-    window.console
-      && console.log
-      && Function.prototype.apply.call(console.log, console, arguments);
-  }
-}
-
-/**
- * The currently active debug mode names.
- */
-
-debug.names = [];
-debug.skips = [];
-
-/**
- * Enables a debug mode by name. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} name
- * @api public
- */
-
-debug.enable = function(name) {
-  try {
-    localStorage.debug = name;
-  } catch(e){}
-
-  var split = (name || '').split(/[\s,]+/)
-    , len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    name = split[i].replace('*', '.*?');
-    if (name[0] === '-') {
-      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
-    }
-    else {
-      debug.names.push(new RegExp('^' + name + '$'));
-    }
-  }
-};
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-debug.disable = function(){
-  debug.enable('');
-};
-
-/**
- * Humanize the given `ms`.
- *
- * @param {Number} m
- * @return {String}
- * @api private
- */
-
-debug.humanize = function(ms) {
-  var sec = 1000
-    , min = 60 * 1000
-    , hour = 60 * min;
-
-  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
-  if (ms >= min) return (ms / min).toFixed(1) + 'm';
-  if (ms >= sec) return (ms / sec | 0) + 's';
-  return ms + 'ms';
-};
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-debug.enabled = function(name) {
-  for (var i = 0, len = debug.skips.length; i < len; i++) {
-    if (debug.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (var i = 0, len = debug.names.length; i < len; i++) {
-    if (debug.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
- * Coerce `val`.
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-// persist
-
-try {
-  if (window.localStorage) debug.enable(localStorage.debug);
-} catch(e){}
-
-});
-require.register("component-reactive/lib/index.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var adapter = require('./adapter');
-var AttrBinding = require('./attr-binding');
-var TextBinding = require('./text-binding');
-var debug = require('debug')('reactive');
-var bindings = require('./bindings');
-var Binding = require('./binding');
-var utils = require('./utils');
-var query = require('query');
-
-/**
- * Expose `Reactive`.
- */
-
-exports = module.exports = Reactive;
-
-/**
- * Bindings.
- */
-
-exports.bindings = {};
-
-/**
- * Define subscription function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.subscribe = function(fn){
-  adapter.subscribe = fn;
-};
-
-/**
- * Define unsubscribe function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.unsubscribe = function(fn){
-  adapter.unsubscribe = fn;
-};
-
-/**
- * Define a get function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.get = function(fn) {
-  adapter.get = fn;
-};
-
-/**
- * Define a set function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.set = function(fn) {
-  adapter.set = fn;
-};
-
-/**
- * Expose adapter
- */
-
-exports.adapter = adapter;
-
-/**
- * Define binding `name` with callback `fn(el, val)`.
- *
- * @param {String} name or object
- * @param {String|Object} name
- * @param {Function} fn
- * @api public
- */
-
-exports.bind = function(name, fn){
-  if ('object' == typeof name) {
-    for (var key in name) {
-      exports.bind(key, name[key]);
-    }
-    return;
-  }
-
-  exports.bindings[name] = fn;
-};
-
-/**
- * Initialize a reactive template for `el` and `obj`.
- *
- * @param {Element} el
- * @param {Element} obj
- * @param {Object} options
- * @api public
- */
-
-function Reactive(el, obj, options) {
-  if (!(this instanceof Reactive)) return new Reactive(el, obj, options);
-  this.el = el;
-  this.obj = obj;
-  this.els = [];
-  this.fns = options || {}; // TODO: rename, this is awful
-  this.bindAll();
-  this.bindInterpolation(this.el, []);
-}
-
-/**
- * Subscribe to changes on `prop`.
- *
- * @param {String} prop
- * @param {Function} fn
- * @return {Reactive}
- * @api private
- */
-
-Reactive.prototype.sub = function(prop, fn){
-  adapter.subscribe(this.obj, prop, fn);
-  return this;
-};
-
-/**
- * Unsubscribe to changes from `prop`.
- *
- * @param {String} prop
- * @param {Function} fn
- * @return {Reactive}
- * @api private
- */
-
-Reactive.prototype.unsub = function(prop, fn){
-  adapter.unsubscribe(this.obj, prop, fn);
-  return this;
-};
-
-/**
- * Get a `prop`
- *
- * @param {String} prop
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-Reactive.prototype.get = function(prop) {
-  return adapter.get(this.obj, prop);
-};
-
-/**
- * Set a `prop`
- *
- * @param {String} prop
- * @param {Mixed} val
- * @return {Reactive}
- * @api private
- */
-
-Reactive.prototype.set = function(prop, val) {
-  adapter.set(this.obj, prop, val);
-  return this;
-};
-
-/**
- * Traverse and bind all interpolation within attributes and text.
- *
- * @param {Element} el
- * @api private
- */
-
-Reactive.prototype.bindInterpolation = function(el, els){
-
-  // element
-  if (el.nodeType == 1) {
-    for (var i = 0; i < el.attributes.length; i++) {
-      var attr = el.attributes[i];
-      if (utils.hasInterpolation(attr.value)) {
-        new AttrBinding(this, el, attr);
-      }
-    }
-  }
-
-  // text node
-  if (el.nodeType == 3) {
-    if (utils.hasInterpolation(el.data)) {
-      debug('bind text "%s"', el.data);
-      new TextBinding(this, el);
-    }
-  }
-
-  // walk nodes
-  for (var i = 0; i < el.childNodes.length; i++) {
-    var node = el.childNodes[i];
-    this.bindInterpolation(node, els);
-  }
-};
-
-/**
- * Apply all bindings.
- *
- * @api private
- */
-
-Reactive.prototype.bindAll = function() {
-  for (var name in exports.bindings) {
-    this.bind(name, exports.bindings[name]);
-  }
-};
-
-/**
- * Bind `name` to `fn`.
- *
- * @param {String|Object} name or object
- * @param {Function} fn
- * @api public
- */
-
-Reactive.prototype.bind = function(name, fn) {
-  if ('object' == typeof name) {
-    for (var key in name) {
-      this.bind(key, name[key]);
-    }
-    return;
-  }
-
-  var els = query.all('[' + name + ']', this.el);
-  if (this.el.hasAttribute && this.el.hasAttribute(name)) {
-    els = [].slice.call(els);
-    els.unshift(this.el);
-  }
-  if (!els.length) return;
-
-  debug('bind [%s] (%d elements)', name, els.length);
-  for (var i = 0; i < els.length; i++) {
-    var binding = new Binding(name, this, els[i], fn);
-    binding.bind();
-  }
-};
-
-// bundled bindings
-
-bindings(exports.bind);
-
-});
-require.register("component-reactive/lib/utils.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('reactive:utils');
-var props = require('props');
-var adapter = require('./adapter');
-
-/**
- * Function cache.
- */
-
-var cache = {};
-
-/**
- * Return interpolation property names in `str`,
- * for example "{foo} and {bar}" would return
- * ['foo', 'bar'].
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-exports.interpolationProps = function(str) {
-  var m;
-  var arr = [];
-  var re = /\{([^}]+)\}/g;
-
-  while (m = re.exec(str)) {
-    var expr = m[1];
-    arr = arr.concat(props(expr));
-  }
-
-  return unique(arr);
-};
-
-/**
- * Interpolate `str` with the given `fn`.
- *
- * @param {String} str
- * @param {Function} fn
- * @return {String}
- * @api private
- */
-
-exports.interpolate = function(str, fn){
-  return str.replace(/\{([^}]+)\}/g, function(_, expr){
-    var cb = cache[expr];
-    if (!cb) cb = cache[expr] = compile(expr);
-    return fn(expr.trim(), cb);
-  });
-};
-
-/**
- * Check if `str` has interpolation.
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
-
-exports.hasInterpolation = function(str) {
-  return ~str.indexOf('{');
-};
-
-/**
- * Remove computed properties notation from `str`.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-exports.clean = function(str) {
-  return str.split('<')[0].trim();
-};
-
-/**
- * Call `prop` on `model` or `view`.
- *
- * @param {Object} model
- * @param {Object} view
- * @param {String} prop
- * @return {Mixed}
- * @api private
- */
-
-exports.call = function(model, view, prop){
-  // view method
-  if ('function' == typeof view[prop]) {
-    return view[prop]();
-  }
-
-  // view value
-  if (view.hasOwnProperty(prop)) {
-    return view[prop];
-  }
-
-  // get property from model
-  return adapter.get(model, prop);
-};
-
-/**
- * Compile `expr` to a `Function`.
- *
- * @param {String} expr
- * @return {Function}
- * @api private
- */
-
-function compile(expr) {
-  // TODO: use props() callback instead
-  var re = /\.\w+|\w+ *\(|"[^"]*"|'[^']*'|\/([^/]+)\/|[a-zA-Z_]\w*/g;
-  var p = props(expr);
-
-  var body = expr.replace(re, function(_) {
-    if ('(' == _[_.length - 1]) return access(_);
-    if (!~p.indexOf(_)) return _;
-    return call(_);
-  });
-
-  debug('compile `%s`', body);
-  return new Function('model', 'view', 'call', 'return ' + body);
-}
-
-/**
- * Access a method `prop` with dot notation.
- *
- * @param {String} prop
- * @return {String}
- * @api private
- */
-
-function access(prop) {
-  return 'model.' + prop;
-}
-
-/**
- * Call `prop` on view, model, or access the model's property.
- *
- * @param {String} prop
- * @return {String}
- * @api private
- */
-
-function call(prop) {
-  return 'call(model, view, "' + prop + '")';
-}
-
-/**
- * Return unique array.
- *
- * @param {Array} arr
- * @return {Array}
- * @api private
- */
-
-function unique(arr) {
-  var ret = [];
-
-  for (var i = 0; i < arr.length; i++) {
-    if (~ret.indexOf(arr[i])) continue;
-    ret.push(arr[i]);
-  }
-
-  return ret;
-}
-
-});
-require.register("component-reactive/lib/text-binding.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('reactive:text-binding');
-var utils = require('./utils');
-
-/**
- * Expose `TextBinding`.
- */
-
-module.exports = TextBinding;
-
-/**
- * Initialize a new text binding.
- *
- * @param {Reactive} view
- * @param {Element} node
- * @param {Attribute} attr
- * @api private
- */
-
-function TextBinding(view, node) {
-  var self = this;
-  this.view = view;
-  this.text = node.data;
-  this.node = node;
-  this.props = utils.interpolationProps(this.text);
-  this.subscribe();
-  this.render();
-}
-
-/**
- * Subscribe to changes.
- */
-
-TextBinding.prototype.subscribe = function(){
-  var self = this;
-  var view = this.view;
-  this.props.forEach(function(prop){
-    view.sub(prop, function(){
-      self.render();
-    });
-  });
-};
-
-/**
- * Render text.
- */
-
-TextBinding.prototype.render = function(){
-  var node = this.node;
-  var text = this.text;
-  var view = this.view;
-  var obj = view.obj;
-
-  // TODO: delegate most of this to `Reactive`
-  debug('render "%s"', text);
-  node.data = utils.interpolate(text, function(prop, fn){
-    if (fn) {
-      return fn(obj, view.fns, utils.call);
-    } else {
-      return view.get(obj, prop);
-    }
-  });
-};
-
-});
-require.register("component-reactive/lib/attr-binding.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('reactive:attr-binding');
-var utils = require('./utils');
-
-/**
- * Expose `AttrBinding`.
- */
-
-module.exports = AttrBinding;
-
-/**
- * Initialize a new attribute binding.
- *
- * @param {Reactive} view
- * @param {Element} node
- * @param {Attribute} attr
- * @api private
- */
-
-function AttrBinding(view, node, attr) {
-  var self = this;
-  this.view = view;
-  this.node = node;
-  this.attr = attr;
-  this.text = attr.value;
-  this.props = utils.interpolationProps(this.text);
-  this.subscribe();
-  this.render();
-}
-
-/**
- * Subscribe to changes.
- */
-
-AttrBinding.prototype.subscribe = function(){
-  var self = this;
-  var view = this.view;
-  this.props.forEach(function(prop){
-    view.sub(prop, function(){
-      self.render();
-    });
-  });
-};
-
-/**
- * Render the value.
- */
-
-AttrBinding.prototype.render = function(){
-  var attr = this.attr;
-  var text = this.text;
-  var view = this.view;
-  var obj = view.obj;
-
-  // TODO: delegate most of this to `Reactive`
-  debug('render %s "%s"', attr.name, text);
-  attr.value = utils.interpolate(text, function(prop, fn){
-    if (fn) {
-      return fn(obj, view.fns, utils.call);
-    } else {
-      return view.get(obj, prop);
-    }
-  });
-};
-
-});
-require.register("component-reactive/lib/binding.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var parse = require('format-parser');
-
-/**
- * Expose `Binding`.
- */
-
-module.exports = Binding;
-
-/**
- * Initialize a binding.
- *
- * @api private
- */
-
-function Binding(name, view, el, fn) {
-  this.name = name;
-  this.view = view;
-  this.obj = view.obj;
-  this.fns = view.fns;
-  this.el = el;
-  this.fn = fn;
-}
-
-/**
- * Apply the binding.
- *
- * @api private
- */
-
-Binding.prototype.bind = function() {
-  var val = this.el.getAttribute(this.name);
-  this.fn(this.el, val, this.obj);
-};
-
-/**
- * Perform interpolation on `name`.
- *
- * @param {String} name
- * @return {String}
- * @api public
- */
-
-Binding.prototype.interpolate = function(name) {
-  var self = this;
-  name = clean(name);
-
-  if (~name.indexOf('{')) {
-    return name.replace(/{([^}]+)}/g, function(_, name){
-      return self.value(name);
-    });
-  }
-
-  return this.formatted(name);
-};
-
-/**
- * Return value for property `name`.
- *
- *  - check if the "view" has a `name` method
- *  - check if the "model" has a `name` method
- *  - check if the "model" has a `name` property
- *
- * @param {String} name
- * @return {Mixed}
- * @api public
- */
-
-Binding.prototype.value = function(name) {
-  var self = this;
-  var obj = this.obj;
-  var view = this.view;
-  var fns = view.fns;
-  name = clean(name);
-
-  // view method
-  if ('function' == typeof fns[name]) {
-    return fns[name]();
-  }
-
-  // view value
-  if (fns.hasOwnProperty(name)) {
-    return fns[name];
-  }
-
-  return view.get(name);
-};
-
-/**
- * Return formatted property.
- *
- * @param {String} fmt
- * @return {Mixed}
- * @api public
- */
-
-Binding.prototype.formatted = function(fmt) {
-  var calls = parse(clean(fmt));
-  var name = calls[0].name;
-  var val = this.value(name);
-
-  for (var i = 1; i < calls.length; ++i) {
-    var call = calls[i];
-    call.args.unshift(val);
-    var fn = this.fns[call.name];
-    val = fn.apply(this.fns, call.args);
-  }
-
-  return val;
-};
-
-/**
- * Invoke `fn` on changes.
- *
- * @param {Function} fn
- * @api public
- */
-
-Binding.prototype.change = function(fn) {
-  fn.call(this);
-
-  var self = this;
-  var view = this.view;
-  var val = this.el.getAttribute(this.name);
-
-  // computed props
-  var parts = val.split('<');
-  val = parts[0];
-  var computed = parts[1];
-  if (computed) computed = computed.trim().split(/\s+/);
-
-  // interpolation
-  if (hasInterpolation(val)) {
-    var props = interpolationProps(val);
-    props.forEach(function(prop){
-      view.sub(prop, fn.bind(self));
-    });
-    return;
-  }
-
-  // formatting
-  var calls = parse(val);
-  var prop = calls[0].name;
-
-  // computed props
-  if (computed) {
-    computed.forEach(function(prop){
-      view.sub(prop, fn.bind(self));
-    });
-    return;
-  }
-
-  // bind to prop
-  view.sub(prop, fn.bind(this));
-};
-
-/**
- * Return interpolation property names in `str`,
- * for example "{foo} and {bar}" would return
- * ['foo', 'bar'].
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-function interpolationProps(str) {
-  var m;
-  var arr = [];
-  var re = /\{([^}]+)\}/g;
-  while (m = re.exec(str)) {
-    arr.push(m[1]);
-  }
-  return arr;
-}
-
-/**
- * Check if `str` has interpolation.
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
-
-function hasInterpolation(str) {
-  return ~str.indexOf('{');
-}
-
-/**
- * Remove computed properties notation from `str`.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-function clean(str) {
-  return str.split('<')[0].trim();
-}
-
-});
-require.register("component-reactive/lib/bindings.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var classes = require('classes');
-var event = require('event');
-
-/**
- * Attributes supported.
- */
-
-var attrs = [
-  'id',
-  'src',
-  'rel',
-  'cols',
-  'rows',
-  'name',
-  'href',
-  'title',
-  'class',
-  'style',
-  'width',
-  'value',
-  'height',
-  'tabindex',
-  'placeholder'
-];
-
-/**
- * Events supported.
- */
-
-var events = [
-  'change',
-  'click',
-  'dblclick',
-  'mousedown',
-  'mouseup',
-  'blur',
-  'focus',
-  'input',
-  'submit',
-  'keydown',
-  'keypress',
-  'keyup'
-];
-
-/**
- * Apply bindings.
- */
-
-module.exports = function(bind){
-
-  /**
-   * Generate attribute bindings.
-   */
-
-  attrs.forEach(function(attr){
-    bind('data-' + attr, function(el, name, obj){
-      this.change(function(){
-        el.setAttribute(attr, this.interpolate(name));
-      });
-    });
-  });
-
-/**
- * Append child element.
- */
-
-  bind('data-append', function(el, name){
-    var other = this.value(name);
-    el.appendChild(other);
-  });
-
-/**
- * Replace element.
- */
-
-  bind('data-replace', function(el, name){
-    var other = this.value(name);
-    el.parentNode.replaceChild(other, el);
-  });
-
-  /**
-   * Show binding.
-   */
-
-  bind('data-show', function(el, name){
-    this.change(function(){
-      if (this.value(name)) {
-        classes(el).add('show').remove('hide');
-      } else {
-        classes(el).remove('show').add('hide');
-      }
-    });
-  });
-
-  /**
-   * Hide binding.
-   */
-
-  bind('data-hide', function(el, name){
-    this.change(function(){
-      if (this.value(name)) {
-        classes(el).remove('show').add('hide');
-      } else {
-        classes(el).add('show').remove('hide');
-      }
-    });
-  });
-
-  /**
-   * Checked binding.
-   */
-
-  bind('data-checked', function(el, name){
-    this.change(function(){
-      if (this.value(name)) {
-        el.setAttribute('checked', 'checked');
-      } else {
-        el.removeAttribute('checked');
-      }
-    });
-  });
-
-  /**
-   * Text binding.
-   */
-
-  bind('data-text', function(el, name){
-    this.change(function(){
-      el.textContent = this.interpolate(name);
-    });
-  });
-
-  /**
-   * HTML binding.
-   */
-
-  bind('data-html', function(el, name){
-    this.change(function(){
-      el.innerHTML = this.formatted(name);
-    });
-  });
-
-  /**
-   * Generate event bindings.
-   */
-
-  events.forEach(function(name){
-    bind('on-' + name, function(el, method){
-      var fns = this.view.fns
-      event.bind(el, name, function(e){
-        var fn = fns[method];
-        if (!fn) throw new Error('method .' + method + '() missing');
-        fns[method](e);
-      });
-    });
-  });
-};
-
-});
-require.register("component-reactive/lib/adapter.js", function(exports, require, module){
-/**
- * Default subscription method.
- * Subscribe to changes on the model.
- *
- * @param {Object} obj
- * @param {String} prop
- * @param {Function} fn
- */
-
-exports.subscribe = function(obj, prop, fn) {
-  if (!obj.on) return;
-  obj.on('change ' + prop, fn);
-};
-
-/**
- * Default unsubscription method.
- * Unsubscribe from changes on the model.
- */
-
-exports.unsubscribe = function(obj, prop, fn) {
-  if (!obj.off) return;
-  obj.off('change ' + prop, fn);
-};
-
-/**
- * Default setter method.
- * Set a property on the model.
- *
- * @param {Object} obj
- * @param {String} prop
- * @param {Mixed} val
- */
-
-exports.set = function(obj, prop, val) {
-  if ('function' == typeof obj[prop]) {
-    obj[prop](val);
-  } else {
-    obj[prop] = val;
-  }
-};
-
-/**
- * Default getter method.
- * Get a property from the model.
- *
- * @param {Object} obj
- * @param {String} prop
- * @return {Mixed}
- */
-
-exports.get = function(obj, prop) {
-  if ('function' == typeof obj[prop]) {
-    return obj[prop]();
-  } else {
-    return obj[prop];
-  }
-};
-
-});
-require.register("ianstormtaylor-get/index.js", function(exports, require, module){
-
-/**
- * Get a value from a obj, by direct access, named getter/setter or via `get`.
- *
- * @param {Object} obj
- * @param {String} prop
- */
-
-module.exports = function get (obj, prop) {
-
-  // named getter/setter
-  if ('function' === typeof obj[prop]) {
-    return obj[prop]();
-  }
-
-  // get method
-  if ('function' === typeof obj.get) {
-    return obj.get(prop);
-  }
-
-  // plain object
-  return obj[prop];
-};
-});
-require.register("segmentio-emitter/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var index = require('indexof');
-
-/**
- * Expose `Emitter`.
- */
-
-module.exports = Emitter;
-
-/**
- * Initialize a new `Emitter`.
- *
- * @api public
- */
-
-function Emitter(obj) {
-  if (obj) return mixin(obj);
-};
-
-/**
- * Mixin the emitter properties.
- *
- * @param {Object} obj
- * @return {Object}
- * @api private
- */
-
-function mixin(obj) {
-  for (var key in Emitter.prototype) {
-    obj[key] = Emitter.prototype[key];
-  }
-  return obj;
-}
-
-/**
- * Listen on the given `event` with `fn`.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.on = function(event, fn){
-  this._callbacks = this._callbacks || {};
-  (this._callbacks[event] = this._callbacks[event] || [])
-    .push(fn);
-  return this;
-};
-
-/**
- * Adds an `event` listener that will be invoked a single
- * time then automatically removed.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.once = function(event, fn){
-  var self = this;
-  this._callbacks = this._callbacks || {};
-
-  function on() {
-    self.off(event, on);
-    fn.apply(this, arguments);
-  }
-
-  fn._off = on;
-  this.on(event, on);
-  return this;
-};
-
-/**
- * Remove the given callback for `event` or all
- * registered callbacks.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.off =
-Emitter.prototype.removeListener =
-Emitter.prototype.removeAllListeners = function(event, fn){
-  this._callbacks = this._callbacks || {};
-
-  // all
-  if (0 == arguments.length) {
-    this._callbacks = {};
-    return this;
-  }
-
-  // specific event
-  var callbacks = this._callbacks[event];
-  if (!callbacks) return this;
-
-  // remove all handlers
-  if (1 == arguments.length) {
-    delete this._callbacks[event];
-    return this;
-  }
-
-  // remove specific handler
-  var i = index(callbacks, fn._off || fn);
-  if (~i) callbacks.splice(i, 1);
-  return this;
-};
-
-/**
- * Emit `event` with the given args.
- *
- * @param {String} event
- * @param {Mixed} ...
- * @return {Emitter}
- */
-
-Emitter.prototype.emit = function(event){
-  this._callbacks = this._callbacks || {};
-  var args = [].slice.call(arguments, 1)
-    , callbacks = this._callbacks[event];
-
-  // "all" event
-  if ('*' != event) this.emit.apply(this, ['*', event].concat(args));
-
-  if (callbacks) {
-    callbacks = callbacks.slice(0);
-    for (var i = 0, len = callbacks.length; i < len; ++i) {
-      callbacks[i].apply(this, args);
-    }
-  }
-
-  return this;
-};
-
-/**
- * Return array of callbacks for `event`.
- *
- * @param {String} event
- * @return {Array}
- * @api public
- */
-
-Emitter.prototype.listeners = function(event){
-  this._callbacks = this._callbacks || {};
-  return this._callbacks[event] || [];
-};
-
-/**
- * Check if this emitter has `event` handlers.
- *
- * @param {String} event
- * @return {Boolean}
- * @api public
- */
-
-Emitter.prototype.hasListeners = function(event){
-  return !! this.listeners(event).length;
-};
-
-});
-require.register("ianstormtaylor-map/index.js", function(exports, require, module){
-
-var each = require('each');
-
-
-/**
- * Map an array or object.
- *
- * @param {Array|Object} obj
- * @param {Function} iterator
- * @return {Mixed}
- */
-
-module.exports = function map (obj, iterator) {
-  var arr = [];
-  each(obj, function (o) {
-    arr.push(iterator.apply(null, arguments));
-  });
-  return arr;
-};
-});
-require.register("segmentio-list/lib/index.js", function(exports, require, module){
-
-var dom = require('dom')
-  , Emitter = require('emitter')
-  , protos = require('./protos')
-  , statics = require('./statics');
-
-
-/**
- * Expose `createList`.
- */
-
-module.exports = createList;
-
-
-/**
- * Create a `List` with the given `Item` constructor.
- *
- * @param {Function} Item
- */
-
-function createList (Item) {
-
-  /**
-   * Initialize a new `List`.
-   */
-
-  function List () {
-    this.Item = Item;
-    this.el = document.createElement('ul');
-    this.items = {};
-    this.list = dom([]);
-    this.List.emit('construct', this);
-  }
-
-  // statics & protos
-  List.prototype.List = List;
-  for (var key in statics) List[key] = statics[key];
-  for (var key in protos) List.prototype[key] = protos[key];
-
-  return List;
-}
-});
-require.register("segmentio-list/lib/protos.js", function(exports, require, module){
-
-var bind = require('bind')
-  , dom = require('dom')
-  , each = require('each')
-  , Emitter = require('emitter')
-  , get = require('get')
-  , map = require('map');
-
-
-/**
- * Mixin emitter.
- */
-
-Emitter(exports);
-
-
-/**
- * Add an item to the list.
- *
- * @param {Object} model
- * @return {List}
- */
-
-exports.add = function (model) {
-  var self = this;
-
-  var view = new this.Item(model);
-  if (view.on) {
-    view.on('*', function () {
-      var args = Array.prototype.slice.call(arguments);
-      args[0] = 'item ' + args[0];
-      self.emit.apply(self, args);
-    });
-  }
-
-  var el = view.el;
-  var id = get(model, 'primary') || get(model, 'id');
-  this.items[id] = {
-    el    : el,
-    model : model,
-    view  : view
-  };
-
-  this.list.els.push(el);
-  this.el.appendChild(el);
-  this.emit('add', el, model, view);
-  return this;
-};
-
-
-/**
- * Remove an item from the list.
- *
- * @param {String} id
- * @return {List}
- */
-
-exports.remove = function (id) {
-  var item = this.items[id];
-  var el = item.el;
-  delete this.items[id];
-  if (!el) return;
-
-  this.list = this.list.reject(function (_) { el === _.get(0); });
-  this.el.removeChild(el);
-  this.emit('remove', el, item.model, item.view);
-  return this;
-};
-
-
-/**
- * Filter the list's elements by hiding ones that don't match.
- *
- * @param {Function} fn
- * @return {List}
- */
-
-exports.filter = function (fn) {
-  this.list.removeClass('hidden');
-  for (var id in this.items) {
-    var item = this.items[id];
-    if (!fn(item.el, item.model, item.view)) dom(item.el).addClass('hidden');
-  }
-  return this;
-};
-
-
-/**
- * Sort the list's elements by an iterator `fn(el, model, view)`.
- *
- * @param {Function} fn
- * @return {List}
- */
-
-exports.sort = function (fn) {
-  var i = 0;
-  var items = map(this.items, function (id, item) {
-    return {
-      index : i++,
-      value : item,
-      criterion : fn.call(null, item.el, item.model, item.view)
-    };
-  }).sort(function (a, b) {
-    a = a.criterion;
-    b = b.criterion;
-    if (a > b) return 1;
-    if (a < b) return -1;
-    return 0;
-  });
-
-  var fragment = document.createDocumentFragment();
-  each(items, function (item) {
-    fragment.appendChild(item.value.el);
-  });
-
-  this.el.appendChild(fragment);
-  return this;
-};
-
-
-/**
- * Empty the list.
- *
- * @return {List}
- */
-
-exports.empty = function () {
-  var self = this;
-  var items = this.items;
-  this.items = {};
-  this.list = dom([]);
-  each(items, function (id, item) {
-    dom(item.el).remove();
-    item.view.off('*');
-    self.emit('remove', item.el, item.model, item.view);
-  });
-  return this;
-};
-
-
-/**
- * Add a class to the list.
- *
- * @param {String} name
- * @return {List}
- */
-
-exports.addClass = function (name) {
-  dom(this.el).addClass(name);
-  return this;
-};
-
-
-/**
- * Remove a class from the list.
- *
- * @param {String} name
- * @return {List}
- */
-
-exports.removeClass = function (name) {
-  dom(this.el).removeClass(name);
-  return this;
-};
-});
-require.register("segmentio-list/lib/statics.js", function(exports, require, module){
-
-var Emitter = require('emitter');
-
-
-/**
- * Mixin emitter.
- */
-
-Emitter(exports);
-
-
-/**
- * Use a given `plugin`.
- *
- * @param {Function} plugin
- */
-
-exports.use = function (plugin) {
-  plugin(this);
-  return this;
-};
-});
-require.register("yields-slug/index.js", function(exports, require, module){
-
-/**
- * Generate a slug from the given `str`.
- *
- * example:
- *
- *        generate('foo bar');
- *        // > foo-bar
- *
- * options:
- *
- *    - `.replace` characters to replace, defaulted to `/[^a-z0-9]/g`
- *    - `.separator` separator to insert, defaulted to `-`
- *
- * @param {String} str
- * @param {Object} opts
- * @return {String}
- */
-
-module.exports = function(str, opts){
-  opts = opts || {};
-  return str.toLowerCase()
-    .replace(opts.replace || /[^a-z0-9]/g, ' ')
-    .replace(/^ +| +$/g, '')
-    .replace(/ +/g, opts.separator || '-')
-};
-
-});
-require.register("segmentio-menu/lib/index.js", function(exports, require, module){
-
-var domify = require('domify')
-  , inherit = require('inherit')
-  , Item = require('./item')
-  , list = require('list')
-  , protos = require('./protos')
-  , statics = require('./statics');
-
-
-/**
- * Expose the default `Menu` with `Item` view.
- */
-
-module.exports = createMenu(Item);
-
-
-/**
- * Create a `Menu` constructor with a given `MenuItem` view.
- *
- * @param {Function} MenuItem
- */
-
-function createMenu (MenuItem) {
-
-  var List = list(MenuItem);
-
-  /**
-   * Initialize a new `Menu`.
-   */
-
-  function Menu () {
-    if (!(this instanceof Menu)) return createMenu.apply(this, arguments);
-    List.apply(this, arguments);
-    this.el = domify('<menu class="menu" tabindex="0">');
-    this.bind();
-    this.Menu.emit('construct', this);
-  }
-
-  // inherit from List
-  inherit(Menu, List);
-
-  // statics + protos
-  Menu.prototype.List = List;
-  Menu.prototype.Menu = Menu;
-  for (var key in statics) Menu[key] = statics[key];
-  for (var key in protos) Menu.prototype[key] = protos[key];
-
-  return Menu;
-}
-});
-require.register("segmentio-menu/lib/item.js", function(exports, require, module){
-
-var domify = require('domify')
-  , get = require('get')
-  , reactive = require('reactive')
-  , slug = require('slug')
-  , template = require('./template');
-
-
-/**
- * Expose `ItemView`.
- */
-
-module.exports = ItemView;
-
-
-/**
- * Initialize a new `ItemView`.
- */
-
-function ItemView (model) {
-  this.model = model;
-  this.el = domify(template);
-  this.reactive = reactive(this.el, model, this);
-}
-
-
-/**
- * Get the id of the model.
- *
- * @return {String}
- */
-
-ItemView.prototype.id = function () {
-  return get(this.model, 'id') || get(this.model, 'primary');
-};
-
-
-/**
- * Make a slug out of the id.
- *
- * @return {String}
- */
-
-ItemView.prototype.slug = function () {
-  return slug(this.id());
-};
-});
-require.register("segmentio-menu/lib/protos.js", function(exports, require, module){
-
-var dom = require('dom');
-var events = require('events');
-var get = require('get');
-var keyname = require('keyname');
-var prevent = require('prevent');
-
-
-/**
- * Bind to DOM events.
- *
- * @return {Menu}
- */
-
-exports.bind = function () {
-  this.events = events(this.el, this);
-  this.events.bind('focus');
-  this.events.bind('blur');
-  this.events.bind('mouseover');
-  return this;
-};
-
-
-/**
- * Add an item to the menu.
- *
- * @param {Object} model
- * @return {Menu}
- */
-
-exports.add = function (model) {
-  if ('string' === typeof model) model = { id: model };
-  this.List.prototype.add.call(this, model);
-
-  var id = primary(model);
-  var el = this.items[id].el;
-  var view = this.items[id].view;
-  var self = this;
-
-  // no href, bind to click
-  if (!get(model, 'href') && !get(view, 'href')) {
-    dom(el).on('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      self.emit('select', el, model, view);
-      self.select(id);
-    });
-  }
-
-  this.emit('add', el, model, view);
-  return this;
-};
-
-
-/**
- * Select an item by `id`.
- *
- * @param {String} id
- * @return {Menu}
- */
-
-exports.select = function (id) {
-
-  // no id? select the focused item if one exists
-  if (undefined === id && this.focused()) {
-    var el = this.focused().get(0);
-    for (var id in this.items) {
-      if (el === this.items[id].el) return this.select(id);
-    }
-  }
-
-  this.deselect();
-  var item = this.items[id];
-  if (!item) return this;
-
-  var el = item.el;
-  var model = item.model;
-  var view = item.view;
-  dom(el).addClass('selected');
-  this.emit('select', el, model, view);
-  return this;
-};
-
-
-/**
- * Deselect all the items.
- *
- * @return {Menu}
- */
-
-exports.deselect = function () {
-  this.unfocus();
-  this.list.removeClass('selected');
-  return this;
-};
-
-
-/**
- * Highlight the next menu item.
- *
- * @return {Menu}
- */
-
-exports.next = function () {
-  var list = this.list;
-  var previous = this.focused();
-  var next = this.visible().first();
-  if (previous && previous.next(':not(.hidden)').els[0]) next = previous.next(':not(.hidden)');
-
-  if (previous) previous.removeClass('focus');
-  next.addClass('focus');
-  return this;
-};
-
-
-/**
- * Highlight the previous menu item.
- *
- * @return {Menu}
- */
-
-exports.previous = function () {
-  var list = this.list;
-  var previous = this.focused();
-  var next = this.visible().last();
-  if (previous && previous.previous(':not(.hidden)').els[0]) next = previous.previous(':not(.hidden)');
-
-  if (previous) previous.removeClass('focus');
-  next.addClass('focus');
-  return this;
-};
-
-
-/**
- * Filter the menu.
- *
- * @param {Function} fn(el, model, view)
- * @return {Menu}
- */
-
-exports.filter = function (fn) {
-  this.List.prototype.filter.apply(this, arguments);
-  var focused = this.focused();
-  if (focused && focused.hasClass('hidden')) this.next();
-  return this;
-};
-
-
-/**
- * Focus the menu.
- *
- * @return {Menu}
- */
-
-exports.focus = function () {
-  this.el.focus();
-  return this;
-};
-
-
-/**
- * Unfocus all menu items.
- *
- * @return {Menu}
- */
-
-exports.unfocus = function () {
-  this.list.removeClass('focus');
-  return this;
-};
-
-
-/**
- * Hover handler.
- */
-
-exports.onmouseover = function (e) {
-  this.unfocus();
-};
-
-
-/**
- * Keydown handler.
- */
-
-exports.onkeydown = function (e) {
-  switch (keyname(e.keyCode)) {
-    case 'enter':
-      prevent(e);
-      this.select();
-      break;
-    case 'up':
-      prevent(e);
-      this.previous();
-      break;
-    case 'down':
-      prevent(e);
-      this.next();
-      break;
-  }
-};
-
-
-/**
- * Focus handler, focusing the first menu item if one isn't already.
- */
-
-exports.onfocus = function (e) {
-  this.events.bind('keydown');
-  var focused = this.focused();
-  if (!focused) this.next();
-};
-
-
-/**
- * Blur handler.
- */
-
-exports.onblur = function (e) {
-  this.events.unbind('keydown');
-  this.unfocus();
-};
-
-
-/**
- * Get the visible menu items.
- *
- * @return {List|Null}
- * @api private
- */
-
-exports.visible = function () {
-  var visible = this.list.filter(function (list) {
-    return ! list.hasClass('hidden');
-  });
-  return visible.length() ? visible : null;
-};
-
-
-/**
- * Get the focused menu item.
- *
- * @return {List|Null}
- * @api private
- */
-
-exports.focused = function () {
-  var focused = this.list.filter(function (list) {
-    return list.hasClass('focus');
-  });
-  return focused.length() ? focused : null;
-};
-
-
-/**
- * Get the primary property value for a model.
- *
- * @param {Object} model
- * @return {String}
- */
-
-function primary (model) {
-  return get(model, 'primary') || get(model, 'id');
-}
-});
-require.register("segmentio-menu/lib/statics.js", function(exports, require, module){
-
-var Emitter = require('emitter');
-
-
-/**
- * Mixin emitter.
- */
-
-Emitter(exports);
-});
-require.register("segmentio-menu/lib/template.js", function(exports, require, module){
-module.exports = '<li class="menu-item {slug || id}-menu-item {class || \'\'}"\n    title="{title || \'\'}">\n  <a class="menu-item-link" data-href="href">{text || id}</a>\n</li>';
-});
-require.register("ianstormtaylor-reactive/lib/index.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var adapter = require('./adapter');
-var AttrBinding = require('./attr-binding');
-var TextBinding = require('./text-binding');
-var debug = require('debug')('reactive');
-var bindings = require('./bindings');
-var Binding = require('./binding');
-var utils = require('./utils');
-var query = require('query');
-
-/**
- * Expose `Reactive`.
- */
-
-exports = module.exports = Reactive;
-
-/**
- * Bindings.
- */
-
-exports.bindings = {};
-
-/**
- * Define subscription function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.subscribe = function(fn){
-  adapter.subscribe = fn;
-};
-
-/**
- * Define unsubscribe function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.unsubscribe = function(fn){
-  adapter.unsubscribe = fn;
-};
-
-/**
- * Define a get function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.get = function(fn) {
-  adapter.get = fn;
-};
-
-/**
- * Define a set function.
- *
- * @param {Function} fn
- * @api public
- */
-
-exports.set = function(fn) {
-  adapter.set = fn;
-};
-
-/**
- * Expose adapter
- */
-
-exports.adapter = adapter;
-
-/**
- * Define binding `name` with callback `fn(el, val)`.
- *
- * @param {String} name or object
- * @param {String|Object} name
- * @param {Function} fn
- * @api public
- */
-
-exports.bind = function(name, fn){
-  if ('object' == typeof name) {
-    for (var key in name) {
-      exports.bind(key, name[key]);
-    }
-    return;
-  }
-
-  exports.bindings[name] = fn;
-};
-
-/**
- * Initialize a reactive template for `el` and `obj`.
- *
- * @param {Element} el
- * @param {Element} obj
- * @param {Object} options
- * @api public
- */
-
-function Reactive(el, obj, options) {
-  if (!(this instanceof Reactive)) return new Reactive(el, obj, options);
-  this.el = el;
-  this.obj = obj;
-  this.els = [];
-  this.fns = options || {}; // TODO: rename, this is awful
-  this.bindAll();
-  this.bindInterpolation(this.el, []);
-}
-
-/**
- * Subscribe to changes on `prop`.
- *
- * @param {String} prop
- * @param {Function} fn
- * @return {Reactive}
- * @api private
- */
-
-Reactive.prototype.sub = function(prop, fn){
-  adapter.subscribe(this.obj, prop, fn);
-  return this;
-};
-
-/**
- * Unsubscribe to changes from `prop`.
- *
- * @param {String} prop
- * @param {Function} fn
- * @return {Reactive}
- * @api private
- */
-
-Reactive.prototype.unsub = function(prop, fn){
-  adapter.unsubscribe(this.obj, prop, fn);
-  return this;
-};
-
-/**
- * Get a `prop`
- *
- * @param {String} prop
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-Reactive.prototype.get = function(prop) {
-  return adapter.get(this.obj, prop);
-};
-
-/**
- * Set a `prop`
- *
- * @param {String} prop
- * @param {Mixed} val
- * @return {Reactive}
- * @api private
- */
-
-Reactive.prototype.set = function(prop, val) {
-  adapter.set(this.obj, prop, val);
-  return this;
-};
-
-/**
- * Traverse and bind all interpolation within attributes and text.
- *
- * @param {Element} el
- * @api private
- */
-
-Reactive.prototype.bindInterpolation = function(el, els){
-
-  // element
-  if (el.nodeType == 1) {
-    for (var i = 0; i < el.attributes.length; i++) {
-      var attr = el.attributes[i];
-      if (utils.hasInterpolation(attr.value)) {
-        new AttrBinding(this, el, attr);
-      }
-    }
-  }
-
-  // text node
-  if (el.nodeType == 3) {
-    if (utils.hasInterpolation(el.data)) {
-      debug('bind text "%s"', el.data);
-      new TextBinding(this, el);
-    }
-  }
-
-  // walk nodes
-  for (var i = 0; i < el.childNodes.length; i++) {
-    var node = el.childNodes[i];
-    this.bindInterpolation(node, els);
-  }
-};
-
-/**
- * Apply all bindings.
- *
- * @api private
- */
-
-Reactive.prototype.bindAll = function() {
-  for (var name in exports.bindings) {
-    this.bind(name, exports.bindings[name]);
-  }
-};
-
-/**
- * Bind `name` to `fn`.
- *
- * @param {String|Object} name or object
- * @param {Function} fn
- * @api public
- */
-
-Reactive.prototype.bind = function(name, fn) {
-  if ('object' == typeof name) {
-    for (var key in name) {
-      this.bind(key, name[key]);
-    }
-    return;
-  }
-
-  var els = query.all('[' + name + ']', this.el);
-  if (this.el.hasAttribute && this.el.hasAttribute(name)) {
-    els = [].slice.call(els);
-    els.unshift(this.el);
-  }
-  if (!els.length) return;
-
-  debug('bind [%s] (%d elements)', name, els.length);
-  for (var i = 0; i < els.length; i++) {
-    var binding = new Binding(name, this, els[i], fn);
-    binding.bind();
-  }
-};
-
-// bundled bindings
-
-bindings(exports.bind);
-
-});
-require.register("ianstormtaylor-reactive/lib/utils.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('reactive:utils');
-var props = require('props');
-var adapter = require('./adapter');
-
-/**
- * Function cache.
- */
-
-var cache = {};
-
-/**
- * Return interpolation property names in `str`,
- * for example "{foo} and {bar}" would return
- * ['foo', 'bar'].
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-exports.interpolationProps = function(str) {
-  var m;
-  var arr = [];
-  var re = /\{([^}]+)\}/g;
-
-  while (m = re.exec(str)) {
-    var expr = m[1];
-    arr = arr.concat(props(expr));
-  }
-
-  return unique(arr);
-};
-
-/**
- * Interpolate `str` with the given `fn`.
- *
- * @param {String} str
- * @param {Function} fn
- * @return {String}
- * @api private
- */
-
-exports.interpolate = function(str, fn){
-  return str.replace(/\{([^}]+)\}/g, function(_, expr){
-    var cb = cache[expr];
-    if (!cb) cb = cache[expr] = compile(expr);
-    return fn(expr.trim(), cb);
-  });
-};
-
-/**
- * Check if `str` has interpolation.
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
-
-exports.hasInterpolation = function(str) {
-  return ~str.indexOf('{');
-};
-
-/**
- * Remove computed properties notation from `str`.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-exports.clean = function(str) {
-  return str.split('<')[0].trim();
-};
-
-/**
- * Call `prop` on `model` or `view`.
- *
- * @param {Object} model
- * @param {Object} view
- * @param {String} prop
- * @return {Mixed}
- * @api private
- */
-
-exports.call = function(model, view, prop){
-  // view method
-  if ('function' == typeof view[prop]) {
-    return view[prop]();
-  }
-
-  // view value
-  if (view.hasOwnProperty(prop)) {
-    return view[prop];
-  }
-
-  // get property from model
-  return adapter.get(model, prop);
-};
-
-/**
- * Compile `expr` to a `Function`.
- *
- * @param {String} expr
- * @return {Function}
- * @api private
- */
-
-function compile(expr) {
-  // TODO: use props() callback instead
-  var re = /\.\w+|\w+ *\(|"[^"]*"|'[^']*'|\/([^/]+)\/|[a-zA-Z_]\w*/g;
-  var p = props(expr);
-
-  var body = expr.replace(re, function(_) {
-    if ('(' == _[_.length - 1]) return access(_);
-    if (!~p.indexOf(_)) return _;
-    return call(_);
-  });
-
-  debug('compile `%s`', body);
-  return new Function('model', 'view', 'call', 'return ' + body);
-}
-
-/**
- * Access a method `prop` with dot notation.
- *
- * @param {String} prop
- * @return {String}
- * @api private
- */
-
-function access(prop) {
-  return 'model.' + prop;
-}
-
-/**
- * Call `prop` on view, model, or access the model's property.
- *
- * @param {String} prop
- * @return {String}
- * @api private
- */
-
-function call(prop) {
-  return 'call(model, view, "' + prop + '")';
-}
-
-/**
- * Return unique array.
- *
- * @param {Array} arr
- * @return {Array}
- * @api private
- */
-
-function unique(arr) {
-  var ret = [];
-
-  for (var i = 0; i < arr.length; i++) {
-    if (~ret.indexOf(arr[i])) continue;
-    ret.push(arr[i]);
-  }
-
-  return ret;
-}
-
-});
-require.register("ianstormtaylor-reactive/lib/text-binding.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('reactive:text-binding');
-var utils = require('./utils');
-
-/**
- * Expose `TextBinding`.
- */
-
-module.exports = TextBinding;
-
-/**
- * Initialize a new text binding.
- *
- * @param {Reactive} view
- * @param {Element} node
- * @param {Attribute} attr
- * @api private
- */
-
-function TextBinding(view, node) {
-  var self = this;
-  this.view = view;
-  this.text = node.data;
-  this.node = node;
-  this.props = utils.interpolationProps(this.text);
-  this.subscribe();
-  this.render();
-}
-
-/**
- * Subscribe to changes.
- */
-
-TextBinding.prototype.subscribe = function(){
-  var self = this;
-  var view = this.view;
-  this.props.forEach(function(prop){
-    view.sub(prop, function(){
-      self.render();
-    });
-  });
-};
-
-/**
- * Render text.
- */
-
-TextBinding.prototype.render = function(){
-  var node = this.node;
-  var text = this.text;
-  var view = this.view;
-  var obj = view.obj;
-
-  // TODO: delegate most of this to `Reactive`
-  debug('render "%s"', text);
-  node.data = utils.interpolate(text, function(prop, fn){
-    if (fn) {
-      return fn(obj, view.fns, utils.call);
-    } else {
-      return view.get(obj, prop);
-    }
-  });
-};
-
-});
-require.register("ianstormtaylor-reactive/lib/attr-binding.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('reactive:attr-binding');
-var utils = require('./utils');
-
-/**
- * Expose `AttrBinding`.
- */
-
-module.exports = AttrBinding;
-
-/**
- * Initialize a new attribute binding.
- *
- * @param {Reactive} view
- * @param {Element} node
- * @param {Attribute} attr
- * @api private
- */
-
-function AttrBinding(view, node, attr) {
-  var self = this;
-  this.view = view;
-  this.node = node;
-  this.attr = attr;
-  this.text = attr.value;
-  this.props = utils.interpolationProps(this.text);
-  this.subscribe();
-  this.render();
-}
-
-/**
- * Subscribe to changes.
- */
-
-AttrBinding.prototype.subscribe = function(){
-  var self = this;
-  var view = this.view;
-  this.props.forEach(function(prop){
-    view.sub(prop, function(){
-      self.render();
-    });
-  });
-};
-
-/**
- * Render the value.
- */
-
-AttrBinding.prototype.render = function(){
-  var attr = this.attr;
-  var text = this.text;
-  var view = this.view;
-  var obj = view.obj;
-
-  // TODO: delegate most of this to `Reactive`
-  debug('render %s "%s"', attr.name, text);
-  attr.value = utils.interpolate(text, function(prop, fn){
-    if (fn) {
-      return fn(obj, view.fns, utils.call);
-    } else {
-      return view.get(obj, prop);
-    }
-  });
-};
-
-});
-require.register("ianstormtaylor-reactive/lib/binding.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var parse = require('format-parser');
-
-/**
- * Expose `Binding`.
- */
-
-module.exports = Binding;
-
-/**
- * Initialize a binding.
- *
- * @api private
- */
-
-function Binding(name, view, el, fn) {
-  this.name = name;
-  this.view = view;
-  this.obj = view.obj;
-  this.fns = view.fns;
-  this.el = el;
-  this.fn = fn;
-}
-
-/**
- * Apply the binding.
- *
- * @api private
- */
-
-Binding.prototype.bind = function() {
-  var val = this.el.getAttribute(this.name);
-  this.fn(this.el, val, this.obj);
-};
-
-/**
- * Perform interpolation on `name`.
- *
- * @param {String} name
- * @return {String}
- * @api public
- */
-
-Binding.prototype.interpolate = function(name) {
-  var self = this;
-  name = clean(name);
-
-  if (~name.indexOf('{')) {
-    return name.replace(/{([^}]+)}/g, function(_, name){
-      return self.value(name);
-    });
-  }
-
-  return this.formatted(name);
-};
-
-/**
- * Return value for property `name`.
- *
- *  - check if the "view" has a `name` method
- *  - check if the "model" has a `name` method
- *  - check if the "model" has a `name` property
- *
- * @param {String} name
- * @return {Mixed}
- * @api public
- */
-
-Binding.prototype.value = function(name) {
-  var self = this;
-  var obj = this.obj;
-  var view = this.view;
-  var fns = view.fns;
-  name = clean(name);
-
-  // view method
-  if ('function' == typeof fns[name]) {
-    return fns[name]();
-  }
-
-  // view value
-  if (fns.hasOwnProperty(name)) {
-    return fns[name];
-  }
-
-  return view.get(name);
-};
-
-/**
- * Return formatted property.
- *
- * @param {String} fmt
- * @return {Mixed}
- * @api public
- */
-
-Binding.prototype.formatted = function(fmt) {
-  var calls = parse(clean(fmt));
-  var name = calls[0].name;
-  var val = this.value(name);
-
-  for (var i = 1; i < calls.length; ++i) {
-    var call = calls[i];
-    call.args.unshift(val);
-    var fn = this.fns[call.name];
-    val = fn.apply(this.fns, call.args);
-  }
-
-  return val;
-};
-
-/**
- * Invoke `fn` on changes.
- *
- * @param {Function} fn
- * @api public
- */
-
-Binding.prototype.change = function(fn) {
-  fn.call(this);
-
-  var self = this;
-  var view = this.view;
-  var val = this.el.getAttribute(this.name);
-
-  // computed props
-  var parts = val.split('<');
-  val = parts[0];
-  var computed = parts[1];
-  if (computed) computed = computed.trim().split(/\s+/);
-
-  // interpolation
-  if (hasInterpolation(val)) {
-    var props = interpolationProps(val);
-    props.forEach(function(prop){
-      view.sub(prop, fn.bind(self));
-    });
-    return;
-  }
-
-  // formatting
-  var calls = parse(val);
-  var prop = calls[0].name;
-
-  // computed props
-  if (computed) {
-    computed.forEach(function(prop){
-      view.sub(prop, fn.bind(self));
-    });
-    return;
-  }
-
-  // bind to prop
-  view.sub(prop, fn.bind(this));
-};
-
-/**
- * Return interpolation property names in `str`,
- * for example "{foo} and {bar}" would return
- * ['foo', 'bar'].
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-function interpolationProps(str) {
-  var m;
-  var arr = [];
-  var re = /\{([^}]+)\}/g;
-  while (m = re.exec(str)) {
-    arr.push(m[1]);
-  }
-  return arr;
-}
-
-/**
- * Check if `str` has interpolation.
- *
- * @param {String} str
- * @return {Boolean}
- * @api private
- */
-
-function hasInterpolation(str) {
-  return ~str.indexOf('{');
-}
-
-/**
- * Remove computed properties notation from `str`.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-function clean(str) {
-  return str.split('<')[0].trim();
-}
-
-});
-require.register("ianstormtaylor-reactive/lib/bindings.js", function(exports, require, module){
-/**
- * Module dependencies.
- */
-
-var classes = require('classes');
-var event = require('event');
-
-/**
- * Attributes supported.
- */
-
-var attrs = [
-  'id',
-  'src',
-  'rel',
-  'cols',
-  'rows',
-  'name',
-  'href',
-  'title',
-  'class',
-  'style',
-  'width',
-  'value',
-  'height',
-  'tabindex',
-  'placeholder'
-];
-
-/**
- * Events supported.
- */
-
-var events = [
-  'change',
-  'click',
-  'dblclick',
-  'mousedown',
-  'mouseup',
-  'blur',
-  'focus',
-  'input',
-  'keydown',
-  'keypress',
-  'keyup'
-];
-
-/**
- * Apply bindings.
- */
-
-module.exports = function(bind){
-
-  /**
-   * Generate attribute bindings.
-   */
-
-  attrs.forEach(function(attr){
-    bind('data-' + attr, function(el, name, obj){
-      this.change(function(){
-        el.setAttribute(attr, this.interpolate(name));
-      });
-    });
-  });
-
-  /**
-   * Show binding.
-   */
-
-  bind('data-show', function(el, name){
-    this.change(function(){
-      if (this.value(name)) {
-        classes(el).add('show').remove('hide');
-      } else {
-        classes(el).remove('show').add('hide');
-      }
-    });
-  });
-
-  /**
-   * Hide binding.
-   */
-
-  bind('data-hide', function(el, name){
-    this.change(function(){
-      if (this.value(name)) {
-        classes(el).remove('show').add('hide');
-      } else {
-        classes(el).add('show').remove('hide');
-      }
-    });
-  });
-
-  /**
-   * Checked binding.
-   */
-
-  bind('data-checked', function(el, name){
-    this.change(function(){
-      if (this.value(name)) {
-        el.setAttribute('checked', 'checked');
-      } else {
-        el.removeAttribute('checked');
-      }
-    });
-  });
-
-  /**
-   * Text binding.
-   */
-
-  bind('data-text', function(el, name){
-    this.change(function(){
-      el.textContent = this.interpolate(name);
-    });
-  });
-
-  /**
-   * HTML binding.
-   */
-
-  bind('data-html', function(el, name){
-    this.change(function(){
-      el.innerHTML = this.formatted(name);
-    });
-  });
-
-  /**
-   * Generate event bindings.
-   */
-
-  events.forEach(function(name){
-    bind('on-' + name, function(el, method){
-      var fns = this.view.fns;
-      event.bind(el, name, function(e){
-        var fn = fns[method];
-        if (!fn) throw new Error('method .' + method + '() missing');
-        fns[method](e);
-      });
-    });
-  });
-
-  /**
-   * Conditional binding.
-   */
-
-  bind('data-if', function(el, name){
-    var value = this.value(name);
-    if (!value) el.parentNode.removeChild(el);
-  });
-
-  /**
-   * Append child element.
-   */
-
-  bind('data-append', function(el, name){
-    var other = this.value(name);
-    el.appendChild(other);
-  });
-
-  /**
-   * Replace element, carrying over its attributes.
-   */
-
-  bind('data-replace', function(el, name){
-    var other = this.value(name);
-
-    // carryover attributes
-    for (var key in el.attributes) {
-      var attr = el.attributes[key];
-      if (!attr.specified || 'class' == attr.name) continue;
-      if (!other.hasAttribute(attr.name)) other.setAttribute(attr.name, attr.value);
-    }
-
-    // carryover classes
-    var arr = classes(el).array();
-    for (var i = 0; i < arr.length; i++) {
-      classes(other).add(arr[i]);
-    }
-
-    el.parentNode.replaceChild(other, el);
-  });
-
-};
-
-});
-require.register("ianstormtaylor-reactive/lib/adapter.js", function(exports, require, module){
-/**
- * Default subscription method.
- * Subscribe to changes on the model.
- *
- * @param {Object} obj
- * @param {String} prop
- * @param {Function} fn
- */
-
-exports.subscribe = function(obj, prop, fn) {
-  if (!obj.on) return;
-  obj.on('change ' + prop, fn);
-};
-
-/**
- * Default unsubscription method.
- * Unsubscribe from changes on the model.
- */
-
-exports.unsubscribe = function(obj, prop, fn) {
-  if (!obj.off) return;
-  obj.off('change ' + prop, fn);
-};
-
-/**
- * Default setter method.
- * Set a property on the model.
- *
- * @param {Object} obj
- * @param {String} prop
- * @param {Mixed} val
- */
-
-exports.set = function(obj, prop, val) {
-  if ('function' == typeof obj[prop]) {
-    obj[prop](val);
-  } else {
-    obj[prop] = val;
-  }
-};
-
-/**
- * Default getter method.
- * Get a property from the model.
- *
- * @param {Object} obj
- * @param {String} prop
- * @return {Mixed}
- */
-
-exports.get = function(obj, prop) {
-  if ('function' == typeof obj[prop]) {
-    return obj[prop]();
-  } else {
-    return obj[prop];
-  }
-};
-
-});
-require.register("ianstormtaylor-classes/index.js", function(exports, require, module){
-
-var classes = require('classes');
-
-
-/**
- * Expose `mixin`.
- */
-
-module.exports = exports = mixin;
-
-
-/**
- * Mixin the classes methods.
- *
- * @param {Object} object
- * @return {Object}
- */
-
-function mixin (obj) {
-  for (var method in exports) obj[method] = exports[method];
-  return obj;
-}
-
-
-/**
- * Add a class.
- *
- * @param {String} name
- * @return {Object}
- */
-
-exports.addClass = function (name) {
-  classes(this.el).add(name);
-  return this;
-};
-
-
-/**
- * Remove a class.
- *
- * @param {String} name
- * @return {Object}
- */
-
-exports.removeClass = function (name) {
-  classes(this.el).remove(name);
-  return this;
-};
-
-
-/**
- * Has a class?
- *
- * @param {String} name
- * @return {Boolean}
- */
-
-exports.hasClass = function (name) {
-  return classes(this.el).has(name);
-};
-
-
-/**
- * Toggle a class.
- *
- * @param {String} name
- * @return {Object}
- */
-
-exports.toggleClass = function (name) {
-  classes(this.el).toggle(name);
-  return this;
-};
-
-});
-require.register("segmentio-view/index.js", function(exports, require, module){
-
-var Classes = require('classes')
-  , domify = require('domify')
-  , Emitter = require('emitter')
-  , reactive = require('reactive')
-  , type = require('type');
-
-
-/**
- * Expose `createView`.
- */
-
-module.exports = createView;
-
-
-/**
- * Create a new view constructor with the given `template`.
- * Optional `fn` will be assigned to `construct` events.
- *
- * @param {String} template
- * @param {Function} fn (optional)
- * @return {Function}
- */
-
-function createView (template, fn) {
-  if (!template) throw new Error('template required');
-
-  /**
-   * Initialize a new `View` with an optional `model`, `el` and `options`.
-   *
-   * @param {Object} model (optional)
-   * @param {Element} el (optional)
-   * @param {Object} options (optional)
-   */
-
-  function View (model, el, options) {
-    options || (options = {});
-
-    if ('element' === type(model)) {
-      options = el;
-      el = model;
-      model = null;
-    }
-
-    if ('object' === type(el)) {
-      options = el;
-      el = null;
-    }
-
-    this.model = model || {};
-    this.el = el || domify(template);
-    this.options = options;
-    this.reactive = reactive(this.el, this.model, this);
-    this.View.emit('construct', this, this.model, this.el, this.options);
-  }
-
-  // statics
-  Emitter(View);
-
-  // prototypes
-  View.prototype.template = template;
-  View.prototype.View = View;
-  Emitter(View.prototype);
-  Classes(View.prototype);
-
-  // assign optional `construct` listener
-  if (fn) View.on('construct', fn);
-
-  return View;
-}
-});
-require.register("nav/index.js", function(exports, require, module){
-
-var bind = require('event').bind
-  , keyname = require('keyname')
-  , menu = require('menu')
-  , MenuItem = require('./item')
-  , prevent = require('prevent')
-  , template = require('./index.html')
-  , value = require('value')
-  , view = require('view');
-
-
-/**
- * Expose the `Nav` constructor.
- */
-
-var Nav = module.exports = view(template, function (self) {
-  self.search = self.el.querySelector('.nav-search');
-  self.form = self.el.querySelector('.nav-form');
-  bind(self.form, 'submit', prevent);
-  bind(self.search, 'focus', function () {
-    self.menu.next();
-  });
-});
-
-
-/**
- * Create a `Menu` constructor.
- */
-
-var Menu = menu(MenuItem);
-
-
-/**
- * Add a document to the menu.
- *
- * @param {Object} doc
- * @return {Nav}
- */
-
-Nav.prototype.add = function (doc) {
-  this.menu.add(doc);
-  return this;
-};
-
-
-/**
- * Remove a document from the menu.
- *
- * @param {String} id
- * @return {Nav}
- */
-
-Nav.prototype.remove = function (id) {
-  this.menu.remove(id);
-  return this;
-};
-
-
-/**
- * Focus the nav's search input.
- *
- * @return {Nav}
- */
-
-Nav.prototype.focus = function () {
-  this.search.focus();
-  return this;
-};
-
-
-/**
- * Reactive menu replacement.
- *
- * @return {Element}
- */
-
-Nav.prototype.replaceMenu = function () {
-  var self = this;
-  this.menu = new Menu()
-    .on('select', function (doc) {
-      self.emit('select', doc);
-    });
-  return this.menu.el;
-};
-
-
-/**
- * On search, filter the menu.
- */
-
-Nav.prototype.onSearch = function (e) {
-  switch (keyname(e.keyCode)) {
-    case 'enter':
-      return this.menu.select();
-    case 'up':
-      return this.menu.previous();
-    case 'down':
-      return this.menu.next();
-  }
-  var string = value(e.target);
-  this.menu.filter(function (el, model, view) {
-    return model.title().toLowerCase().indexOf(string) !== -1;
-  });
-};
-});
-require.register("nav/item.js", function(exports, require, module){
-
-var documents = require('documents')
-  , moment = require('moment')
-  , template = require('./item.html')
-  , view = require('view');
-
-
-/**
- * Expose `MenuItemView` constructor.
- */
-
-var MenuItemView = module.exports = view(template);
-
-
-/**
- * On clicking the delete button, remove the document from the list.
- */
-
-MenuItemView.prototype.onClickDelete = function (e) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  var doc = documents.find('.primary() ===' + this.model.primary());
-  if (doc) documents.remove(doc);
-};
-
-
-/**
- * Return an href for the document.
- *
- * @return {String}
- */
-
-MenuItemView.prototype.href = function () {
-  return '/' + this.model.primary();
-};
-
-
-/**
- * Return a title for the document.
- *
- * @return {String}
- */
-
-MenuItemView.prototype.title = function () {
-  var title = this.model.title();
-  if (title) return title;
-  var created = moment(this.model.created());
-  return created.format('[Untitled] - MMM Do, YYYY');
-};
-});
-require.register("boot/browser.js", function(exports, require, module){
-
-var bind = require('event').bind
-  , body = document.body
-  , classes = require('classes')
-  , documents = require('documents')
-  , Editor = require('editor')
-  , Nav = require('nav')
-  , Router = require('router')
-  , uid = require('uid');
-
-
-/**
- * Editor reference.
- */
-
-var editor;
-
-
-/**
- * Router.
- */
-
-var router = new Router();
-
-
-/**
- * Home route.
- */
-
-router.on('/', function (next) {
-  router.go('/' + uid());
-});
-
-
-/**
- * Document route.
- */
-
-router.on('/:id/:state?', function (context, next) {
-  body.className = 'loading ss-loading';
-  documents.fetch(context.params.id, function (err, doc) {
-    if (err) throw err;
-    if (editor) body.removeChild(editor.el);
-    editor = new Editor(doc);
-    body.appendChild(editor.el);
-    body.className = context.params.state;
-    window.analytics.track('Viewed Document', { id: doc.primary() });
-  });
-});
-
-
-/**
- * Nav.
- */
-
-var nav = new Nav();
-
-nav.on('select', function (doc) {
-  router.go('/' + doc.primary());
-});
-
-body.appendChild(nav.el);
-
-documents
-  .on('add', nav.add.bind(nav))
-  .on('remove', nav.remove.bind(nav));
-
-bind(document.querySelector('.main-menu-nav-button'), 'click', function (e) {
-  var el = classes(body);
-  if (el.has('navigating')) {
-    el.remove('navigating');
-  } else {
-    el.add('navigating');
-    nav.focus();
-  }
-});
-
-
-/**
- * Listen.
- */
-
-router.listen();
-
-
-/**
- * Load documents from Firebase.
- */
-
-documents.load();
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-require.register("editor/index.html", function(exports, require, module){
-module.exports = '<div class="editor">\n  <div class="editor-write">\n    <form class="editor-form">\n      <textarea class="editor-input" placeholder="Start writing here&hellip;"></textarea>\n    </form>\n  </div>\n\n  <div class="editor-read">\n    <article class="editor-output"></article>\n  </div>\n\n  <menu class="editor-menu menu">\n    <li class="editor-menu-item menu-item">\n      <a class="editor-write-button editor-menu-item-link menu-item-link ss-write"\n         title="Write Mode (Ctrl + Alt + ⇽)"></a>\n    </li>\n    <li class="editor-menu-item menu-item">\n      <a class="editor-read-button editor-menu-item-link menu-item-link ss-view"\n         title="Read Mode (Ctrl + Alt + ⇾)"></a>\n    </li>\n  </menu>\n</div>';
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-require.register("nav/index.html", function(exports, require, module){
-module.exports = '<nav class="nav">\n  <form class="nav-form">\n    <input class="nav-search"\n           type="search"\n           placeholder="Filter the list&hellip;"\n           on-keyup="onSearch">\n    <i class="nav-search-icon ss-search"></i>\n  </form>\n  <menu class="nav-menu" data-replace="replaceMenu"></menu>\n</nav>';
-});
-require.register("nav/item.html", function(exports, require, module){
-module.exports = '<li class="menu-item">\n  <a class="menu-item-link menu-item-title"\n     href="/{id}">{title || \'Untitled\'}</a>\n  <a class="menu-item-link menu-item-delete-button ss-trash"\n     title="Remove Document from Bookmarks"\n     on-click="onClickDelete"></a>\n</li>';
-});
+require.register("component-indexof/index.js", Function("exports, require, module",
+"module.exports = function(arr, obj){\n\
+  if (arr.indexOf) return arr.indexOf(obj);\n\
+  for (var i = 0; i < arr.length; ++i) {\n\
+    if (arr[i] === obj) return i;\n\
+  }\n\
+  return -1;\n\
+};//@ sourceURL=component-indexof/index.js"
+));
+require.register("component-classes/index.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var index = require('indexof');\n\
+\n\
+/**\n\
+ * Whitespace regexp.\n\
+ */\n\
+\n\
+var re = /\\s+/;\n\
+\n\
+/**\n\
+ * toString reference.\n\
+ */\n\
+\n\
+var toString = Object.prototype.toString;\n\
+\n\
+/**\n\
+ * Wrap `el` in a `ClassList`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @return {ClassList}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(el){\n\
+  return new ClassList(el);\n\
+};\n\
+\n\
+/**\n\
+ * Initialize a new ClassList for `el`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @api private\n\
+ */\n\
+\n\
+function ClassList(el) {\n\
+  if (!el) throw new Error('A DOM element reference is required');\n\
+  this.el = el;\n\
+  this.list = el.classList;\n\
+}\n\
+\n\
+/**\n\
+ * Add class `name` if not already present.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {ClassList}\n\
+ * @api public\n\
+ */\n\
+\n\
+ClassList.prototype.add = function(name){\n\
+  // classList\n\
+  if (this.list) {\n\
+    this.list.add(name);\n\
+    return this;\n\
+  }\n\
+\n\
+  // fallback\n\
+  var arr = this.array();\n\
+  var i = index(arr, name);\n\
+  if (!~i) arr.push(name);\n\
+  this.el.className = arr.join(' ');\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove class `name` when present, or\n\
+ * pass a regular expression to remove\n\
+ * any which match.\n\
+ *\n\
+ * @param {String|RegExp} name\n\
+ * @return {ClassList}\n\
+ * @api public\n\
+ */\n\
+\n\
+ClassList.prototype.remove = function(name){\n\
+  if ('[object RegExp]' == toString.call(name)) {\n\
+    return this.removeMatching(name);\n\
+  }\n\
+\n\
+  // classList\n\
+  if (this.list) {\n\
+    this.list.remove(name);\n\
+    return this;\n\
+  }\n\
+\n\
+  // fallback\n\
+  var arr = this.array();\n\
+  var i = index(arr, name);\n\
+  if (~i) arr.splice(i, 1);\n\
+  this.el.className = arr.join(' ');\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove all classes matching `re`.\n\
+ *\n\
+ * @param {RegExp} re\n\
+ * @return {ClassList}\n\
+ * @api private\n\
+ */\n\
+\n\
+ClassList.prototype.removeMatching = function(re){\n\
+  var arr = this.array();\n\
+  for (var i = 0; i < arr.length; i++) {\n\
+    if (re.test(arr[i])) {\n\
+      this.remove(arr[i]);\n\
+    }\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Toggle class `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {ClassList}\n\
+ * @api public\n\
+ */\n\
+\n\
+ClassList.prototype.toggle = function(name){\n\
+  // classList\n\
+  if (this.list) {\n\
+    this.list.toggle(name);\n\
+    return this;\n\
+  }\n\
+\n\
+  // fallback\n\
+  if (this.has(name)) {\n\
+    this.remove(name);\n\
+  } else {\n\
+    this.add(name);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Return an array of classes.\n\
+ *\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+ClassList.prototype.array = function(){\n\
+  var str = this.el.className.replace(/^\\s+|\\s+$/g, '');\n\
+  var arr = str.split(re);\n\
+  if ('' === arr[0]) arr.shift();\n\
+  return arr;\n\
+};\n\
+\n\
+/**\n\
+ * Check if class `name` is present.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {ClassList}\n\
+ * @api public\n\
+ */\n\
+\n\
+ClassList.prototype.has =\n\
+ClassList.prototype.contains = function(name){\n\
+  return this.list\n\
+    ? this.list.contains(name)\n\
+    : !! ~index(this.array(), name);\n\
+};\n\
+//@ sourceURL=component-classes/index.js"
+));
+require.register("component-event/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Bind `el` event `type` to `fn`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {String} type\n\
+ * @param {Function} fn\n\
+ * @param {Boolean} capture\n\
+ * @return {Function}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.bind = function(el, type, fn, capture){\n\
+  if (el.addEventListener) {\n\
+    el.addEventListener(type, fn, capture || false);\n\
+  } else {\n\
+    el.attachEvent('on' + type, fn);\n\
+  }\n\
+  return fn;\n\
+};\n\
+\n\
+/**\n\
+ * Unbind `el` event `type`'s callback `fn`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {String} type\n\
+ * @param {Function} fn\n\
+ * @param {Boolean} capture\n\
+ * @return {Function}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.unbind = function(el, type, fn, capture){\n\
+  if (el.removeEventListener) {\n\
+    el.removeEventListener(type, fn, capture || false);\n\
+  } else {\n\
+    el.detachEvent('on' + type, fn);\n\
+  }\n\
+  return fn;\n\
+};\n\
+//@ sourceURL=component-event/index.js"
+));
+require.register("component-query/index.js", Function("exports, require, module",
+"\n\
+function one(selector, el) {\n\
+  return el.querySelector(selector);\n\
+}\n\
+\n\
+exports = module.exports = function(selector, el){\n\
+  el = el || document;\n\
+  return one(selector, el);\n\
+};\n\
+\n\
+exports.all = function(selector, el){\n\
+  el = el || document;\n\
+  return el.querySelectorAll(selector);\n\
+};\n\
+\n\
+exports.engine = function(obj){\n\
+  if (!obj.one) throw new Error('.one callback required');\n\
+  if (!obj.all) throw new Error('.all callback required');\n\
+  one = obj.one;\n\
+  exports.all = obj.all;\n\
+};\n\
+//@ sourceURL=component-query/index.js"
+));
+require.register("component-matches-selector/index.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var query = require('query');\n\
+\n\
+/**\n\
+ * Element prototype.\n\
+ */\n\
+\n\
+var proto = Element.prototype;\n\
+\n\
+/**\n\
+ * Vendor function.\n\
+ */\n\
+\n\
+var vendor = proto.matchesSelector\n\
+  || proto.webkitMatchesSelector\n\
+  || proto.mozMatchesSelector\n\
+  || proto.msMatchesSelector\n\
+  || proto.oMatchesSelector;\n\
+\n\
+/**\n\
+ * Expose `match()`.\n\
+ */\n\
+\n\
+module.exports = match;\n\
+\n\
+/**\n\
+ * Match `el` to `selector`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {String} selector\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+function match(el, selector) {\n\
+  if (vendor) return vendor.call(el, selector);\n\
+  var nodes = query.all(selector, el.parentNode);\n\
+  for (var i = 0; i < nodes.length; ++i) {\n\
+    if (nodes[i] == el) return true;\n\
+  }\n\
+  return false;\n\
+}\n\
+//@ sourceURL=component-matches-selector/index.js"
+));
+require.register("component-delegate/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var matches = require('matches-selector')\n\
+  , event = require('event');\n\
+\n\
+/**\n\
+ * Delegate event `type` to `selector`\n\
+ * and invoke `fn(e)`. A callback function\n\
+ * is returned which may be passed to `.unbind()`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {String} selector\n\
+ * @param {String} type\n\
+ * @param {Function} fn\n\
+ * @param {Boolean} capture\n\
+ * @return {Function}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.bind = function(el, selector, type, fn, capture){\n\
+  return event.bind(el, type, function(e){\n\
+    if (matches(e.target, selector)) fn(e);\n\
+  }, capture);\n\
+  return callback;\n\
+};\n\
+\n\
+/**\n\
+ * Unbind event `type`'s callback `fn`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {String} type\n\
+ * @param {Function} fn\n\
+ * @param {Boolean} capture\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.unbind = function(el, type, fn, capture){\n\
+  event.unbind(el, type, fn, capture);\n\
+};\n\
+//@ sourceURL=component-delegate/index.js"
+));
+require.register("component-link-delegate/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var delegate = require('delegate');\n\
+var url = require('url');\n\
+\n\
+/**\n\
+ * Handle link delegation on `el` or the document,\n\
+ * and invoke `fn(e)` when clickable.\n\
+ *\n\
+ * @param {Element|Function} el or fn\n\
+ * @param {Function} [fn]\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(el, fn){\n\
+  // default to document\n\
+  if ('function' == typeof el) {\n\
+    fn = el;\n\
+    el = document;\n\
+  }\n\
+\n\
+  delegate.bind(el, 'a', 'click', function(e){\n\
+    if (clickable(e)) fn(e);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Check if `e` is clickable.\n\
+ */\n\
+\n\
+function clickable(e) {\n\
+  if (1 != which(e)) return;\n\
+  if (e.metaKey || e.ctrlKey || e.shiftKey) return;\n\
+  if (e.defaultPrevented) return;\n\
+\n\
+  // target\n\
+  var el = e.target;\n\
+\n\
+  // check target\n\
+  if (el.target) return;\n\
+\n\
+  // x-origin\n\
+  if (url.isCrossDomain(el.href)) return;\n\
+\n\
+  return true;\n\
+}\n\
+\n\
+/**\n\
+ * Event button.\n\
+ */\n\
+\n\
+function which(e) {\n\
+  e = e || window.event;\n\
+  return null == e.which\n\
+    ? e.button\n\
+    : e.which;\n\
+}\n\
+//@ sourceURL=component-link-delegate/index.js"
+));
+require.register("component-path-to-regexp/index.js", Function("exports, require, module",
+"/**\n\
+ * Expose `pathtoRegexp`.\n\
+ */\n\
+\n\
+module.exports = pathtoRegexp;\n\
+\n\
+/**\n\
+ * Normalize the given path string,\n\
+ * returning a regular expression.\n\
+ *\n\
+ * An empty array should be passed,\n\
+ * which will contain the placeholder\n\
+ * key names. For example \"/user/:id\" will\n\
+ * then contain [\"id\"].\n\
+ *\n\
+ * @param  {String|RegExp|Array} path\n\
+ * @param  {Array} keys\n\
+ * @param  {Object} options\n\
+ * @return {RegExp}\n\
+ * @api private\n\
+ */\n\
+\n\
+function pathtoRegexp(path, keys, options) {\n\
+  options = options || {};\n\
+  var sensitive = options.sensitive;\n\
+  var strict = options.strict;\n\
+  keys = keys || [];\n\
+\n\
+  if (path instanceof RegExp) return path;\n\
+  if (path instanceof Array) path = '(' + path.join('|') + ')';\n\
+\n\
+  path = path\n\
+    .concat(strict ? '' : '/?')\n\
+    .replace(/\\/\\(/g, '(?:/')\n\
+    .replace(/(\\/)?(\\.)?:(\\w+)(?:(\\(.*?\\)))?(\\?)?(\\*)?/g, function(_, slash, format, key, capture, optional, star){\n\
+      keys.push({ name: key, optional: !! optional });\n\
+      slash = slash || '';\n\
+      return ''\n\
+        + (optional ? '' : slash)\n\
+        + '(?:'\n\
+        + (optional ? slash : '')\n\
+        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'\n\
+        + (optional || '')\n\
+        + (star ? '(/*)?' : '');\n\
+    })\n\
+    .replace(/([\\/.])/g, '\\\\$1')\n\
+    .replace(/\\*/g, '(.*)');\n\
+\n\
+  return new RegExp('^' + path + '$', sensitive ? '' : 'i');\n\
+};\n\
+//@ sourceURL=component-path-to-regexp/index.js"
+));
+require.register("component-url/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Parse the given `url`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Object}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.parse = function(url){\n\
+  var a = document.createElement('a');\n\
+  a.href = url;\n\
+  return {\n\
+    href: a.href,\n\
+    host: a.host || location.host,\n\
+    port: ('0' === a.port || '' === a.port) ? location.port : a.port,\n\
+    hash: a.hash,\n\
+    hostname: a.hostname || location.hostname,\n\
+    pathname: a.pathname.charAt(0) != '/' ? '/' + a.pathname : a.pathname,\n\
+    protocol: !a.protocol || ':' == a.protocol ? location.protocol : a.protocol,\n\
+    search: a.search,\n\
+    query: a.search.slice(1)\n\
+  };\n\
+};\n\
+\n\
+/**\n\
+ * Check if `url` is absolute.\n\
+ *\n\
+ * @param {String} url\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.isAbsolute = function(url){\n\
+  return 0 == url.indexOf('//') || !!~url.indexOf('://');\n\
+};\n\
+\n\
+/**\n\
+ * Check if `url` is relative.\n\
+ *\n\
+ * @param {String} url\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.isRelative = function(url){\n\
+  return !exports.isAbsolute(url);\n\
+};\n\
+\n\
+/**\n\
+ * Check if `url` is cross domain.\n\
+ *\n\
+ * @param {String} url\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.isCrossDomain = function(url){\n\
+  url = exports.parse(url);\n\
+  return url.hostname !== location.hostname\n\
+    || url.port !== location.port\n\
+    || url.protocol !== location.protocol;\n\
+};//@ sourceURL=component-url/index.js"
+));
+require.register("ianstormtaylor-history/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Get the current path.\n\
+ *\n\
+ * @return {String}\n\
+ */\n\
+\n\
+exports.path = function () {\n\
+  return window.location.pathname;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Get the current state.\n\
+ *\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.state = function () {\n\
+  return window.history.state;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Push a new `url` on to the history.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Object} state (optional)\n\
+ */\n\
+\n\
+exports.push = function (url, state) {\n\
+  window.history.pushState(state, null, url);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Replace the current url with a new `url`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Object} state (optional)\n\
+ */\n\
+\n\
+exports.replace = function (url, state) {\n\
+  window.history.replaceState(state, null, url);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Move back in the history, by an optional number of `steps`.\n\
+ *\n\
+ * @param {Number} steps (optional)\n\
+ */\n\
+\n\
+exports.back =\n\
+exports.backward = function (steps) {\n\
+  steps || (steps = 1);\n\
+  window.history.go(-1 * steps);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Move forward in the history, by an optional number of `steps`.\n\
+ *\n\
+ * @param {Number} steps (optional)\n\
+ */\n\
+\n\
+exports.forward = function (steps) {\n\
+  steps || (steps = 1);\n\
+  window.history.go(steps);\n\
+};//@ sourceURL=ianstormtaylor-history/index.js"
+));
+require.register("yields-prevent/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * prevent default on the given `e`.\n\
+ * \n\
+ * examples:\n\
+ * \n\
+ *      anchor.onclick = prevent;\n\
+ *      anchor.onclick = function(e){\n\
+ *        if (something) return prevent(e);\n\
+ *      };\n\
+ * \n\
+ * @param {Event} e\n\
+ */\n\
+\n\
+module.exports = function(e){\n\
+  e = e || window.event\n\
+  return e.preventDefault\n\
+    ? e.preventDefault()\n\
+    : e.returnValue = false;\n\
+};\n\
+//@ sourceURL=yields-prevent/index.js"
+));
+require.register("yields-stop/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * stop propagation on the given `e`.\n\
+ * \n\
+ * examples:\n\
+ * \n\
+ *      anchor.onclick = require('stop');\n\
+ *      anchor.onclick = function(e){\n\
+ *        if (!some) return require('stop')(e);\n\
+ *      };\n\
+ * \n\
+ * \n\
+ * @param {Event} e\n\
+ */\n\
+\n\
+module.exports = function(e){\n\
+  e = e || window.event;\n\
+  return e.stopPropagation\n\
+    ? e.stopPropagation()\n\
+    : e.cancelBubble = true;\n\
+};\n\
+//@ sourceURL=yields-stop/index.js"
+));
+require.register("ianstormtaylor-router/lib/context.js", Function("exports, require, module",
+"\n\
+\n\
+/**\n\
+ * Expose `Context`.\n\
+ */\n\
+\n\
+module.exports = Context;\n\
+\n\
+\n\
+/**\n\
+ * Initialize a new `Context`.\n\
+ *\n\
+ * @param {String} path\n\
+ * @param {Object} previous (optional)\n\
+ */\n\
+\n\
+function Context (path, previous) {\n\
+  this.path = path;\n\
+  this.params = {};\n\
+  this.previous = previous ? previous.params : {};\n\
+}//@ sourceURL=ianstormtaylor-router/lib/context.js"
+));
+require.register("ianstormtaylor-router/lib/index.js", Function("exports, require, module",
+"\n\
+var Context = require('./context')\n\
+  , history = require('history')\n\
+  , link = require('link-delegate')\n\
+  , prevent = require('prevent')\n\
+  , Route = require('./route')\n\
+  , stop = require('stop')\n\
+  , url = require('url');\n\
+\n\
+\n\
+/**\n\
+ * Expose `Router`.\n\
+ */\n\
+\n\
+module.exports = exports = Router;\n\
+\n\
+\n\
+/**\n\
+ * Expose `Route`.\n\
+ */\n\
+\n\
+exports.Route = Route;\n\
+\n\
+\n\
+/**\n\
+ * Expose `Context`.\n\
+ */\n\
+\n\
+exports.Context = Context;\n\
+\n\
+\n\
+/**\n\
+ * Initialize a new `Router`.\n\
+ */\n\
+\n\
+function Router () {\n\
+  this.callbacks = [];\n\
+  this.running = false;\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Use the given `plugin`.\n\
+ *\n\
+ * @param {Function} plugin\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.use = function (plugin) {\n\
+  plugin(this);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Attach a route handler.\n\
+ *\n\
+ * @param {String} path\n\
+ * @param {Functions...} fns\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.prototype.on = function (path) {\n\
+  var route = new Route(path);\n\
+  var fns = Array.prototype.slice.call(arguments, 1);\n\
+  for (var i = 1; i < arguments.length; i++) {\n\
+    this.callbacks.push(route.middleware(arguments[i]));\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Trigger a route at `path`.\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.prototype.dispatch = function (path) {\n\
+  var context = this._context = new Context(path, this._context);\n\
+  var callbacks = this.callbacks;\n\
+  var i = 0;\n\
+\n\
+  function next () {\n\
+    var fn = callbacks[i++];\n\
+    if (fn) fn(context, next);\n\
+  }\n\
+\n\
+  next();\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Dispatch a new `path` and push it to the history, or use the current path.\n\
+ *\n\
+ * @param {String} path (optional)\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.prototype.go = function (path) {\n\
+  if (!path) {\n\
+    var l = window.location;\n\
+    path = l.pathname;\n\
+    if (l.search) path += l.search;\n\
+  } else {\n\
+    this.push(path);\n\
+  }\n\
+\n\
+  this.dispatch(path);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Start the router and listen for link clicks relative to an optional `path`.\n\
+ * You can optionally set `go` to false to manage the first dispatch yourself.\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.prototype.listen = function (path, go) {\n\
+  if ('boolean' === typeof path) {\n\
+    go = path;\n\
+    path = null;\n\
+  }\n\
+\n\
+  if (go || go === undefined) this.go();\n\
+\n\
+  var self = this;\n\
+  link(function (e) {\n\
+    var el = e.target;\n\
+    var href = el.href;\n\
+    if (!el.hasAttribute('href') || !routable(href, path)) return;\n\
+    var parsed = url.parse(href);\n\
+    self.go(parsed.pathname);\n\
+    prevent(e);\n\
+    stop(e);\n\
+  });\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Push a new `path` to the browsers history.\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.prototype.push = function (path) {\n\
+  history.push(path);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Replace the current path in the browsers history.\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {Router}\n\
+ */\n\
+\n\
+Router.prototype.replace = function (path) {\n\
+  history.replace(path);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Check if a given `href` is routable under `path`.\n\
+ *\n\
+ * @param {String} href\n\
+ * @return {Boolean}\n\
+ */\n\
+\n\
+function routable (href, path) {\n\
+  if (!path) return true;\n\
+  var parsed = url.parse(href);\n\
+  if (parsed.pathname.indexOf(path) === 0) return true;\n\
+  return false;\n\
+}//@ sourceURL=ianstormtaylor-router/lib/index.js"
+));
+require.register("ianstormtaylor-router/lib/route.js", Function("exports, require, module",
+"\n\
+var regexp = require('path-to-regexp');\n\
+\n\
+\n\
+/**\n\
+ * Expose `Route`.\n\
+ */\n\
+\n\
+module.exports = Route;\n\
+\n\
+\n\
+/**\n\
+ * Initialize a new `Route` with the given `path`.\n\
+ *\n\
+ * @param {String} path\n\
+ */\n\
+\n\
+function Route (path) {\n\
+  this.path = path;\n\
+  this.keys = [];\n\
+  this.regexp = regexp(path, this.keys);\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Return route middleware with the given `fn`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Function}\n\
+ */\n\
+\n\
+Route.prototype.middleware = function (fn) {\n\
+  var self = this;\n\
+  return function (context, next) {\n\
+    if (self.match(context.path, context.params)) return fn(context, next);\n\
+    next();\n\
+  };\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Check if the route matches a given `path`, returning false or an object.\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {Boolean|Object}\n\
+ */\n\
+\n\
+Route.prototype.match = function (path, params) {\n\
+  var keys = this.keys;\n\
+  var qsIndex = path.indexOf('?');\n\
+  var pathname = ~qsIndex ? path.slice(0, qsIndex) : path;\n\
+  var m = this.regexp.exec(pathname);\n\
+\n\
+  if (!m) return false;\n\
+\n\
+  for (var i = 1, len = m.length; i < len; ++i) {\n\
+    var key = keys[i - 1];\n\
+    var val = 'string' === typeof m[i] ? decodeURIComponent(m[i]) : m[i];\n\
+    params[key.name] = val;\n\
+  }\n\
+  return true;\n\
+};//@ sourceURL=ianstormtaylor-router/lib/route.js"
+));
+require.register("matthewmueller-uid/index.js", Function("exports, require, module",
+"/**\n\
+ * Export `uid`\n\
+ */\n\
+\n\
+module.exports = uid;\n\
+\n\
+/**\n\
+ * Create a `uid`\n\
+ *\n\
+ * @param {String} len\n\
+ * @return {String} uid\n\
+ */\n\
+\n\
+function uid(len) {\n\
+  len = len || 7;\n\
+  return Math.random().toString(35).substr(2, len);\n\
+}\n\
+//@ sourceURL=matthewmueller-uid/index.js"
+));
+require.register("component-to-function/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Expose `toFunction()`.\n\
+ */\n\
+\n\
+module.exports = toFunction;\n\
+\n\
+/**\n\
+ * Convert `obj` to a `Function`.\n\
+ *\n\
+ * @param {Mixed} obj\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function toFunction(obj) {\n\
+  switch ({}.toString.call(obj)) {\n\
+    case '[object Object]':\n\
+      return objectToFunction(obj);\n\
+    case '[object Function]':\n\
+      return obj;\n\
+    case '[object String]':\n\
+      return stringToFunction(obj);\n\
+    case '[object RegExp]':\n\
+      return regexpToFunction(obj);\n\
+    default:\n\
+      return defaultToFunction(obj);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Default to strict equality.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function defaultToFunction(val) {\n\
+  return function(obj){\n\
+    return val === obj;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Convert `re` to a function.\n\
+ *\n\
+ * @param {RegExp} re\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function regexpToFunction(re) {\n\
+  return function(obj){\n\
+    return re.test(obj);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Convert property `str` to a function.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function stringToFunction(str) {\n\
+  // immediate such as \"> 20\"\n\
+  if (/^ *\\W+/.test(str)) return new Function('_', 'return _ ' + str);\n\
+\n\
+  // properties such as \"name.first\" or \"age > 18\"\n\
+  return new Function('_', 'return _.' + str);\n\
+}\n\
+\n\
+/**\n\
+ * Convert `object` to a function.\n\
+ *\n\
+ * @param {Object} object\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function objectToFunction(obj) {\n\
+  var match = {}\n\
+  for (var key in obj) {\n\
+    match[key] = typeof obj[key] === 'string'\n\
+      ? defaultToFunction(obj[key])\n\
+      : toFunction(obj[key])\n\
+  }\n\
+  return function(val){\n\
+    if (typeof val !== 'object') return false;\n\
+    for (var key in match) {\n\
+      if (!(key in val)) return false;\n\
+      if (!match[key](val[key])) return false;\n\
+    }\n\
+    return true;\n\
+  }\n\
+}\n\
+//@ sourceURL=component-to-function/index.js"
+));
+require.register("component-type/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * toString ref.\n\
+ */\n\
+\n\
+var toString = Object.prototype.toString;\n\
+\n\
+/**\n\
+ * Return the type of `val`.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(val){\n\
+  switch (toString.call(val)) {\n\
+    case '[object Function]': return 'function';\n\
+    case '[object Date]': return 'date';\n\
+    case '[object RegExp]': return 'regexp';\n\
+    case '[object Arguments]': return 'arguments';\n\
+    case '[object Array]': return 'array';\n\
+    case '[object String]': return 'string';\n\
+  }\n\
+\n\
+  if (val === null) return 'null';\n\
+  if (val === undefined) return 'undefined';\n\
+  if (val && val.nodeType === 1) return 'element';\n\
+  if (val === Object(val)) return 'object';\n\
+\n\
+  return typeof val;\n\
+};\n\
+//@ sourceURL=component-type/index.js"
+));
+require.register("component-each/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var toFunction = require('to-function');\n\
+var type;\n\
+\n\
+try {\n\
+  type = require('type-component');\n\
+} catch (e) {\n\
+  type = require('type');\n\
+}\n\
+\n\
+/**\n\
+ * HOP reference.\n\
+ */\n\
+\n\
+var has = Object.prototype.hasOwnProperty;\n\
+\n\
+/**\n\
+ * Iterate the given `obj` and invoke `fn(val, i)`.\n\
+ *\n\
+ * @param {String|Array|Object} obj\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(obj, fn){\n\
+  fn = toFunction(fn);\n\
+  switch (type(obj)) {\n\
+    case 'array':\n\
+      return array(obj, fn);\n\
+    case 'object':\n\
+      if ('number' == typeof obj.length) return array(obj, fn);\n\
+      return object(obj, fn);\n\
+    case 'string':\n\
+      return string(obj, fn);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Iterate string chars.\n\
+ *\n\
+ * @param {String} obj\n\
+ * @param {Function} fn\n\
+ * @api private\n\
+ */\n\
+\n\
+function string(obj, fn) {\n\
+  for (var i = 0; i < obj.length; ++i) {\n\
+    fn(obj.charAt(i), i);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Iterate object keys.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {Function} fn\n\
+ * @api private\n\
+ */\n\
+\n\
+function object(obj, fn) {\n\
+  for (var key in obj) {\n\
+    if (has.call(obj, key)) {\n\
+      fn(key, obj[key]);\n\
+    }\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Iterate array-ish.\n\
+ *\n\
+ * @param {Array|Object} obj\n\
+ * @param {Function} fn\n\
+ * @api private\n\
+ */\n\
+\n\
+function array(obj, fn) {\n\
+  for (var i = 0; i < obj.length; ++i) {\n\
+    fn(obj[i], i);\n\
+  }\n\
+}\n\
+//@ sourceURL=component-each/index.js"
+));
+require.register("component-set/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Expose `Set`.\n\
+ */\n\
+\n\
+module.exports = Set;\n\
+\n\
+/**\n\
+ * Initialize a new `Set` with optional `vals`\n\
+ *\n\
+ * @param {Array} vals\n\
+ * @api public\n\
+ */\n\
+\n\
+function Set(vals) {\n\
+  if (!(this instanceof Set)) return new Set(vals);\n\
+  this.vals = [];\n\
+  if (vals) {\n\
+    for (var i = 0; i < vals.length; ++i) {\n\
+      this.add(vals[i]);\n\
+    }\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Add `val`.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.add = function(val){\n\
+  if (this.has(val)) return;\n\
+  this.vals.push(val);\n\
+};\n\
+\n\
+/**\n\
+ * Check if this set has `val`.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.has = function(val){\n\
+  return !! ~this.indexOf(val);\n\
+};\n\
+\n\
+/**\n\
+ * Return the indexof `val`.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {Number}\n\
+ * @api private\n\
+ */\n\
+\n\
+Set.prototype.indexOf = function(val){\n\
+  for (var i = 0, len = this.vals.length; i < len; ++i) {\n\
+    var obj = this.vals[i];\n\
+    if (obj.equals && obj.equals(val)) return i;\n\
+    if (obj == val) return i;\n\
+  }\n\
+  return -1;\n\
+};\n\
+\n\
+/**\n\
+ * Iterate each member and invoke `fn(val)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Set}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.each = function(fn){\n\
+  for (var i = 0; i < this.vals.length; ++i) {\n\
+    fn(this.vals[i]);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Return the values as an array.\n\
+ *\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.values =\n\
+Set.prototype.array =\n\
+Set.prototype.members =\n\
+Set.prototype.toJSON = function(){\n\
+  return this.vals;\n\
+};\n\
+\n\
+/**\n\
+ * Return the set size.\n\
+ *\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.size = function(){\n\
+  return this.vals.length;\n\
+};\n\
+\n\
+/**\n\
+ * Empty the set and return old values.\n\
+ *\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.clear = function(){\n\
+  var old = this.vals;\n\
+  this.vals = [];\n\
+  return old;\n\
+};\n\
+\n\
+/**\n\
+ * Remove `val`, returning __true__ when present, otherwise __false__.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.remove = function(val){\n\
+  var i = this.indexOf(val);\n\
+  if (~i) this.vals.splice(i, 1);\n\
+  return !! ~i;\n\
+};\n\
+\n\
+/**\n\
+ * Perform a union on `set`.\n\
+ *\n\
+ * @param {Set} set\n\
+ * @return {Set} new set\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.union = function(set){\n\
+  var ret = new Set;\n\
+  var a = this.vals;\n\
+  var b = set.vals;\n\
+  for (var i = 0; i < a.length; ++i) ret.add(a[i]);\n\
+  for (var i = 0; i < b.length; ++i) ret.add(b[i]);\n\
+  return ret;\n\
+};\n\
+\n\
+/**\n\
+ * Perform an intersection on `set`.\n\
+ *\n\
+ * @param {Set} set\n\
+ * @return {Set} new set\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.intersect = function(set){\n\
+  var ret = new Set;\n\
+  var a = this.vals;\n\
+  var b = set.vals;\n\
+\n\
+  for (var i = 0; i < a.length; ++i) {\n\
+    if (set.has(a[i])) {\n\
+      ret.add(a[i]);\n\
+    }\n\
+  }\n\
+\n\
+  for (var i = 0; i < b.length; ++i) {\n\
+    if (this.has(b[i])) {\n\
+      ret.add(b[i]);\n\
+    }\n\
+  }\n\
+\n\
+  return ret;\n\
+};\n\
+\n\
+/**\n\
+ * Check if the set is empty.\n\
+ *\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+Set.prototype.isEmpty = function(){\n\
+  return 0 == this.vals.length;\n\
+};\n\
+\n\
+//@ sourceURL=component-set/index.js"
+));
+require.register("component-emitter/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var index = require('indexof');\n\
+\n\
+/**\n\
+ * Expose `Emitter`.\n\
+ */\n\
+\n\
+module.exports = Emitter;\n\
+\n\
+/**\n\
+ * Initialize a new `Emitter`.\n\
+ *\n\
+ * @api public\n\
+ */\n\
+\n\
+function Emitter(obj) {\n\
+  if (obj) return mixin(obj);\n\
+};\n\
+\n\
+/**\n\
+ * Mixin the emitter properties.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+function mixin(obj) {\n\
+  for (var key in Emitter.prototype) {\n\
+    obj[key] = Emitter.prototype[key];\n\
+  }\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Listen on the given `event` with `fn`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.on = function(event, fn){\n\
+  this._callbacks = this._callbacks || {};\n\
+  (this._callbacks[event] = this._callbacks[event] || [])\n\
+    .push(fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Adds an `event` listener that will be invoked a single\n\
+ * time then automatically removed.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.once = function(event, fn){\n\
+  var self = this;\n\
+  this._callbacks = this._callbacks || {};\n\
+\n\
+  function on() {\n\
+    self.off(event, on);\n\
+    fn.apply(this, arguments);\n\
+  }\n\
+\n\
+  fn._off = on;\n\
+  this.on(event, on);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove the given callback for `event` or all\n\
+ * registered callbacks.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.off =\n\
+Emitter.prototype.removeListener =\n\
+Emitter.prototype.removeAllListeners = function(event, fn){\n\
+  this._callbacks = this._callbacks || {};\n\
+\n\
+  // all\n\
+  if (0 == arguments.length) {\n\
+    this._callbacks = {};\n\
+    return this;\n\
+  }\n\
+\n\
+  // specific event\n\
+  var callbacks = this._callbacks[event];\n\
+  if (!callbacks) return this;\n\
+\n\
+  // remove all handlers\n\
+  if (1 == arguments.length) {\n\
+    delete this._callbacks[event];\n\
+    return this;\n\
+  }\n\
+\n\
+  // remove specific handler\n\
+  var i = index(callbacks, fn._off || fn);\n\
+  if (~i) callbacks.splice(i, 1);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Emit `event` with the given args.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Mixed} ...\n\
+ * @return {Emitter}\n\
+ */\n\
+\n\
+Emitter.prototype.emit = function(event){\n\
+  this._callbacks = this._callbacks || {};\n\
+  var args = [].slice.call(arguments, 1)\n\
+    , callbacks = this._callbacks[event];\n\
+\n\
+  if (callbacks) {\n\
+    callbacks = callbacks.slice(0);\n\
+    for (var i = 0, len = callbacks.length; i < len; ++i) {\n\
+      callbacks[i].apply(this, args);\n\
+    }\n\
+  }\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Return array of callbacks for `event`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.listeners = function(event){\n\
+  this._callbacks = this._callbacks || {};\n\
+  return this._callbacks[event] || [];\n\
+};\n\
+\n\
+/**\n\
+ * Check if this emitter has `event` handlers.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.hasListeners = function(event){\n\
+  return !! this.listeners(event).length;\n\
+};\n\
+//@ sourceURL=component-emitter/index.js"
+));
+require.register("component-enumerable/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var toFunction = require('to-function')\n\
+  , proto = {};\n\
+\n\
+/**\n\
+ * Expose `Enumerable`.\n\
+ */\n\
+\n\
+module.exports = Enumerable;\n\
+\n\
+/**\n\
+ * Mixin to `obj`.\n\
+ *\n\
+ *    var Enumerable = require('enumerable');\n\
+ *    Enumerable(Something.prototype);\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Object} obj\n\
+ */\n\
+\n\
+function mixin(obj){\n\
+  for (var key in proto) obj[key] = proto[key];\n\
+  obj.__iterate__ = obj.__iterate__ || defaultIterator;\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Initialize a new `Enumerable` with the given `obj`.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @api private\n\
+ */\n\
+\n\
+function Enumerable(obj) {\n\
+  if (!(this instanceof Enumerable)) {\n\
+    if (Array.isArray(obj)) return new Enumerable(obj);\n\
+    return mixin(obj);\n\
+  }\n\
+  this.obj = obj;\n\
+}\n\
+\n\
+/*!\n\
+ * Default iterator utilizing `.length` and subscripts.\n\
+ */\n\
+\n\
+function defaultIterator() {\n\
+  var self = this;\n\
+  return {\n\
+    length: function(){ return self.length },\n\
+    get: function(i){ return self[i] }\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Return a string representation of this enumerable.\n\
+ *\n\
+ *    [Enumerable [1,2,3]]\n\
+ *\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+Enumerable.prototype.inspect =\n\
+Enumerable.prototype.toString = function(){\n\
+  return '[Enumerable ' + JSON.stringify(this.obj) + ']';\n\
+};\n\
+\n\
+/**\n\
+ * Iterate enumerable.\n\
+ *\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+Enumerable.prototype.__iterate__ = function(){\n\
+  var obj = this.obj;\n\
+  obj.__iterate__ = obj.__iterate__ || defaultIterator;\n\
+  return obj.__iterate__();\n\
+};\n\
+\n\
+/**\n\
+ * Iterate each value and invoke `fn(val, i)`.\n\
+ *\n\
+ *    users.each(function(val, i){\n\
+ *\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Object} self\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.forEach =\n\
+proto.each = function(fn){\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    fn(vals.get(i), i);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Map each return value from `fn(val, i)`.\n\
+ *\n\
+ * Passing a callback function:\n\
+ *\n\
+ *    users.map(function(user){\n\
+ *      return user.name.first\n\
+ *    })\n\
+ *\n\
+ * Passing a property string:\n\
+ *\n\
+ *    users.map('name.first')\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.map = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  var arr = [];\n\
+  for (var i = 0; i < len; ++i) {\n\
+    arr.push(fn(vals.get(i), i));\n\
+  }\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Select all values that return a truthy value of `fn(val, i)`.\n\
+ *\n\
+ *    users.select(function(user){\n\
+ *      return user.age > 20\n\
+ *    })\n\
+ *\n\
+ *  With a property:\n\
+ *\n\
+ *    items.select('complete')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.filter =\n\
+proto.select = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) arr.push(val);\n\
+  }\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Select all unique values.\n\
+ *\n\
+ *    nums.unique()\n\
+ *\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.unique = function(){\n\
+  var val;\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (~arr.indexOf(val)) continue;\n\
+    arr.push(val);\n\
+  }\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Reject all values that return a truthy value of `fn(val, i)`.\n\
+ *\n\
+ * Rejecting using a callback:\n\
+ *\n\
+ *    users.reject(function(user){\n\
+ *      return user.age < 20\n\
+ *    })\n\
+ *\n\
+ * Rejecting with a property:\n\
+ *\n\
+ *    items.reject('complete')\n\
+ *\n\
+ * Rejecting values via `==`:\n\
+ *\n\
+ *    data.reject(null)\n\
+ *    users.reject(tobi)\n\
+ *\n\
+ * @param {Function|String|Mixed} fn\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.reject = function(fn){\n\
+  var val;\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if ('string' == typeof fn) fn = toFunction(fn);\n\
+\n\
+  if (fn) {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      val = vals.get(i);\n\
+      if (!fn(val, i)) arr.push(val);\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      val = vals.get(i);\n\
+      if (val != fn) arr.push(val);\n\
+    }\n\
+  }\n\
+\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Reject `null` and `undefined`.\n\
+ *\n\
+ *    [1, null, 5, undefined].compact()\n\
+ *    // => [1,5]\n\
+ *\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+\n\
+proto.compact = function(){\n\
+  return this.reject(null);\n\
+};\n\
+\n\
+/**\n\
+ * Return the first value when `fn(val, i)` is truthy,\n\
+ * otherwise return `undefined`.\n\
+ *\n\
+ *    users.find(function(user){\n\
+ *      return user.role == 'admin'\n\
+ *    })\n\
+ *\n\
+ * With a property string:\n\
+ *\n\
+ *    users.find('age > 20')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.find = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return val;\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Return the last value when `fn(val, i)` is truthy,\n\
+ * otherwise return `undefined`.\n\
+ *\n\
+ *    users.findLast(function(user){\n\
+ *      return user.role == 'admin'\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.findLast = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = len - 1; i > -1; --i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return val;\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Assert that all invocations of `fn(val, i)` are truthy.\n\
+ *\n\
+ * For example ensuring that all pets are ferrets:\n\
+ *\n\
+ *    pets.all(function(pet){\n\
+ *      return pet.species == 'ferret'\n\
+ *    })\n\
+ *\n\
+ *    users.all('admin')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.all =\n\
+proto.every = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (!fn(val, i)) return false;\n\
+  }\n\
+  return true;\n\
+};\n\
+\n\
+/**\n\
+ * Assert that none of the invocations of `fn(val, i)` are truthy.\n\
+ *\n\
+ * For example ensuring that no pets are admins:\n\
+ *\n\
+ *    pets.none(function(p){ return p.admin })\n\
+ *    pets.none('admin')\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.none = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return false;\n\
+  }\n\
+  return true;\n\
+};\n\
+\n\
+/**\n\
+ * Assert that at least one invocation of `fn(val, i)` is truthy.\n\
+ *\n\
+ * For example checking to see if any pets are ferrets:\n\
+ *\n\
+ *    pets.any(function(pet){\n\
+ *      return pet.species == 'ferret'\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.any = function(fn){\n\
+  fn = toFunction(fn);\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) return true;\n\
+  }\n\
+  return false;\n\
+};\n\
+\n\
+/**\n\
+ * Count the number of times `fn(val, i)` returns true.\n\
+ *\n\
+ *    var n = pets.count(function(pet){\n\
+ *      return pet.species == 'ferret'\n\
+ *    })\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.count = function(fn){\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  var n = 0;\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (fn(val, i)) ++n;\n\
+  }\n\
+  return n;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the indexof `obj` or return `-1`.\n\
+ *\n\
+ * @param {Mixed} obj\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.indexOf = function(obj){\n\
+  var val;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    val = vals.get(i);\n\
+    if (val === obj) return i;\n\
+  }\n\
+  return -1;\n\
+};\n\
+\n\
+/**\n\
+ * Check if `obj` is present in this enumerable.\n\
+ *\n\
+ * @param {Mixed} obj\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.has = function(obj){\n\
+  return !! ~this.indexOf(obj);\n\
+};\n\
+\n\
+/**\n\
+ * Reduce with `fn(accumulator, val, i)` using\n\
+ * optional `init` value defaulting to the first\n\
+ * enumerable value.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @param {Mixed} [val]\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.reduce = function(fn, init){\n\
+  var val;\n\
+  var i = 0;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  val = null == init\n\
+    ? vals.get(i++)\n\
+    : init;\n\
+\n\
+  for (; i < len; ++i) {\n\
+    val = fn(val, vals.get(i), i);\n\
+  }\n\
+\n\
+  return val;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the max value.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.max(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.max('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.max()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.max = function(fn){\n\
+  var val;\n\
+  var n = 0;\n\
+  var max = -Infinity;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = fn(vals.get(i), i);\n\
+      max = n > max ? n : max;\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = vals.get(i);\n\
+      max = n > max ? n : max;\n\
+    }\n\
+  }\n\
+\n\
+  return max;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the min value.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.min(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.min('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.min()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.min = function(fn){\n\
+  var val;\n\
+  var n = 0;\n\
+  var min = Infinity;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = fn(vals.get(i), i);\n\
+      min = n < min ? n : min;\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n = vals.get(i);\n\
+      min = n < min ? n : min;\n\
+    }\n\
+  }\n\
+\n\
+  return min;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the sum.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.sum(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.sum('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.sum()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.sum = function(fn){\n\
+  var ret;\n\
+  var n = 0;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += fn(vals.get(i), i);\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += vals.get(i);\n\
+    }\n\
+  }\n\
+\n\
+  return n;\n\
+};\n\
+\n\
+/**\n\
+ * Determine the average value.\n\
+ *\n\
+ * With a callback function:\n\
+ *\n\
+ *    pets.avg(function(pet){\n\
+ *      return pet.age\n\
+ *    })\n\
+ *\n\
+ * With property strings:\n\
+ *\n\
+ *    pets.avg('age')\n\
+ *\n\
+ * With immediate values:\n\
+ *\n\
+ *    nums.avg()\n\
+ *\n\
+ * @param {Function|String} fn\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.avg =\n\
+proto.mean = function(fn){\n\
+  var ret;\n\
+  var n = 0;\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (fn) {\n\
+    fn = toFunction(fn);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += fn(vals.get(i), i);\n\
+    }\n\
+  } else {\n\
+    for (var i = 0; i < len; ++i) {\n\
+      n += vals.get(i);\n\
+    }\n\
+  }\n\
+\n\
+  return n / len;\n\
+};\n\
+\n\
+/**\n\
+ * Return the first value, or first `n` values.\n\
+ *\n\
+ * @param {Number|Function} [n]\n\
+ * @return {Array|Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.first = function(n){\n\
+  if ('function' == typeof n) return this.find(n);\n\
+  var vals = this.__iterate__();\n\
+\n\
+  if (n) {\n\
+    var len = Math.min(n, vals.length());\n\
+    var arr = new Array(len);\n\
+    for (var i = 0; i < len; ++i) {\n\
+      arr[i] = vals.get(i);\n\
+    }\n\
+    return arr;\n\
+  }\n\
+\n\
+  return vals.get(0);\n\
+};\n\
+\n\
+/**\n\
+ * Return the last value, or last `n` values.\n\
+ *\n\
+ * @param {Number|Function} [n]\n\
+ * @return {Array|Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.last = function(n){\n\
+  if ('function' == typeof n) return this.findLast(n);\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  if (n) {\n\
+    var i = Math.max(0, len - n);\n\
+    var arr = [];\n\
+    for (; i < len; ++i) {\n\
+      arr.push(vals.get(i));\n\
+    }\n\
+    return arr;\n\
+  }\n\
+\n\
+  return vals.get(len - 1);\n\
+};\n\
+\n\
+/**\n\
+ * Return values in groups of `n`.\n\
+ *\n\
+ * @param {Number} n\n\
+ * @return {Enumerable}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.inGroupsOf = function(n){\n\
+  var arr = [];\n\
+  var group = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+\n\
+  for (var i = 0; i < len; ++i) {\n\
+    group.push(vals.get(i));\n\
+    if ((i + 1) % n == 0) {\n\
+      arr.push(group);\n\
+      group = [];\n\
+    }\n\
+  }\n\
+\n\
+  if (group.length) arr.push(group);\n\
+\n\
+  return new Enumerable(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Return the value at the given index.\n\
+ *\n\
+ * @param {Number} i\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.at = function(i){\n\
+  return this.__iterate__().get(i);\n\
+};\n\
+\n\
+/**\n\
+ * Return a regular `Array`.\n\
+ *\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.toJSON =\n\
+proto.array = function(){\n\
+  var arr = [];\n\
+  var vals = this.__iterate__();\n\
+  var len = vals.length();\n\
+  for (var i = 0; i < len; ++i) {\n\
+    arr.push(vals.get(i));\n\
+  }\n\
+  return arr;\n\
+};\n\
+\n\
+/**\n\
+ * Return the enumerable value.\n\
+ *\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+proto.value = function(){\n\
+  return this.obj;\n\
+};\n\
+\n\
+/**\n\
+ * Mixin enumerable.\n\
+ */\n\
+\n\
+mixin(Enumerable.prototype);\n\
+//@ sourceURL=component-enumerable/index.js"
+));
+require.register("segmentio-collection/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var Emitter = require('emitter')\n\
+  , Enumerable = require('enumerable');\n\
+\n\
+/**\n\
+ * Expose `Collection`.\n\
+ */\n\
+\n\
+module.exports = Collection;\n\
+\n\
+/**\n\
+ * Initialize a new collection with the given `models`.\n\
+ *\n\
+ * @param {Array} models\n\
+ * @api public\n\
+ */\n\
+\n\
+function Collection(models) {\n\
+  this.models = models || [];\n\
+}\n\
+\n\
+/**\n\
+ * Mixin emitter.\n\
+ */\n\
+\n\
+Emitter(Collection.prototype);\n\
+\n\
+/**\n\
+ * Mixin enumerable.\n\
+ */\n\
+\n\
+Enumerable(Collection.prototype);\n\
+\n\
+/**\n\
+ * Iterator implementation.\n\
+ */\n\
+\n\
+Collection.prototype.__iterate__ = function(){\n\
+  var self = this;\n\
+  return {\n\
+    length: function(){ return self.length() },\n\
+    get: function(i){ return self.models[i] }\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Return the collection length.\n\
+ *\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+Collection.prototype.length = function(){\n\
+  return this.models.length;\n\
+};\n\
+\n\
+/**\n\
+ * Add `model` to the collection and return the index.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+Collection.prototype.add =\n\
+Collection.prototype.push = function(model){\n\
+  var length = this.models.push(model);\n\
+  this.emit('add', model);\n\
+  return length;\n\
+};\n\
+\n\
+/**\n\
+ * Remove `model` from the collection, returning `true` when present,\n\
+ * otherwise `false`.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @api public\n\
+ */\n\
+\n\
+Collection.prototype.remove = function(model){\n\
+  var i = this.indexOf(model);\n\
+  if (~i) {\n\
+    this.models.splice(i, 1);\n\
+    this.emit('remove', model);\n\
+  }\n\
+  return !! ~i;\n\
+};\n\
+//@ sourceURL=segmentio-collection/index.js"
+));
+require.register("yields-unserialize/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Unserialize the given \"stringified\" javascript.\n\
+ * \n\
+ * @param {String} val\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+module.exports = function(val){\n\
+  try {\n\
+    return JSON.parse(val);\n\
+  } catch (e) {\n\
+    return val || undefined;\n\
+  }\n\
+};\n\
+//@ sourceURL=yields-unserialize/index.js"
+));
+require.register("yields-store/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * dependencies.\n\
+ */\n\
+\n\
+var each = require('each')\n\
+  , unserialize = require('unserialize')\n\
+  , storage = window.localStorage\n\
+  , type = require('type');\n\
+\n\
+/**\n\
+ * Store the given `key` `val`.\n\
+ *\n\
+ * @param {String} key\n\
+ * @param {Mixed} val\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+exports = module.exports = function(key, val){\n\
+  switch (arguments.length) {\n\
+    case 2: return set(key, val);\n\
+    case 0: return all();\n\
+    case 1: return 'object' == type(key)\n\
+      ? each(key, set)\n\
+      : get(key);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * supported flag.\n\
+ */\n\
+\n\
+exports.supported = !! storage;\n\
+\n\
+/**\n\
+ * export methods.\n\
+ */\n\
+\n\
+exports.set = set;\n\
+exports.get = get;\n\
+exports.all = all;\n\
+\n\
+/**\n\
+ * Set `key` to `val`.\n\
+ *\n\
+ * @param {String} key\n\
+ * @param {Mixed} val\n\
+ */\n\
+\n\
+function set(key, val){\n\
+  return null == val\n\
+    ? storage.removeItem(key)\n\
+    : storage.setItem(key, JSON.stringify(val));\n\
+}\n\
+\n\
+/**\n\
+ * Get `key`.\n\
+ *\n\
+ * @param {String} key\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+function get(key){\n\
+  return null == key\n\
+    ? storage.clear()\n\
+    : unserialize(storage.getItem(key));\n\
+}\n\
+\n\
+/**\n\
+ * Get all.\n\
+ *\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+function all(){\n\
+  var len = storage.length\n\
+    , ret = {}\n\
+    , key\n\
+    , val;\n\
+\n\
+  for (var i = 0; i < len; ++i) {\n\
+    key = storage.key(i);\n\
+    ret[key] = get(key);\n\
+  }\n\
+\n\
+  return ret;\n\
+}\n\
+//@ sourceURL=yields-store/index.js"
+));
+require.register("component-clone/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var type;\n\
+\n\
+try {\n\
+  type = require('type');\n\
+} catch(e){\n\
+  type = require('type-component');\n\
+}\n\
+\n\
+/**\n\
+ * Module exports.\n\
+ */\n\
+\n\
+module.exports = clone;\n\
+\n\
+/**\n\
+ * Clones objects.\n\
+ *\n\
+ * @param {Mixed} any object\n\
+ * @api public\n\
+ */\n\
+\n\
+function clone(obj){\n\
+  switch (type(obj)) {\n\
+    case 'object':\n\
+      var copy = {};\n\
+      for (var key in obj) {\n\
+        if (obj.hasOwnProperty(key)) {\n\
+          copy[key] = clone(obj[key]);\n\
+        }\n\
+      }\n\
+      return copy;\n\
+\n\
+    case 'array':\n\
+      var copy = new Array(obj.length);\n\
+      for (var i = 0, l = obj.length; i < l; i++) {\n\
+        copy[i] = clone(obj[i]);\n\
+      }\n\
+      return copy;\n\
+\n\
+    case 'regexp':\n\
+      // from millermedeiros/amd-utils - MIT\n\
+      var flags = '';\n\
+      flags += obj.multiline ? 'm' : '';\n\
+      flags += obj.global ? 'g' : '';\n\
+      flags += obj.ignoreCase ? 'i' : '';\n\
+      return new RegExp(obj.source, flags);\n\
+\n\
+    case 'date':\n\
+      return new Date(obj.getTime());\n\
+\n\
+    default: // string, number, boolean, …\n\
+      return obj;\n\
+  }\n\
+}\n\
+//@ sourceURL=component-clone/index.js"
+));
+require.register("component-collection/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var Enumerable = require('enumerable');\n\
+\n\
+/**\n\
+ * Expose `Collection`.\n\
+ */\n\
+\n\
+module.exports = Collection;\n\
+\n\
+/**\n\
+ * Initialize a new collection with the given `models`.\n\
+ *\n\
+ * @param {Array} models\n\
+ * @api public\n\
+ */\n\
+\n\
+function Collection(models) {\n\
+  this.models = models || [];\n\
+}\n\
+\n\
+/**\n\
+ * Mixin enumerable.\n\
+ */\n\
+\n\
+Enumerable(Collection.prototype);\n\
+\n\
+/**\n\
+ * Iterator implementation.\n\
+ */\n\
+\n\
+Collection.prototype.__iterate__ = function(){\n\
+  var self = this;\n\
+  return {\n\
+    length: function(){ return self.length() },\n\
+    get: function(i){ return self.models[i] }\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Return the collection length.\n\
+ *\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+Collection.prototype.length = function(){\n\
+  return this.models.length;\n\
+};\n\
+\n\
+/**\n\
+ * Add `model` to the collection and return the index.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+Collection.prototype.push = function(model){\n\
+  return this.models.push(model);\n\
+};\n\
+//@ sourceURL=component-collection/index.js"
+));
+require.register("RedVentures-reduce/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Reduce `arr` with `fn`.\n\
+ *\n\
+ * @param {Array} arr\n\
+ * @param {Function} fn\n\
+ * @param {Mixed} initial\n\
+ *\n\
+ * TODO: combatible error handling?\n\
+ */\n\
+\n\
+module.exports = function(arr, fn, initial){  \n\
+  var idx = 0;\n\
+  var len = arr.length;\n\
+  var curr = arguments.length == 3\n\
+    ? initial\n\
+    : arr[idx++];\n\
+\n\
+  while (idx < len) {\n\
+    curr = fn.call(null, curr, arr[idx], ++idx, arr);\n\
+  }\n\
+  \n\
+  return curr;\n\
+};//@ sourceURL=RedVentures-reduce/index.js"
+));
+require.register("visionmedia-superagent/lib/client.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var Emitter = require('emitter');\n\
+var reduce = require('reduce');\n\
+\n\
+/**\n\
+ * Root reference for iframes.\n\
+ */\n\
+\n\
+var root = 'undefined' == typeof window\n\
+  ? this\n\
+  : window;\n\
+\n\
+/**\n\
+ * Noop.\n\
+ */\n\
+\n\
+function noop(){};\n\
+\n\
+/**\n\
+ * Check if `obj` is a host object,\n\
+ * we don't want to serialize these :)\n\
+ *\n\
+ * TODO: future proof, move to compoent land\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Boolean}\n\
+ * @api private\n\
+ */\n\
+\n\
+function isHost(obj) {\n\
+  var str = {}.toString.call(obj);\n\
+\n\
+  switch (str) {\n\
+    case '[object File]':\n\
+    case '[object Blob]':\n\
+    case '[object FormData]':\n\
+      return true;\n\
+    default:\n\
+      return false;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Determine XHR.\n\
+ */\n\
+\n\
+function getXHR() {\n\
+  if (root.XMLHttpRequest\n\
+    && ('file:' != root.location.protocol || !root.ActiveXObject)) {\n\
+    return new XMLHttpRequest;\n\
+  } else {\n\
+    try { return new ActiveXObject('Microsoft.XMLHTTP'); } catch(e) {}\n\
+    try { return new ActiveXObject('Msxml2.XMLHTTP.6.0'); } catch(e) {}\n\
+    try { return new ActiveXObject('Msxml2.XMLHTTP.3.0'); } catch(e) {}\n\
+    try { return new ActiveXObject('Msxml2.XMLHTTP'); } catch(e) {}\n\
+  }\n\
+  return false;\n\
+}\n\
+\n\
+/**\n\
+ * Removes leading and trailing whitespace, added to support IE.\n\
+ *\n\
+ * @param {String} s\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+var trim = ''.trim\n\
+  ? function(s) { return s.trim(); }\n\
+  : function(s) { return s.replace(/(^\\s*|\\s*$)/g, ''); };\n\
+\n\
+/**\n\
+ * Check if `obj` is an object.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Boolean}\n\
+ * @api private\n\
+ */\n\
+\n\
+function isObject(obj) {\n\
+  return obj === Object(obj);\n\
+}\n\
+\n\
+/**\n\
+ * Serialize the given `obj`.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function serialize(obj) {\n\
+  if (!isObject(obj)) return obj;\n\
+  var pairs = [];\n\
+  for (var key in obj) {\n\
+    pairs.push(encodeURIComponent(key)\n\
+      + '=' + encodeURIComponent(obj[key]));\n\
+  }\n\
+  return pairs.join('&');\n\
+}\n\
+\n\
+/**\n\
+ * Expose serialization method.\n\
+ */\n\
+\n\
+ request.serializeObject = serialize;\n\
+\n\
+ /**\n\
+  * Parse the given x-www-form-urlencoded `str`.\n\
+  *\n\
+  * @param {String} str\n\
+  * @return {Object}\n\
+  * @api private\n\
+  */\n\
+\n\
+function parseString(str) {\n\
+  var obj = {};\n\
+  var pairs = str.split('&');\n\
+  var parts;\n\
+  var pair;\n\
+\n\
+  for (var i = 0, len = pairs.length; i < len; ++i) {\n\
+    pair = pairs[i];\n\
+    parts = pair.split('=');\n\
+    obj[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);\n\
+  }\n\
+\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Expose parser.\n\
+ */\n\
+\n\
+request.parseString = parseString;\n\
+\n\
+/**\n\
+ * Default MIME type map.\n\
+ *\n\
+ *     superagent.types.xml = 'application/xml';\n\
+ *\n\
+ */\n\
+\n\
+request.types = {\n\
+  html: 'text/html',\n\
+  json: 'application/json',\n\
+  urlencoded: 'application/x-www-form-urlencoded',\n\
+  'form': 'application/x-www-form-urlencoded',\n\
+  'form-data': 'application/x-www-form-urlencoded'\n\
+};\n\
+\n\
+/**\n\
+ * Default serialization map.\n\
+ *\n\
+ *     superagent.serialize['application/xml'] = function(obj){\n\
+ *       return 'generated xml here';\n\
+ *     };\n\
+ *\n\
+ */\n\
+\n\
+ request.serialize = {\n\
+   'application/x-www-form-urlencoded': serialize,\n\
+   'application/json': JSON.stringify\n\
+ };\n\
+\n\
+ /**\n\
+  * Default parsers.\n\
+  *\n\
+  *     superagent.parse['application/xml'] = function(str){\n\
+  *       return { object parsed from str };\n\
+  *     };\n\
+  *\n\
+  */\n\
+\n\
+request.parse = {\n\
+  'application/x-www-form-urlencoded': parseString,\n\
+  'application/json': JSON.parse\n\
+};\n\
+\n\
+/**\n\
+ * Parse the given header `str` into\n\
+ * an object containing the mapped fields.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+function parseHeader(str) {\n\
+  var lines = str.split(/\\r?\\n\
+/);\n\
+  var fields = {};\n\
+  var index;\n\
+  var line;\n\
+  var field;\n\
+  var val;\n\
+\n\
+  lines.pop(); // trailing CRLF\n\
+\n\
+  for (var i = 0, len = lines.length; i < len; ++i) {\n\
+    line = lines[i];\n\
+    index = line.indexOf(':');\n\
+    field = line.slice(0, index).toLowerCase();\n\
+    val = trim(line.slice(index + 1));\n\
+    fields[field] = val;\n\
+  }\n\
+\n\
+  return fields;\n\
+}\n\
+\n\
+/**\n\
+ * Return the mime type for the given `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function type(str){\n\
+  return str.split(/ *; */).shift();\n\
+};\n\
+\n\
+/**\n\
+ * Return header field parameters.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+function params(str){\n\
+  return reduce(str.split(/ *; */), function(obj, str){\n\
+    var parts = str.split(/ *= */)\n\
+      , key = parts.shift()\n\
+      , val = parts.shift();\n\
+\n\
+    if (key && val) obj[key] = val;\n\
+    return obj;\n\
+  }, {});\n\
+};\n\
+\n\
+/**\n\
+ * Initialize a new `Response` with the given `xhr`.\n\
+ *\n\
+ *  - set flags (.ok, .error, etc)\n\
+ *  - parse header\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *  Aliasing `superagent` as `request` is nice:\n\
+ *\n\
+ *      request = superagent;\n\
+ *\n\
+ *  We can use the promise-like API, or pass callbacks:\n\
+ *\n\
+ *      request.get('/').end(function(res){});\n\
+ *      request.get('/', function(res){});\n\
+ *\n\
+ *  Sending data can be chained:\n\
+ *\n\
+ *      request\n\
+ *        .post('/user')\n\
+ *        .send({ name: 'tj' })\n\
+ *        .end(function(res){});\n\
+ *\n\
+ *  Or passed to `.send()`:\n\
+ *\n\
+ *      request\n\
+ *        .post('/user')\n\
+ *        .send({ name: 'tj' }, function(res){});\n\
+ *\n\
+ *  Or passed to `.post()`:\n\
+ *\n\
+ *      request\n\
+ *        .post('/user', { name: 'tj' })\n\
+ *        .end(function(res){});\n\
+ *\n\
+ * Or further reduced to a single call for simple cases:\n\
+ *\n\
+ *      request\n\
+ *        .post('/user', { name: 'tj' }, function(res){});\n\
+ *\n\
+ * @param {XMLHTTPRequest} xhr\n\
+ * @param {Object} options\n\
+ * @api private\n\
+ */\n\
+\n\
+function Response(req, options) {\n\
+  options = options || {};\n\
+  this.req = req;\n\
+  this.xhr = this.req.xhr;\n\
+  this.text = this.xhr.responseText;\n\
+  this.setStatusProperties(this.xhr.status);\n\
+  this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());\n\
+  // getAllResponseHeaders sometimes falsely returns \"\" for CORS requests, but\n\
+  // getResponseHeader still works. so we get content-type even if getting\n\
+  // other headers fails.\n\
+  this.header['content-type'] = this.xhr.getResponseHeader('content-type');\n\
+  this.setHeaderProperties(this.header);\n\
+  this.body = this.parseBody(this.text);\n\
+}\n\
+\n\
+/**\n\
+ * Get case-insensitive `field` value.\n\
+ *\n\
+ * @param {String} field\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+Response.prototype.get = function(field){\n\
+  return this.header[field.toLowerCase()];\n\
+};\n\
+\n\
+/**\n\
+ * Set header related properties:\n\
+ *\n\
+ *   - `.type` the content type without params\n\
+ *\n\
+ * A response of \"Content-Type: text/plain; charset=utf-8\"\n\
+ * will provide you with a `.type` of \"text/plain\".\n\
+ *\n\
+ * @param {Object} header\n\
+ * @api private\n\
+ */\n\
+\n\
+Response.prototype.setHeaderProperties = function(header){\n\
+  // content-type\n\
+  var ct = this.header['content-type'] || '';\n\
+  this.type = type(ct);\n\
+\n\
+  // params\n\
+  var obj = params(ct);\n\
+  for (var key in obj) this[key] = obj[key];\n\
+};\n\
+\n\
+/**\n\
+ * Parse the given body `str`.\n\
+ *\n\
+ * Used for auto-parsing of bodies. Parsers\n\
+ * are defined on the `superagent.parse` object.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Mixed}\n\
+ * @api private\n\
+ */\n\
+\n\
+Response.prototype.parseBody = function(str){\n\
+  var parse = request.parse[this.type];\n\
+  return parse\n\
+    ? parse(str)\n\
+    : null;\n\
+};\n\
+\n\
+/**\n\
+ * Set flags such as `.ok` based on `status`.\n\
+ *\n\
+ * For example a 2xx response will give you a `.ok` of __true__\n\
+ * whereas 5xx will be __false__ and `.error` will be __true__. The\n\
+ * `.clientError` and `.serverError` are also available to be more\n\
+ * specific, and `.statusType` is the class of error ranging from 1..5\n\
+ * sometimes useful for mapping respond colors etc.\n\
+ *\n\
+ * \"sugar\" properties are also defined for common cases. Currently providing:\n\
+ *\n\
+ *   - .noContent\n\
+ *   - .badRequest\n\
+ *   - .unauthorized\n\
+ *   - .notAcceptable\n\
+ *   - .notFound\n\
+ *\n\
+ * @param {Number} status\n\
+ * @api private\n\
+ */\n\
+\n\
+Response.prototype.setStatusProperties = function(status){\n\
+  var type = status / 100 | 0;\n\
+\n\
+  // status / class\n\
+  this.status = status;\n\
+  this.statusType = type;\n\
+\n\
+  // basics\n\
+  this.info = 1 == type;\n\
+  this.ok = 2 == type;\n\
+  this.clientError = 4 == type;\n\
+  this.serverError = 5 == type;\n\
+  this.error = (4 == type || 5 == type)\n\
+    ? this.toError()\n\
+    : false;\n\
+\n\
+  // sugar\n\
+  this.accepted = 202 == status;\n\
+  this.noContent = 204 == status || 1223 == status;\n\
+  this.badRequest = 400 == status;\n\
+  this.unauthorized = 401 == status;\n\
+  this.notAcceptable = 406 == status;\n\
+  this.notFound = 404 == status;\n\
+  this.forbidden = 403 == status;\n\
+};\n\
+\n\
+/**\n\
+ * Return an `Error` representative of this response.\n\
+ *\n\
+ * @return {Error}\n\
+ * @api public\n\
+ */\n\
+\n\
+Response.prototype.toError = function(){\n\
+  var req = this.req;\n\
+  var method = req.method;\n\
+  var path = req.path;\n\
+\n\
+  var msg = 'cannot ' + method + ' ' + path + ' (' + this.status + ')';\n\
+  var err = new Error(msg);\n\
+  err.status = this.status;\n\
+  err.method = method;\n\
+  err.path = path;\n\
+\n\
+  return err;\n\
+};\n\
+\n\
+/**\n\
+ * Expose `Response`.\n\
+ */\n\
+\n\
+request.Response = Response;\n\
+\n\
+/**\n\
+ * Initialize a new `Request` with the given `method` and `url`.\n\
+ *\n\
+ * @param {String} method\n\
+ * @param {String} url\n\
+ * @api public\n\
+ */\n\
+\n\
+function Request(method, url) {\n\
+  var self = this;\n\
+  Emitter.call(this);\n\
+  this._query = this._query || [];\n\
+  this.method = method;\n\
+  this.url = url;\n\
+  this.header = {};\n\
+  this._header = {};\n\
+  this.on('end', function(){\n\
+    var res = new Response(self);\n\
+    if ('HEAD' == method) res.text = null;\n\
+    self.callback(null, res);\n\
+  });\n\
+}\n\
+\n\
+/**\n\
+ * Mixin `Emitter`.\n\
+ */\n\
+\n\
+Emitter(Request.prototype);\n\
+\n\
+/**\n\
+ * Set timeout to `ms`.\n\
+ *\n\
+ * @param {Number} ms\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.timeout = function(ms){\n\
+  this._timeout = ms;\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Clear previous timeout.\n\
+ *\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.clearTimeout = function(){\n\
+  this._timeout = 0;\n\
+  clearTimeout(this._timer);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Abort the request, and clear potential timeout.\n\
+ *\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.abort = function(){\n\
+  if (this.aborted) return;\n\
+  this.aborted = true;\n\
+  this.xhr.abort();\n\
+  this.clearTimeout();\n\
+  this.emit('abort');\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Set header `field` to `val`, or multiple fields with one object.\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *      req.get('/')\n\
+ *        .set('Accept', 'application/json')\n\
+ *        .set('X-API-Key', 'foobar')\n\
+ *        .end(callback);\n\
+ *\n\
+ *      req.get('/')\n\
+ *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })\n\
+ *        .end(callback);\n\
+ *\n\
+ * @param {String|Object} field\n\
+ * @param {String} val\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.set = function(field, val){\n\
+  if (isObject(field)) {\n\
+    for (var key in field) {\n\
+      this.set(key, field[key]);\n\
+    }\n\
+    return this;\n\
+  }\n\
+  this._header[field.toLowerCase()] = val;\n\
+  this.header[field] = val;\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Get case-insensitive header `field` value.\n\
+ *\n\
+ * @param {String} field\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+Request.prototype.getHeader = function(field){\n\
+  return this._header[field.toLowerCase()];\n\
+};\n\
+\n\
+/**\n\
+ * Set Content-Type to `type`, mapping values from `request.types`.\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *      superagent.types.xml = 'application/xml';\n\
+ *\n\
+ *      request.post('/')\n\
+ *        .type('xml')\n\
+ *        .send(xmlstring)\n\
+ *        .end(callback);\n\
+ *\n\
+ *      request.post('/')\n\
+ *        .type('application/xml')\n\
+ *        .send(xmlstring)\n\
+ *        .end(callback);\n\
+ *\n\
+ * @param {String} type\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.type = function(type){\n\
+  this.set('Content-Type', request.types[type] || type);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Set Authorization field value with `user` and `pass`.\n\
+ *\n\
+ * @param {String} user\n\
+ * @param {String} pass\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.auth = function(user, pass){\n\
+  var str = btoa(user + ':' + pass);\n\
+  this.set('Authorization', 'Basic ' + str);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+* Add query-string `val`.\n\
+*\n\
+* Examples:\n\
+*\n\
+*   request.get('/shoes')\n\
+*     .query('size=10')\n\
+*     .query({ color: 'blue' })\n\
+*\n\
+* @param {Object|String} val\n\
+* @return {Request} for chaining\n\
+* @api public\n\
+*/\n\
+\n\
+Request.prototype.query = function(val){\n\
+  if ('string' != typeof val) val = serialize(val);\n\
+  if (val) this._query.push(val);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Send `data`, defaulting the `.type()` to \"json\" when\n\
+ * an object is given.\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *       // querystring\n\
+ *       request.get('/search')\n\
+ *         .end(callback)\n\
+ *\n\
+ *       // multiple data \"writes\"\n\
+ *       request.get('/search')\n\
+ *         .send({ search: 'query' })\n\
+ *         .send({ range: '1..5' })\n\
+ *         .send({ order: 'desc' })\n\
+ *         .end(callback)\n\
+ *\n\
+ *       // manual json\n\
+ *       request.post('/user')\n\
+ *         .type('json')\n\
+ *         .send('{\"name\":\"tj\"})\n\
+ *         .end(callback)\n\
+ *\n\
+ *       // auto json\n\
+ *       request.post('/user')\n\
+ *         .send({ name: 'tj' })\n\
+ *         .end(callback)\n\
+ *\n\
+ *       // manual x-www-form-urlencoded\n\
+ *       request.post('/user')\n\
+ *         .type('form')\n\
+ *         .send('name=tj')\n\
+ *         .end(callback)\n\
+ *\n\
+ *       // auto x-www-form-urlencoded\n\
+ *       request.post('/user')\n\
+ *         .type('form')\n\
+ *         .send({ name: 'tj' })\n\
+ *         .end(callback)\n\
+ *\n\
+ *       // defaults to x-www-form-urlencoded\n\
+  *      request.post('/user')\n\
+  *        .send('name=tobi')\n\
+  *        .send('species=ferret')\n\
+  *        .end(callback)\n\
+ *\n\
+ * @param {String|Object} data\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.send = function(data){\n\
+  var obj = isObject(data);\n\
+  var type = this.getHeader('Content-Type');\n\
+\n\
+  // merge\n\
+  if (obj && isObject(this._data)) {\n\
+    for (var key in data) {\n\
+      this._data[key] = data[key];\n\
+    }\n\
+  } else if ('string' == typeof data) {\n\
+    if (!type) this.type('form');\n\
+    type = this.getHeader('Content-Type');\n\
+    if ('application/x-www-form-urlencoded' == type) {\n\
+      this._data = this._data\n\
+        ? this._data + '&' + data\n\
+        : data;\n\
+    } else {\n\
+      this._data = (this._data || '') + data;\n\
+    }\n\
+  } else {\n\
+    this._data = data;\n\
+  }\n\
+\n\
+  if (!obj) return this;\n\
+  if (!type) this.type('json');\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Invoke the callback with `err` and `res`\n\
+ * and handle arity check.\n\
+ *\n\
+ * @param {Error} err\n\
+ * @param {Response} res\n\
+ * @api private\n\
+ */\n\
+\n\
+Request.prototype.callback = function(err, res){\n\
+  var fn = this._callback;\n\
+  if (2 == fn.length) return fn(err, res);\n\
+  if (err) return this.emit('error', err);\n\
+  fn(res);\n\
+};\n\
+\n\
+/**\n\
+ * Invoke callback with x-domain error.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Request.prototype.crossDomainError = function(){\n\
+  var err = new Error('Origin is not allowed by Access-Control-Allow-Origin');\n\
+  err.crossDomain = true;\n\
+  this.callback(err);\n\
+};\n\
+\n\
+/**\n\
+ * Invoke callback with timeout error.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Request.prototype.timeoutError = function(){\n\
+  var timeout = this._timeout;\n\
+  var err = new Error('timeout of ' + timeout + 'ms exceeded');\n\
+  err.timeout = timeout;\n\
+  this.callback(err);\n\
+};\n\
+\n\
+/**\n\
+ * Enable transmission of cookies with x-domain requests.\n\
+ *\n\
+ * Note that for this to work the origin must not be\n\
+ * using \"Access-Control-Allow-Origin\" with a wildcard,\n\
+ * and also must set \"Access-Control-Allow-Credentials\"\n\
+ * to \"true\".\n\
+ *\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.withCredentials = function(){\n\
+  this._withCredentials = true;\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Initiate request, invoking callback `fn(res)`\n\
+ * with an instanceof `Response`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Request} for chaining\n\
+ * @api public\n\
+ */\n\
+\n\
+Request.prototype.end = function(fn){\n\
+  var self = this;\n\
+  var xhr = this.xhr = getXHR();\n\
+  var query = this._query.join('&');\n\
+  var timeout = this._timeout;\n\
+  var data = this._data;\n\
+\n\
+  // store callback\n\
+  this._callback = fn || noop;\n\
+\n\
+  // CORS\n\
+  if (this._withCredentials) xhr.withCredentials = true;\n\
+\n\
+  // state change\n\
+  xhr.onreadystatechange = function(){\n\
+    if (4 != xhr.readyState) return;\n\
+    if (0 == xhr.status) {\n\
+      if (self.aborted) return self.timeoutError();\n\
+      return self.crossDomainError();\n\
+    }\n\
+    self.emit('end');\n\
+  };\n\
+\n\
+  // progress\n\
+  if (xhr.upload) {\n\
+    xhr.upload.onprogress = function(e){\n\
+      e.percent = e.loaded / e.total * 100;\n\
+      self.emit('progress', e);\n\
+    };\n\
+  }\n\
+\n\
+  // timeout\n\
+  if (timeout && !this._timer) {\n\
+    this._timer = setTimeout(function(){\n\
+      self.abort();\n\
+    }, timeout);\n\
+  }\n\
+\n\
+  // querystring\n\
+  if (query) {\n\
+    query = request.serializeObject(query);\n\
+    this.url += ~this.url.indexOf('?')\n\
+      ? '&' + query\n\
+      : '?' + query;\n\
+  }\n\
+\n\
+  // initiate request\n\
+  xhr.open(this.method, this.url, true);\n\
+\n\
+  // body\n\
+  if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !isHost(data)) {\n\
+    // serialize stuff\n\
+    var serialize = request.serialize[this.getHeader('Content-Type')];\n\
+    if (serialize) data = serialize(data);\n\
+  }\n\
+\n\
+  // set header fields\n\
+  for (var field in this.header) {\n\
+    if (null == this.header[field]) continue;\n\
+    xhr.setRequestHeader(field, this.header[field]);\n\
+  }\n\
+\n\
+  // send stuff\n\
+  xhr.send(data);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Expose `Request`.\n\
+ */\n\
+\n\
+request.Request = Request;\n\
+\n\
+/**\n\
+ * Issue a request:\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *    request('GET', '/users').end(callback)\n\
+ *    request('/users').end(callback)\n\
+ *    request('/users', callback)\n\
+ *\n\
+ * @param {String} method\n\
+ * @param {String|Function} url or callback\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+function request(method, url) {\n\
+  // callback\n\
+  if ('function' == typeof url) {\n\
+    return new Request('GET', method).end(url);\n\
+  }\n\
+\n\
+  // url first\n\
+  if (1 == arguments.length) {\n\
+    return new Request('GET', method);\n\
+  }\n\
+\n\
+  return new Request(method, url);\n\
+}\n\
+\n\
+/**\n\
+ * GET `url` with optional callback `fn(res)`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Mixed|Function} data or fn\n\
+ * @param {Function} fn\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+request.get = function(url, data, fn){\n\
+  var req = request('GET', url);\n\
+  if ('function' == typeof data) fn = data, data = null;\n\
+  if (data) req.query(data);\n\
+  if (fn) req.end(fn);\n\
+  return req;\n\
+};\n\
+\n\
+/**\n\
+ * GET `url` with optional callback `fn(res)`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Mixed|Function} data or fn\n\
+ * @param {Function} fn\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+request.head = function(url, data, fn){\n\
+  var req = request('HEAD', url);\n\
+  if ('function' == typeof data) fn = data, data = null;\n\
+  if (data) req.send(data);\n\
+  if (fn) req.end(fn);\n\
+  return req;\n\
+};\n\
+\n\
+/**\n\
+ * DELETE `url` with optional callback `fn(res)`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Function} fn\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+request.del = function(url, fn){\n\
+  var req = request('DELETE', url);\n\
+  if (fn) req.end(fn);\n\
+  return req;\n\
+};\n\
+\n\
+/**\n\
+ * PATCH `url` with optional `data` and callback `fn(res)`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Mixed} data\n\
+ * @param {Function} fn\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+request.patch = function(url, data, fn){\n\
+  var req = request('PATCH', url);\n\
+  if ('function' == typeof data) fn = data, data = null;\n\
+  if (data) req.send(data);\n\
+  if (fn) req.end(fn);\n\
+  return req;\n\
+};\n\
+\n\
+/**\n\
+ * POST `url` with optional `data` and callback `fn(res)`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Mixed} data\n\
+ * @param {Function} fn\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+request.post = function(url, data, fn){\n\
+  var req = request('POST', url);\n\
+  if ('function' == typeof data) fn = data, data = null;\n\
+  if (data) req.send(data);\n\
+  if (fn) req.end(fn);\n\
+  return req;\n\
+};\n\
+\n\
+/**\n\
+ * PUT `url` with optional `data` and callback `fn(res)`.\n\
+ *\n\
+ * @param {String} url\n\
+ * @param {Mixed|Function} data or fn\n\
+ * @param {Function} fn\n\
+ * @return {Request}\n\
+ * @api public\n\
+ */\n\
+\n\
+request.put = function(url, data, fn){\n\
+  var req = request('PUT', url);\n\
+  if ('function' == typeof data) fn = data, data = null;\n\
+  if (data) req.send(data);\n\
+  if (fn) req.end(fn);\n\
+  return req;\n\
+};\n\
+\n\
+/**\n\
+ * Expose `request`.\n\
+ */\n\
+\n\
+module.exports = request;\n\
+//@ sourceURL=visionmedia-superagent/lib/client.js"
+));
+require.register("segmentio-model/lib/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var proto = require('./proto')\n\
+  , statics = require('./static')\n\
+  , Emitter = require('emitter');\n\
+\n\
+/**\n\
+ * Expose `createModel`.\n\
+ */\n\
+\n\
+module.exports = createModel;\n\
+\n\
+/**\n\
+ * Create a new model constructor with the given `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Function}\n\
+ * @api public\n\
+ */\n\
+\n\
+function createModel(name) {\n\
+  if ('string' != typeof name) throw new TypeError('model name required');\n\
+\n\
+  /**\n\
+   * Initialize a new model with the given `attrs`.\n\
+   *\n\
+   * @param {Object} attrs\n\
+   * @api public\n\
+   */\n\
+\n\
+  function model(attrs) {\n\
+    if (!(this instanceof model)) return new model(attrs);\n\
+    attrs = attrs || {};\n\
+    this._callbacks = {};\n\
+    this.attrs = attrs;\n\
+    this.dirty = attrs;\n\
+    this.model.emit('construct', this, attrs);\n\
+  }\n\
+\n\
+  // mixin emitter\n\
+\n\
+  Emitter(model);\n\
+\n\
+  // statics\n\
+\n\
+  model.modelName = name;\n\
+  model.base = '/' + name.toLowerCase();\n\
+  model.attrs = {};\n\
+  model.validators = [];\n\
+  for (var key in statics) model[key] = statics[key];\n\
+\n\
+  // prototype\n\
+\n\
+  model.prototype = {};\n\
+  model.prototype.model = model;\n\
+  for (var key in proto) model.prototype[key] = proto[key];\n\
+\n\
+  return model;\n\
+}\n\
+\n\
+//@ sourceURL=segmentio-model/lib/index.js"
+));
+require.register("segmentio-model/lib/static.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var request = require('superagent')\n\
+  , Collection = require('collection')\n\
+  , noop = function(){};\n\
+\n\
+/**\n\
+ * Construct a url to the given `path`.\n\
+ *\n\
+ * Example:\n\
+ *\n\
+ *    User.url('add')\n\
+ *    // => \"/users/add\"\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.url = function(path){\n\
+  var url = this.base;\n\
+  if (0 == arguments.length) return url;\n\
+  return url + '/' + path;\n\
+};\n\
+\n\
+/**\n\
+ * Add validation `fn()`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Function} self\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.validate = function(fn){\n\
+  this.validators.push(fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Use the given plugin `fn()`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Function} self\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.use = function(fn){\n\
+  fn(this);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Define attr with the given `name` and `options`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @param {Object} options\n\
+ * @return {Function} self\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.attr = function(name, options){\n\
+  this.attrs[name] = options || {};\n\
+\n\
+  // implied pk\n\
+  if ('_id' == name || 'id' == name) {\n\
+    this.attrs[name].primaryKey = true;\n\
+    this.primaryKey = name;\n\
+  }\n\
+\n\
+  // getter / setter method\n\
+  this.prototype[name] = function(val){\n\
+    if (0 == arguments.length) return this.attrs[name];\n\
+    var prev = this.attrs[name];\n\
+    this.dirty[name] = val;\n\
+    this.attrs[name] = val;\n\
+    this.model.emit('change', this, name, val, prev);\n\
+    this.model.emit('change ' + name, this, val, prev);\n\
+    this.emit('change', name, val, prev);\n\
+    this.emit('change ' + name, val, prev);\n\
+    return this;\n\
+  };\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove all and invoke `fn(err)`.\n\
+ *\n\
+ * @param {Function} [fn]\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.removeAll = function(fn){\n\
+  fn = fn || noop;\n\
+  var self = this;\n\
+  var url = this.url('all');\n\
+  request.del(url, function(res){\n\
+    if (res.error) return fn(error(res));\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Get all and invoke `fn(err, array)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.all = function(fn){\n\
+  var self = this;\n\
+  var url = this.url('all');\n\
+  request.get(url, function(res){\n\
+    if (res.error) return fn(error(res));\n\
+    var col = new Collection;\n\
+    for (var i = 0, len = res.body.length; i < len; ++i) {\n\
+      col.push(new self(res.body[i]));\n\
+    }\n\
+    fn(null, col);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Get `id` and invoke `fn(err, model)`.\n\
+ *\n\
+ * @param {Mixed} id\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.get = function(id, fn){\n\
+  var self = this;\n\
+  var url = this.url(id);\n\
+  request.get(url, function(res){\n\
+    if (res.error) return fn(error(res));\n\
+    var model = new self(res.body);\n\
+    fn(null, model);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Response error helper.\n\
+ *\n\
+ * @param {Response} er\n\
+ * @return {Error}\n\
+ * @api private\n\
+ */\n\
+\n\
+function error(res) {\n\
+  return new Error('got ' + res.status + ' response');\n\
+}\n\
+//@ sourceURL=segmentio-model/lib/static.js"
+));
+require.register("segmentio-model/lib/proto.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var Emitter = require('emitter')\n\
+  , request = require('superagent')\n\
+  , clone = require('clone')\n\
+  , each = require('each')\n\
+  , noop = function(){};\n\
+\n\
+/**\n\
+ * Mixin emitter.\n\
+ */\n\
+\n\
+Emitter(exports);\n\
+\n\
+/**\n\
+ * Register an error `msg` on `attr`.\n\
+ *\n\
+ * @param {String} attr\n\
+ * @param {String} msg\n\
+ * @return {Object} self\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.error = function(attr, msg){\n\
+  this.errors.push({\n\
+    attr: attr,\n\
+    message: msg\n\
+  });\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Check if this model is new.\n\
+ *\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.isNew = function(){\n\
+  var key = this.model.primaryKey;\n\
+  return ! this.has(key);\n\
+};\n\
+\n\
+/**\n\
+ * Get / set the primary key.\n\
+ *\n\
+ * @param {Mixed} val\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.primary = function(val){\n\
+  var key = this.model.primaryKey;\n\
+  if (0 == arguments.length) return this[key]();\n\
+  return this[key](val);\n\
+};\n\
+\n\
+/**\n\
+ * Validate the model and return a boolean.\n\
+ *\n\
+ * Example:\n\
+ *\n\
+ *    user.isValid()\n\
+ *    // => false\n\
+ *\n\
+ *    user.errors\n\
+ *    // => [{ attr: ..., message: ... }]\n\
+ *\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.isValid = function(){\n\
+  this.validate();\n\
+  return 0 == this.errors.length;\n\
+};\n\
+\n\
+/**\n\
+ * Return `false` or an object\n\
+ * containing the \"dirty\" attributes.\n\
+ *\n\
+ * Optionally check for a specific `attr`.\n\
+ *\n\
+ * @param {String} [attr]\n\
+ * @return {Object|Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.changed = function(attr){\n\
+  var dirty = this.dirty;\n\
+  if (Object.keys(dirty).length) {\n\
+    if (attr) return !! dirty[attr];\n\
+    return dirty;\n\
+  }\n\
+  return false;\n\
+};\n\
+\n\
+/**\n\
+ * Perform validations.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.validate = function(){\n\
+  var self = this;\n\
+  var fns = this.model.validators;\n\
+  this.errors = [];\n\
+  each(fns, function(fn){ fn(self) });\n\
+};\n\
+\n\
+/**\n\
+ * Destroy the model and mark it as `.removed`\n\
+ * and invoke `fn(err)`.\n\
+ *\n\
+ * Events:\n\
+ *\n\
+ *  - `removing` before deletion\n\
+ *  - `remove` on deletion\n\
+ *\n\
+ * @param {Function} [fn]\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.destroy =\n\
+exports.remove = function(fn){\n\
+  fn = fn || noop;\n\
+  if (this.isNew()) return fn(new Error('not saved'));\n\
+  var self = this;\n\
+  var url = this.url();\n\
+  this.model.emit('removing', this);\n\
+  this.emit('removing');\n\
+  request.del(url, function(res){\n\
+    if (res.error) return fn(error(res));\n\
+    self.removed = true;\n\
+    self.model.emit('remove', self);\n\
+    self.emit('remove');\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Save and invoke `fn(err)`.\n\
+ *\n\
+ * Events:\n\
+ *\n\
+ *  - `saving` pre-update or save, after validation\n\
+ *  - `save` on updates and saves\n\
+ *\n\
+ * @param {Function} [fn]\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.save = function(fn){\n\
+  if (!this.isNew()) return this.update(fn);\n\
+  var self = this;\n\
+  var url = this.model.url();\n\
+  fn = fn || noop;\n\
+  if (!this.isValid()) return fn(new Error('validation failed'));\n\
+  this.model.emit('saving', this);\n\
+  this.emit('saving');\n\
+  request.post(url, self, function(res){\n\
+    if (res.error) return fn(error(res));\n\
+    if (res.body) self.primary(res.body.id);\n\
+    self.dirty = {};\n\
+    self.model.emit('save', self);\n\
+    self.emit('save');\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Update and invoke `fn(err)`.\n\
+ *\n\
+ * @param {Function} [fn]\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.update = function(fn){\n\
+  var self = this;\n\
+  var url = this.url();\n\
+  fn = fn || noop;\n\
+  if (!this.isValid()) return fn(new Error('validation failed'));\n\
+  this.model.emit('saving', this);\n\
+  this.emit('saving');\n\
+  request.put(url, self, function(res){\n\
+    if (res.error) return fn(error(res));\n\
+    self.dirty = {};\n\
+    self.model.emit('save', self);\n\
+    self.emit('save');\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Return a url for `path` relative to this model.\n\
+ *\n\
+ * Example:\n\
+ *\n\
+ *    var user = new User({ id: 5 });\n\
+ *    user.url('edit');\n\
+ *    // => \"/users/5/edit\"\n\
+ *\n\
+ * @param {String} path\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.url = function(path){\n\
+  var model = this.model;\n\
+  var url = model.base;\n\
+  var id = this.primary();\n\
+  if (0 == arguments.length) return url + '/' + id;\n\
+  return url + '/' + id + '/' + path;\n\
+};\n\
+\n\
+/**\n\
+ * Set multiple `attrs`.\n\
+ *\n\
+ * @param {Object} attrs\n\
+ * @return {Object} self\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.set = function(attrs){\n\
+  for (var key in attrs) {\n\
+    this[key](attrs[key]);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Get `attr` value.\n\
+ *\n\
+ * @param {String} attr\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.get = function(attr){\n\
+  return this.attrs[attr];\n\
+};\n\
+\n\
+/**\n\
+ * Check if `attr` is present (not `null` or `undefined`).\n\
+ *\n\
+ * @param {String} attr\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.has = function(attr){\n\
+  return null != this.attrs[attr];\n\
+};\n\
+\n\
+/**\n\
+ * Return the JSON representation of the model.\n\
+ *\n\
+ * @return {Object}\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.toJSON = function(){\n\
+  return clone(this.attrs);\n\
+};\n\
+\n\
+/**\n\
+ * Response error helper.\n\
+ *\n\
+ * @param {Response} er\n\
+ * @return {Error}\n\
+ * @api private\n\
+ */\n\
+\n\
+function error(res) {\n\
+  return new Error('got ' + res.status + ' response');\n\
+}//@ sourceURL=segmentio-model/lib/proto.js"
+));
+require.register("segmentio-model-defaults/index.js", Function("exports, require, module",
+"\n\
+var clone = require('clone')\n\
+  , each = require('each')\n\
+  , type = require('type');\n\
+\n\
+\n\
+/**\n\
+ * Plugin.\n\
+ *\n\
+ * @param {Function|Object} values  The default values dictionary or the Model.\n\
+ */\n\
+\n\
+module.exports = function (values) {\n\
+  if ('object' === type(values)) {\n\
+    return function (Model) {\n\
+      bind(Model, values);\n\
+    };\n\
+  } else {\n\
+    return bind(values);\n\
+  }\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Bind to the model's construct event.\n\
+ *\n\
+ * @param {Function} Model  The model constructor.\n\
+ */\n\
+\n\
+function bind (Model, defaults) {\n\
+  defaults || (defaults = {});\n\
+  Model.on('construct', function (model, attrs) {\n\
+    each(Model.attrs, function (key, options) {\n\
+      var value = undefined != options.default\n\
+        ? options.default\n\
+        : defaults[key];\n\
+\n\
+      if (value !== undefined) apply(model, key, value);\n\
+    });\n\
+  });\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Default a `model` with a `value` for a `key` if it doesn't exist. Use a clone\n\
+ * of the value, so that they it's easy to declare objects and arrays without\n\
+ * worrying about copying by reference.\n\
+ *\n\
+ * @param {Model}          model  The model.\n\
+ * @param {String}         key    The key to back by a default.\n\
+ * @param {Mixed|Function} value  The default value to use.\n\
+ */\n\
+\n\
+function apply (model, key, value) {\n\
+  if ('function' === type(value)) value = value();\n\
+  if (!model.attrs[key]) model.attrs[key] = clone(value);\n\
+}\n\
+//@ sourceURL=segmentio-model-defaults/index.js"
+));
+require.register("segmentio-model-firebase/index.js", Function("exports, require, module",
+"\n\
+var statics = require('./statics')\n\
+  , protos = require('./protos');\n\
+\n\
+\n\
+/**\n\
+ * Mixin our plugin.\n\
+ */\n\
+\n\
+module.exports = function (url) {\n\
+  return function (Model) {\n\
+    Model.firebase = new window.Firebase(url);\n\
+    for (var key in statics) Model[key] = statics[key];\n\
+    for (var key in protos) Model.prototype[key] = protos[key];\n\
+    Model.on('construct', construct);\n\
+  };\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * On construct, start listening for firebase changes.\n\
+ */\n\
+\n\
+function construct (model, attrs) {\n\
+  model.firebase().on('value', function (snapshot) {\n\
+    var attrs = snapshot.val();\n\
+    if (attrs) model.set(attrs);\n\
+  });\n\
+}//@ sourceURL=segmentio-model-firebase/index.js"
+));
+require.register("segmentio-model-firebase/statics.js", Function("exports, require, module",
+"\n\
+var Collection = require('collection')\n\
+  , noop = function(){};\n\
+\n\
+\n\
+/**\n\
+ * `url` doesn't apply for firebase.\n\
+ */\n\
+\n\
+exports.url = noop;\n\
+\n\
+/**\n\
+ * Remove all and invoke `fn(err)`.\n\
+ *\n\
+ * @param {Function} [fn]\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.removeAll = function(fn){\n\
+  fn = fn || noop;\n\
+  this.firebase.remove(function (err) {\n\
+    if (err) return fn(err);\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Get all and invoke `fn(err, array)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.all = function(fn){\n\
+  var self = this;\n\
+  var col = new Collection();\n\
+  this.firebase.once('value', function (snapshot) {\n\
+    snapshot.forEach(function (child) {\n\
+      var attrs = child.val();\n\
+      if (attrs) col.push(new self(attrs));\n\
+    });\n\
+    fn(null, col);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Get `id` and invoke `fn(err, model)`.\n\
+ *\n\
+ * @param {String} id\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.get = function(id, fn){\n\
+  if (!id) return fn(new Error('no model'));\n\
+  var self = this;\n\
+  this.firebase.child(id).once('value', function (snapshot) {\n\
+    var attrs = snapshot.val();\n\
+    if (!attrs) return fn(new Error('no model'));\n\
+    var model = new self(attrs);\n\
+    fn(null, model);\n\
+  });\n\
+};//@ sourceURL=segmentio-model-firebase/statics.js"
+));
+require.register("segmentio-model-firebase/protos.js", Function("exports, require, module",
+"\n\
+var noop = function(){};\n\
+\n\
+\n\
+/**\n\
+ * `url` doesn't apply for firebase.\n\
+ */\n\
+\n\
+exports.url = noop;\n\
+\n\
+/**\n\
+ * Returns this model's firebase.\n\
+ *\n\
+ * @return {Firebase} - Your Firebase reference.\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.firebase = function () {\n\
+  var firebase = this.model.firebase;\n\
+  if (!firebase) throw new Error('no firebase');\n\
+  return firebase.child(this.primary());\n\
+};\n\
+\n\
+/**\n\
+ * Destroy the model and mark it as `.removed`\n\
+ * and invoke `fn(err)`.\n\
+ *\n\
+ * @param {Function} [fn] - Callback.\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.destroy =\n\
+exports.remove = function (fn) {\n\
+  fn = fn || noop;\n\
+  if (this.isNew()) return fn(new Error('not saved'));\n\
+  var firebase = this.firebase();\n\
+  var self = this;\n\
+  this.model.emit('removing', this);\n\
+  this.emit('removing');\n\
+  firebase.remove(function (err) {\n\
+    if (err) return fn(err);\n\
+    self.removed = true;\n\
+    self.model.emit('remove', self);\n\
+    self.emit('remove');\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Save and invoke `fn(err)`.\n\
+ *\n\
+ * @param {Function} [fn] - Callback.\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.save  = function (fn) {\n\
+  if (!this.isNew()) return this.update(fn);\n\
+  var self = this;\n\
+  var firebase = this.firebase();\n\
+  fn = fn || noop;\n\
+  if (!this.isValid()) return fn(new Error('validation failed'));\n\
+  this.model.emit('saving', this);\n\
+  this.emit('saving');\n\
+  firebase.set(self.attrs, function (err) {\n\
+    if (err) return fn(err);\n\
+    self.dirty = {};\n\
+    self.model.emit('save', self);\n\
+    self.emit('save');\n\
+    fn();\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Update and invoke `fn(err)`.\n\
+ *\n\
+ * @param {Function} [fn] - Callback.\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.update = function (fn) {\n\
+  var self = this;\n\
+  var firebase = this.firebase();\n\
+  fn = fn || noop;\n\
+  if (!this.isValid()) return fn(new Error('validation failed'));\n\
+  this.model.emit('saving', this);\n\
+  this.emit('saving');\n\
+  firebase.update(self.attrs, function (err) {\n\
+    if (err) return fn(err);\n\
+    self.dirty = {};\n\
+    self.model.emit('save', self);\n\
+    self.emit('save');\n\
+    fn();\n\
+  });\n\
+};//@ sourceURL=segmentio-model-firebase/protos.js"
+));
+require.register("component-bind/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Slice reference.\n\
+ */\n\
+\n\
+var slice = [].slice;\n\
+\n\
+/**\n\
+ * Bind `obj` to `fn`.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {Function|String} fn or string\n\
+ * @return {Function}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(obj, fn){\n\
+  if ('string' == typeof fn) fn = obj[fn];\n\
+  if ('function' != typeof fn) throw new Error('bind() requires a function');\n\
+  var args = [].slice.call(arguments, 2);\n\
+  return function(){\n\
+    return fn.apply(obj, args.concat(slice.call(arguments)));\n\
+  }\n\
+};\n\
+//@ sourceURL=component-bind/index.js"
+));
+require.register("segmentio-model-memoize/index.js", Function("exports, require, module",
+"\n\
+var each = require('each')\n\
+  , type = require('type')\n\
+  , bind = require('bind');\n\
+\n\
+\n\
+/**\n\
+ * Plugin.\n\
+ *\n\
+ * @param {Function|Object} models  The models to warm the cache with or the\n\
+ *                                  Model constructor for the plugin.\n\
+ */\n\
+\n\
+module.exports = function (models) {\n\
+  // just the plugin\n\
+  if ('function' === type(models)) return new Memoizer(models);\n\
+\n\
+  // warming cache with models\n\
+  return function (Model) {\n\
+    new Memoizer(Model, models);\n\
+  };\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Initialize a new `Memoizer`.\n\
+ *\n\
+ * @param {Model} Model   The Model constructor to memoize.\n\
+ * @param {Array} models  Optional array of models to warm the cache with.\n\
+ */\n\
+\n\
+function Memoizer (Model, models) {\n\
+  this.Model = Model;\n\
+  this._get = bind(Model, Model.get);\n\
+  Model.get = bind(this, this.get);\n\
+\n\
+  var cache = this.cache = {};\n\
+  if (models) each(models, function (attrs) {\n\
+    var model = new Model(attrs);\n\
+    cache[model.primary()] = model;\n\
+  });\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Check the cache before getting a model from the server.\n\
+ *\n\
+ * @param {String}   id        The primary key for the model.\n\
+ * @param {Function} callback  Called with `err, model`.\n\
+ */\n\
+\n\
+Memoizer.prototype.get = function (id, callback) {\n\
+  var cache = this.cache;\n\
+  if (cache[id]) return callback(null, cache[id]);\n\
+\n\
+  this._get(id, function (err, model) {\n\
+    if (err) return callback(err);\n\
+    cache[model.primary()] = model;\n\
+    callback(null, model);\n\
+  });\n\
+};\n\
+//@ sourceURL=segmentio-model-memoize/index.js"
+));
+require.register("document/index.js", Function("exports, require, module",
+"\n\
+var defaults = require('model-defaults')\n\
+  , firebase = require('model-firebase')('https://socrates.firebaseio.com/documents/')\n\
+  , memoize = require('model-memoize')\n\
+  , model = require('model')\n\
+  , uid = require('uid');\n\
+\n\
+\n\
+/**\n\
+ * Document.\n\
+ */\n\
+\n\
+var Document = module.exports = model('document')\n\
+  .use(defaults)\n\
+  .use(firebase)\n\
+  .use(memoize)\n\
+  .attr('id', { default : function () { return uid(); } })\n\
+  .attr('created', { default : function () { return new Date(); } })\n\
+  .attr('title', { default : '' })\n\
+  .attr('body', { default : '' });//@ sourceURL=document/index.js"
+));
+require.register("documents/index.js", Function("exports, require, module",
+"\n\
+var Collection = require('collection')\n\
+  , Document = require('document')\n\
+  , each = require('each')\n\
+  , Set = require('set')\n\
+  , store = require('store');\n\
+\n\
+\n\
+/**\n\
+ * Define our local storage key.\n\
+ */\n\
+\n\
+var STORE = 'bookmarks';\n\
+\n\
+\n\
+/**\n\
+ * BACKWARDS COMPATIBILITY: bookmarks used to be stored under\n\
+ * `socrates.bookmarks` as a comma-separate string. Convert them gracefully.\n\
+ */\n\
+\n\
+var OLD_STORE = 'socrates.bookmarks';\n\
+if (store(OLD_STORE)) {\n\
+  store(STORE, store(OLD_STORE).split(','));\n\
+  store(OLD_STORE, null);\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Set.\n\
+ */\n\
+\n\
+var bookmarks = new Set(store(STORE));\n\
+\n\
+\n\
+/**\n\
+ * Create a documents collection.\n\
+ */\n\
+\n\
+var documents = module.exports = exports = new Collection()\n\
+  .on('add', function (doc) {\n\
+    bookmarks.add(doc.primary());\n\
+    store(STORE, bookmarks.values());\n\
+  })\n\
+  .on('remove', function (doc) {\n\
+    bookmarks.remove(doc.primary());\n\
+    store(STORE, bookmarks.values());\n\
+  });\n\
+\n\
+\n\
+/**\n\
+ * Fetch a document, saving it to documents.\n\
+ *\n\
+ * @param {String} id\n\
+ * @param {Function} callback(err, doc)\n\
+ */\n\
+\n\
+exports.fetch = function (id, callback) {\n\
+  Document.get(id, function (err, doc) {\n\
+    if (!doc) {\n\
+      doc = new Document();\n\
+      doc.save();\n\
+      window.analytics.track('Created New Document', { id: doc.primary() });\n\
+    }\n\
+    if (!documents.has(doc)) documents.add(doc);\n\
+    callback && callback(null, doc);\n\
+  });\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Load our documents from the saved bookmarks.\n\
+ */\n\
+\n\
+exports.load = function () {\n\
+  each(store(STORE), function (id) {\n\
+    exports.fetch(id);\n\
+  });\n\
+};//@ sourceURL=documents/index.js"
+));
+require.register("component-debounce/index.js", Function("exports, require, module",
+"/**\n\
+ * Debounces a function by the given threshold.\n\
+ *\n\
+ * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/\n\
+ * @param {Function} function to wrap\n\
+ * @param {Number} timeout in ms (`100`)\n\
+ * @param {Boolean} whether to execute at the beginning (`false`)\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function debounce(func, threshold, execAsap){\n\
+  var timeout;\n\
+\n\
+  return function debounced(){\n\
+    var obj = this, args = arguments;\n\
+\n\
+    function delayed () {\n\
+      if (!execAsap) {\n\
+        func.apply(obj, args);\n\
+      }\n\
+      timeout = null;\n\
+    }\n\
+\n\
+    if (timeout) {\n\
+      clearTimeout(timeout);\n\
+    } else if (execAsap) {\n\
+      func.apply(obj, args);\n\
+    }\n\
+\n\
+    timeout = setTimeout(delayed, threshold || 100);\n\
+  };\n\
+};\n\
+//@ sourceURL=component-debounce/index.js"
+));
+require.register("component-css/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Properties to ignore appending \"px\".\n\
+ */\n\
+\n\
+var ignore = {\n\
+  columnCount: true,\n\
+  fillOpacity: true,\n\
+  fontWeight: true,\n\
+  lineHeight: true,\n\
+  opacity: true,\n\
+  orphans: true,\n\
+  widows: true,\n\
+  zIndex: true,\n\
+  zoom: true\n\
+};\n\
+\n\
+/**\n\
+ * Set `el` css values.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {Object} obj\n\
+ * @return {Element}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(el, obj){\n\
+  for (var key in obj) {\n\
+    var val = obj[key];\n\
+    if ('number' == typeof val && !ignore[key]) val += 'px';\n\
+    el.style[key] = val;\n\
+  }\n\
+  return el;\n\
+};\n\
+//@ sourceURL=component-css/index.js"
+));
+require.register("component-sort/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Expose `sort`.\n\
+ */\n\
+\n\
+exports = module.exports = sort;\n\
+\n\
+/**\n\
+ * Sort `el`'s children with the given `fn(a, b)`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+function sort(el, fn) {\n\
+  var arr = [].slice.call(el.children).sort(fn);\n\
+  var frag = document.createDocumentFragment();\n\
+  for (var i = 0; i < arr.length; i++) {\n\
+    frag.appendChild(arr[i]);\n\
+  }\n\
+  el.appendChild(frag);\n\
+};\n\
+\n\
+/**\n\
+ * Sort descending.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.desc = function(el, fn){\n\
+  sort(el, function(a, b){\n\
+    return ~fn(a, b) + 1;\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Sort ascending.\n\
+ */\n\
+\n\
+exports.asc = sort;\n\
+//@ sourceURL=component-sort/index.js"
+));
+require.register("yields-traverse/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * dependencies\n\
+ */\n\
+\n\
+var matches = require('matches-selector');\n\
+\n\
+/**\n\
+ * Traverse with the given `el`, `selector` and `len`.\n\
+ *\n\
+ * @param {String} type\n\
+ * @param {Element} el\n\
+ * @param {String} selector\n\
+ * @param {Number} len\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(type, el, selector, len){\n\
+  var el = el[type]\n\
+    , n = len || 1\n\
+    , ret = [];\n\
+\n\
+  if (!el) return ret;\n\
+\n\
+  do {\n\
+    if (n == ret.length) break;\n\
+    if (1 != el.nodeType) continue;\n\
+    if (matches(el, selector)) ret.push(el);\n\
+    if (!selector) ret.push(el);\n\
+  } while (el = el[type]);\n\
+\n\
+  return ret;\n\
+}\n\
+//@ sourceURL=yields-traverse/index.js"
+));
+require.register("component-dom/index.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var matches = require('matches-selector');\n\
+var delegate = require('delegate');\n\
+var classes = require('classes');\n\
+var traverse = require('traverse');\n\
+var indexof = require('indexof');\n\
+var domify = require('domify');\n\
+var events = require('event');\n\
+var value = require('value');\n\
+var query = require('query');\n\
+var type = require('type');\n\
+var css = require('css');\n\
+\n\
+/**\n\
+ * Attributes supported.\n\
+ */\n\
+\n\
+var attrs = [\n\
+  'id',\n\
+  'src',\n\
+  'rel',\n\
+  'cols',\n\
+  'rows',\n\
+  'type',\n\
+  'name',\n\
+  'href',\n\
+  'title',\n\
+  'style',\n\
+  'width',\n\
+  'height',\n\
+  'action',\n\
+  'method',\n\
+  'tabindex',\n\
+  'placeholder'\n\
+];\n\
+\n\
+/**\n\
+ * Expose `dom()`.\n\
+ */\n\
+\n\
+exports = module.exports = dom;\n\
+\n\
+/**\n\
+ * Expose supported attrs.\n\
+ */\n\
+\n\
+exports.attrs = attrs;\n\
+\n\
+/**\n\
+ * Return a dom `List` for the given\n\
+ * `html`, selector, or element.\n\
+ *\n\
+ * @param {String|Element|List}\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+function dom(selector, context) {\n\
+  // array\n\
+  if (Array.isArray(selector)) {\n\
+    return new List(selector);\n\
+  }\n\
+\n\
+  // List\n\
+  if (selector instanceof List) {\n\
+    return selector;\n\
+  }\n\
+\n\
+  // node\n\
+  if (selector.nodeName) {\n\
+    return new List([selector]);\n\
+  }\n\
+\n\
+  if ('string' != typeof selector) {\n\
+    throw new TypeError('invalid selector');\n\
+  }\n\
+\n\
+  // html\n\
+  if ('<' == selector.charAt(0)) {\n\
+    return new List([domify(selector)], selector);\n\
+  }\n\
+\n\
+  // selector\n\
+  var ctx = context\n\
+    ? (context.els ? context.els[0] : context)\n\
+    : document;\n\
+\n\
+  return new List(query.all(selector, ctx), selector);\n\
+}\n\
+\n\
+/**\n\
+ * Expose `List` constructor.\n\
+ */\n\
+\n\
+exports.List = List;\n\
+\n\
+/**\n\
+ * Initialize a new `List` with the\n\
+ * given array-ish of `els` and `selector`\n\
+ * string.\n\
+ *\n\
+ * @param {Mixed} els\n\
+ * @param {String} selector\n\
+ * @api private\n\
+ */\n\
+\n\
+function List(els, selector) {\n\
+  this.els = els || [];\n\
+  this.selector = selector;\n\
+}\n\
+\n\
+/**\n\
+ * Enumerable iterator.\n\
+ */\n\
+\n\
+List.prototype.__iterate__ = function(){\n\
+  var self = this;\n\
+  return {\n\
+    length: function(){ return self.els.length },\n\
+    get: function(i){ return new List([self.els[i]]) }\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Remove elements from the DOM.\n\
+ *\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.remove = function(){\n\
+  for (var i = 0; i < this.els.length; i++) {\n\
+    var el = this.els[i];\n\
+    var parent = el.parentNode;\n\
+    if (parent) parent.removeChild(el);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Set attribute `name` to `val`, or get attr `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @param {String} [val]\n\
+ * @return {String|List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.attr = function(name, val){\n\
+  // get\n\
+  if (1 == arguments.length) {\n\
+    return this.els[0] && this.els[0].getAttribute(name);\n\
+  }\n\
+\n\
+  // remove\n\
+  if (null == val) {\n\
+    return this.removeAttr(name);\n\
+  }\n\
+\n\
+  // set\n\
+  return this.forEach(function(el){\n\
+    el.setAttribute(name, val);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Remove attribute `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.removeAttr = function(name){\n\
+  return this.forEach(function(el){\n\
+    el.removeAttribute(name);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Set property `name` to `val`, or get property `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @param {String} [val]\n\
+ * @return {Object|List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.prop = function(name, val){\n\
+  if (1 == arguments.length) {\n\
+    return this.els[0] && this.els[0][name];\n\
+  }\n\
+\n\
+  return this.forEach(function(el){\n\
+    el[name] = val;\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Get the first element's value or set selected\n\
+ * element values to `val`.\n\
+ *\n\
+ * @param {Mixed} [val]\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.val =\n\
+List.prototype.value = function(val){\n\
+  if (0 == arguments.length) {\n\
+    return this.els[0]\n\
+      ? value(this.els[0])\n\
+      : undefined;\n\
+  }\n\
+\n\
+  return this.forEach(function(el){\n\
+    value(el, val);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Return a cloned `List` with all elements cloned.\n\
+ *\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.clone = function(){\n\
+  var arr = [];\n\
+  for (var i = 0, len = this.els.length; i < len; ++i) {\n\
+    arr.push(this.els[i].cloneNode(true));\n\
+  }\n\
+  return new List(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Prepend `val`.\n\
+ *\n\
+ * @param {String|Element|List} val\n\
+ * @return {List} new list\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.prepend = function(val){\n\
+  var el = this.els[0];\n\
+  if (!el) return this;\n\
+  val = dom(val);\n\
+  for (var i = 0; i < val.els.length; ++i) {\n\
+    if (el.children.length) {\n\
+      el.insertBefore(val.els[i], el.firstChild);\n\
+    } else {\n\
+      el.appendChild(val.els[i]);\n\
+    }\n\
+  }\n\
+  return val;\n\
+};\n\
+\n\
+/**\n\
+ * Append `val`.\n\
+ *\n\
+ * @param {String|Element|List} val\n\
+ * @return {List} new list\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.append = function(val){\n\
+  var el = this.els[0];\n\
+  if (!el) return this;\n\
+  val = dom(val);\n\
+  for (var i = 0; i < val.els.length; ++i) {\n\
+    el.appendChild(val.els[i]);\n\
+  }\n\
+  return val;\n\
+};\n\
+\n\
+/**\n\
+ * Append self's `el` to `val`\n\
+ *\n\
+ * @param {String|Element|List} val\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.appendTo = function(val){\n\
+  dom(val).append(this);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Insert self's `els` after `val`\n\
+ *\n\
+ * @param {String|Element|List} val\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.insertAfter = function(val){\n\
+  val = dom(val).els[0];\n\
+  if (!val || !val.parentNode) return this;\n\
+  this.forEach(function(el){\n\
+    val.parentNode.insertBefore(el, val.nextSibling);\n\
+  });\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Return a `List` containing the element at `i`.\n\
+ *\n\
+ * @param {Number} i\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.at = function(i){\n\
+  return new List([this.els[i]], this.selector);\n\
+};\n\
+\n\
+/**\n\
+ * Return a `List` containing the first element.\n\
+ *\n\
+ * @param {Number} i\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.first = function(){\n\
+  return new List([this.els[0]], this.selector);\n\
+};\n\
+\n\
+/**\n\
+ * Return a `List` containing the last element.\n\
+ *\n\
+ * @param {Number} i\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.last = function(){\n\
+  return new List([this.els[this.els.length - 1]], this.selector);\n\
+};\n\
+\n\
+/**\n\
+ * Return an `Element` at `i`.\n\
+ *\n\
+ * @param {Number} i\n\
+ * @return {Element}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.get = function(i){\n\
+  return this.els[i || 0];\n\
+};\n\
+\n\
+/**\n\
+ * Return list length.\n\
+ *\n\
+ * @return {Number}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.length = function(){\n\
+  return this.els.length;\n\
+};\n\
+\n\
+/**\n\
+ * Return element text.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {String|List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.text = function(str){\n\
+  // TODO: real impl\n\
+  if (1 == arguments.length) {\n\
+    this.forEach(function(el){\n\
+      el.textContent = str;\n\
+    });\n\
+    return this;\n\
+  }\n\
+\n\
+  var str = '';\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    str += this.els[i].textContent;\n\
+  }\n\
+  return str;\n\
+};\n\
+\n\
+/**\n\
+ * Return element html.\n\
+ *\n\
+ * @return {String} html\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.html = function(html){\n\
+  if (1 == arguments.length) {\n\
+    this.forEach(function(el){\n\
+      el.innerHTML = html;\n\
+    });\n\
+  }\n\
+  // TODO: real impl\n\
+  return this.els[0] && this.els[0].innerHTML;\n\
+};\n\
+\n\
+/**\n\
+ * Bind to `event` and invoke `fn(e)`. When\n\
+ * a `selector` is given then events are delegated.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {String} [selector]\n\
+ * @param {Function} fn\n\
+ * @param {Boolean} capture\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.on = function(event, selector, fn, capture){\n\
+  if ('string' == typeof selector) {\n\
+    for (var i = 0; i < this.els.length; ++i) {\n\
+      fn._delegate = delegate.bind(this.els[i], selector, event, fn, capture);\n\
+    }\n\
+    return this;\n\
+  }\n\
+\n\
+  capture = fn;\n\
+  fn = selector;\n\
+\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    events.bind(this.els[i], event, fn, capture);\n\
+  }\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Unbind to `event` and invoke `fn(e)`. When\n\
+ * a `selector` is given then delegated event\n\
+ * handlers are unbound.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {String} [selector]\n\
+ * @param {Function} fn\n\
+ * @param {Boolean} capture\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.off = function(event, selector, fn, capture){\n\
+  if ('string' == typeof selector) {\n\
+    for (var i = 0; i < this.els.length; ++i) {\n\
+      // TODO: add selector support back\n\
+      delegate.unbind(this.els[i], event, fn._delegate, capture);\n\
+    }\n\
+    return this;\n\
+  }\n\
+\n\
+  capture = fn;\n\
+  fn = selector;\n\
+\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    events.unbind(this.els[i], event, fn, capture);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Iterate elements and invoke `fn(list, i)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.each = function(fn){\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    fn(new List([this.els[i]], this.selector), i);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Iterate elements and invoke `fn(el, i)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.forEach = function(fn){\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    fn(this.els[i], i);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Map elements invoking `fn(list, i)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.map = function(fn){\n\
+  var arr = [];\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    arr.push(fn(new List([this.els[i]], this.selector), i));\n\
+  }\n\
+  return arr;\n\
+};\n\
+\n\
+/**\n\
+ * Filter elements invoking `fn(list, i)`, returning\n\
+ * a new `List` of elements when a truthy value is returned.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.select =\n\
+List.prototype.filter = function(fn){\n\
+  var el;\n\
+  var list = new List([], this.selector);\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    if (fn(new List([el], this.selector), i)) list.els.push(el);\n\
+  }\n\
+  return list;\n\
+};\n\
+\n\
+/**\n\
+ * Filter elements invoking `fn(list, i)`, returning\n\
+ * a new `List` of elements when a falsey value is returned.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.reject = function(fn){\n\
+  var el;\n\
+  var list = new List([], this.selector);\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    if (!fn(new List([el], this.selector), i)) list.els.push(el);\n\
+  }\n\
+  return list;\n\
+};\n\
+\n\
+/**\n\
+ * Add the given class `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.addClass = function(name){\n\
+  var el;\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    el._classes = el._classes || classes(el);\n\
+    el._classes.add(name);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove the given class `name`.\n\
+ *\n\
+ * @param {String|RegExp} name\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.removeClass = function(name){\n\
+  var el;\n\
+\n\
+  if ('regexp' == type(name)) {\n\
+    for (var i = 0; i < this.els.length; ++i) {\n\
+      el = this.els[i];\n\
+      el._classes = el._classes || classes(el);\n\
+      var arr = el._classes.array();\n\
+      for (var j = 0; j < arr.length; j++) {\n\
+        if (name.test(arr[j])) {\n\
+          el._classes.remove(arr[j]);\n\
+        }\n\
+      }\n\
+    }\n\
+    return this;\n\
+  }\n\
+\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    el._classes = el._classes || classes(el);\n\
+    el._classes.remove(name);\n\
+  }\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Toggle the given class `name`,\n\
+ * optionally a `bool` may be given\n\
+ * to indicate that the class should\n\
+ * be added when truthy.\n\
+ *\n\
+ * @param {String} name\n\
+ * @param {Boolean} bool\n\
+ * @return {List} self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.toggleClass = function(name, bool){\n\
+  var el;\n\
+  var fn = 'toggle';\n\
+\n\
+  // toggle with boolean\n\
+  if (2 == arguments.length) {\n\
+    fn = bool ? 'add' : 'remove';\n\
+  }\n\
+\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    el._classes = el._classes || classes(el);\n\
+    el._classes[fn](name);\n\
+  }\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Check if the given class `name` is present.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.hasClass = function(name){\n\
+  var el;\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    el._classes = el._classes || classes(el);\n\
+    if (el._classes.has(name)) return true;\n\
+  }\n\
+  return false;\n\
+};\n\
+\n\
+/**\n\
+ * Set CSS `prop` to `val` or get `prop` value.\n\
+ * Also accepts an object (`prop`: `val`)\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ * @return {List|String}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.css = function(prop, val){\n\
+  if (2 == arguments.length) {\n\
+    var obj = {};\n\
+    obj[prop] = val;\n\
+    return this.setStyle(obj);\n\
+  }\n\
+\n\
+  if ('object' == type(prop)) {\n\
+    return this.setStyle(prop);\n\
+  }\n\
+\n\
+  return this.getStyle(prop);\n\
+};\n\
+\n\
+/**\n\
+ * Set CSS `props`.\n\
+ *\n\
+ * @param {Object} props\n\
+ * @return {List} self\n\
+ * @api private\n\
+ */\n\
+\n\
+List.prototype.setStyle = function(props){\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    css(this.els[i], props);\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Get CSS `prop` value.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+List.prototype.getStyle = function(prop){\n\
+  var el = this.els[0];\n\
+  if (el) return el.style[prop];\n\
+};\n\
+\n\
+/**\n\
+ * Find children matching the given `selector`.\n\
+ *\n\
+ * @param {String} selector\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.find = function(selector){\n\
+  return dom(selector, this);\n\
+};\n\
+\n\
+/**\n\
+ * Empty the dom list\n\
+ *\n\
+ * @return self\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.empty = function(){\n\
+  var elem, el;\n\
+\n\
+  for (var i = 0; i < this.els.length; ++i) {\n\
+    el = this.els[i];\n\
+    while (el.firstChild) {\n\
+      el.removeChild(el.firstChild);\n\
+    }\n\
+  }\n\
+\n\
+  return this;\n\
+}\n\
+\n\
+/**\n\
+ * Check if the first element matches `selector`.\n\
+ *\n\
+ * @param {String} selector\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.is = function(selector){\n\
+  return matches(this.get(0), selector);\n\
+};\n\
+\n\
+/**\n\
+ * Get parent(s) with optional `selector` and `limit`\n\
+ *\n\
+ * @param {String} selector\n\
+ * @param {Number} limit\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.parent = function(selector, limit){\n\
+  return new List(traverse('parentNode',\n\
+    this.get(0),\n\
+    selector,\n\
+    limit\n\
+    || 1));\n\
+};\n\
+\n\
+/**\n\
+ * Get next element(s) with optional `selector` and `limit`.\n\
+ *\n\
+ * @param {String} selector\n\
+ * @param {Number} limit\n\
+ * @retrun {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.next = function(selector, limit){\n\
+  return new List(traverse('nextSibling',\n\
+    this.get(0),\n\
+    selector,\n\
+    limit\n\
+    || 1));\n\
+};\n\
+\n\
+/**\n\
+ * Get previous element(s) with optional `selector` and `limit`.\n\
+ *\n\
+ * @param {String} selector\n\
+ * @param {Number} limit\n\
+ * @return {List}\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.prev =\n\
+List.prototype.previous = function(selector, limit){\n\
+  return new List(traverse('previousSibling',\n\
+    this.get(0),\n\
+    selector,\n\
+    limit\n\
+    || 1));\n\
+};\n\
+\n\
+/**\n\
+ * Attribute accessors.\n\
+ */\n\
+\n\
+attrs.forEach(function(name){\n\
+  List.prototype[name] = function(val){\n\
+    if (0 == arguments.length) return this.attr(name);\n\
+    return this.attr(name, val);\n\
+  };\n\
+});\n\
+\n\
+//@ sourceURL=component-dom/index.js"
+));
+require.register("component-domify/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Expose `parse`.\n\
+ */\n\
+\n\
+module.exports = parse;\n\
+\n\
+/**\n\
+ * Wrap map from jquery.\n\
+ */\n\
+\n\
+var map = {\n\
+  option: [1, '<select multiple=\"multiple\">', '</select>'],\n\
+  optgroup: [1, '<select multiple=\"multiple\">', '</select>'],\n\
+  legend: [1, '<fieldset>', '</fieldset>'],\n\
+  thead: [1, '<table>', '</table>'],\n\
+  tbody: [1, '<table>', '</table>'],\n\
+  tfoot: [1, '<table>', '</table>'],\n\
+  colgroup: [1, '<table>', '</table>'],\n\
+  caption: [1, '<table>', '</table>'],\n\
+  tr: [2, '<table><tbody>', '</tbody></table>'],\n\
+  td: [3, '<table><tbody><tr>', '</tr></tbody></table>'],\n\
+  th: [3, '<table><tbody><tr>', '</tr></tbody></table>'],\n\
+  col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],\n\
+  _default: [0, '', '']\n\
+};\n\
+\n\
+/**\n\
+ * Parse `html` and return the children.\n\
+ *\n\
+ * @param {String} html\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function parse(html) {\n\
+  if ('string' != typeof html) throw new TypeError('String expected');\n\
+\n\
+  // tag name\n\
+  var m = /<([\\w:]+)/.exec(html);\n\
+  if (!m) throw new Error('No elements were generated.');\n\
+  var tag = m[1];\n\
+\n\
+  // body support\n\
+  if (tag == 'body') {\n\
+    var el = document.createElement('html');\n\
+    el.innerHTML = html;\n\
+    return el.removeChild(el.lastChild);\n\
+  }\n\
+\n\
+  // wrap map\n\
+  var wrap = map[tag] || map._default;\n\
+  var depth = wrap[0];\n\
+  var prefix = wrap[1];\n\
+  var suffix = wrap[2];\n\
+  var el = document.createElement('div');\n\
+  el.innerHTML = prefix + html + suffix;\n\
+  while (depth--) el = el.lastChild;\n\
+\n\
+  var els = el.children;\n\
+  if (1 == els.length) {\n\
+    return el.removeChild(els[0]);\n\
+  }\n\
+\n\
+  var fragment = document.createDocumentFragment();\n\
+  while (els.length) {\n\
+    fragment.appendChild(el.removeChild(els[0]));\n\
+  }\n\
+\n\
+  return fragment;\n\
+}\n\
+//@ sourceURL=component-domify/index.js"
+));
+require.register("component-value/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var typeOf = require('type');\n\
+\n\
+/**\n\
+ * Set or get `el`'s' value.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {Mixed} val\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(el, val){\n\
+  if (2 == arguments.length) return set(el, val);\n\
+  return get(el);\n\
+};\n\
+\n\
+/**\n\
+ * Get `el`'s value.\n\
+ */\n\
+\n\
+function get(el) {\n\
+  switch (type(el)) {\n\
+    case 'checkbox':\n\
+    case 'radio':\n\
+      if (el.checked) {\n\
+        var attr = el.getAttribute('value');\n\
+        return null == attr ? true : attr;\n\
+      } else {\n\
+        return false;\n\
+      }\n\
+    case 'radiogroup':\n\
+      for (var i = 0, radio; radio = el[i]; i++) {\n\
+        if (radio.checked) return radio.value;\n\
+      }\n\
+      break;\n\
+    case 'select':\n\
+      for (var i = 0, option; option = el.options[i]; i++) {\n\
+        if (option.selected) return option.value;\n\
+      }\n\
+      break;\n\
+    default:\n\
+      return el.value;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Set `el`'s value.\n\
+ */\n\
+\n\
+function set(el, val) {\n\
+  switch (type(el)) {\n\
+    case 'checkbox':\n\
+    case 'radio':\n\
+      if (val) {\n\
+        el.checked = true;\n\
+      } else {\n\
+        el.checked = false;\n\
+      }\n\
+      break;\n\
+    case 'radiogroup':\n\
+      for (var i = 0, radio; radio = el[i]; i++) {\n\
+        radio.checked = radio.value === val;\n\
+      }\n\
+      break;\n\
+    case 'select':\n\
+      for (var i = 0, option; option = el.options[i]; i++) {\n\
+        option.selected = option.value === val;\n\
+      }\n\
+      break;\n\
+    default:\n\
+      el.value = val;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Element type.\n\
+ */\n\
+\n\
+function type(el) {\n\
+  var group = 'array' == typeOf(el) || 'object' == typeOf(el);\n\
+  if (group) el = el[0];\n\
+  var name = el.nodeName.toLowerCase();\n\
+  var type = el.getAttribute('type');\n\
+\n\
+  if (group && type && 'radio' == type.toLowerCase()) return 'radiogroup';\n\
+  if ('input' == name && type && 'checkbox' == type.toLowerCase()) return 'checkbox';\n\
+  if ('input' == name && type && 'radio' == type.toLowerCase()) return 'radio';\n\
+  if ('select' == name) return 'select';\n\
+  return name;\n\
+}\n\
+//@ sourceURL=component-value/index.js"
+));
+require.register("segmentio-marked/lib/marked.js", Function("exports, require, module",
+"/**\n\
+ * marked - a markdown parser\n\
+ * Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)\n\
+ * https://github.com/chjj/marked\n\
+ */\n\
+\n\
+;(function() {\n\
+\n\
+/**\n\
+ * Block-Level Grammar\n\
+ */\n\
+\n\
+var block = {\n\
+  newline: /^\\n\
++/,\n\
+  code: /^( {4}[^\\n\
+]+\\n\
+*)+/,\n\
+  fences: noop,\n\
+  hr: /^( *[-*_]){3,} *(?:\\n\
++|$)/,\n\
+  heading: /^ *(#{1,6}) *([^\\n\
+]+?) *#* *(?:\\n\
++|$)/,\n\
+  nptable: noop,\n\
+  lheading: /^([^\\n\
+]+)\\n\
+ *(=|-){3,} *\\n\
+*/,\n\
+  blockquote: /^( *>[^\\n\
+]+(\\n\
+[^\\n\
+]+)*\\n\
+*)+/,\n\
+  list: /^( *)(bull) [\\s\\S]+?(?:hr|\\n\
+{2,}(?! )(?!\\1bull )\\n\
+*|\\s*$)/,\n\
+  html: /^ *(?:comment|closed|closing) *(?:\\n\
+{2,}|\\s*$)/,\n\
+  def: /^ *\\[([^\\]]+)\\]: *<?([^\\s>]+)>?(?: +[\"(]([^\\n\
+]+)[\")])? *(?:\\n\
++|$)/,\n\
+  table: noop,\n\
+  paragraph: /^((?:[^\\n\
+]+\\n\
+?(?!hr|heading|lheading|blockquote|tag|def))+)\\n\
+*/,\n\
+  text: /^[^\\n\
+]+/\n\
+};\n\
+\n\
+block.bullet = /(?:[*+-]|\\d+\\.)/;\n\
+block.item = /^( *)(bull) [^\\n\
+]*(?:\\n\
+(?!\\1bull )[^\\n\
+]*)*/;\n\
+block.item = replace(block.item, 'gm')\n\
+  (/bull/g, block.bullet)\n\
+  ();\n\
+\n\
+block.list = replace(block.list)\n\
+  (/bull/g, block.bullet)\n\
+  ('hr', /\\n\
++(?=(?: *[-*_]){3,} *(?:\\n\
++|$))/)\n\
+  ();\n\
+\n\
+block._tag = '(?!(?:'\n\
+  + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code'\n\
+  + '|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo'\n\
+  + '|span|br|wbr|ins|del|img)\\\\b)\\\\w+(?!:/|@)\\\\b';\n\
+\n\
+block.html = replace(block.html)\n\
+  ('comment', /<!--[\\s\\S]*?-->/)\n\
+  ('closed', /<(tag)[\\s\\S]+?<\\/\\1>/)\n\
+  ('closing', /<tag(?:\"[^\"]*\"|'[^']*'|[^'\">])*?>/)\n\
+  (/tag/g, block._tag)\n\
+  ();\n\
+\n\
+block.paragraph = replace(block.paragraph)\n\
+  ('hr', block.hr)\n\
+  ('heading', block.heading)\n\
+  ('lheading', block.lheading)\n\
+  ('blockquote', block.blockquote)\n\
+  ('tag', '<' + block._tag)\n\
+  ('def', block.def)\n\
+  ();\n\
+\n\
+/**\n\
+ * Normal Block Grammar\n\
+ */\n\
+\n\
+block.normal = merge({}, block);\n\
+\n\
+/**\n\
+ * GFM Block Grammar\n\
+ */\n\
+\n\
+block.gfm = merge({}, block.normal, {\n\
+  fences: /^ *(`{3,}|~{3,}) *(\\S+)? *\\n\
+([\\s\\S]+?)\\s*\\1 *(?:\\n\
++|$)/,\n\
+  paragraph: /^/\n\
+});\n\
+\n\
+block.gfm.paragraph = replace(block.paragraph)\n\
+  ('(?!', '(?!' + block.gfm.fences.source.replace('\\\\1', '\\\\2') + '|')\n\
+  ();\n\
+\n\
+/**\n\
+ * GFM + Tables Block Grammar\n\
+ */\n\
+\n\
+block.tables = merge({}, block.gfm, {\n\
+  nptable: /^ *(\\S.*\\|.*)\\n\
+ *([-:]+ *\\|[-| :]*)\\n\
+((?:.*\\|.*(?:\\n\
+|$))*)\\n\
+*/,\n\
+  table: /^ *\\|(.+)\\n\
+ *\\|( *[-:]+[-| :]*)\\n\
+((?: *\\|.*(?:\\n\
+|$))*)\\n\
+*/\n\
+});\n\
+\n\
+/**\n\
+ * Block Lexer\n\
+ */\n\
+\n\
+function Lexer(options) {\n\
+  this.tokens = [];\n\
+  this.tokens.links = {};\n\
+  this.options = options || marked.defaults;\n\
+  this.rules = block.normal;\n\
+\n\
+  if (this.options.gfm) {\n\
+    if (this.options.tables) {\n\
+      this.rules = block.tables;\n\
+    } else {\n\
+      this.rules = block.gfm;\n\
+    }\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Expose Block Rules\n\
+ */\n\
+\n\
+Lexer.rules = block;\n\
+\n\
+/**\n\
+ * Static Lex Method\n\
+ */\n\
+\n\
+Lexer.lex = function(src, options) {\n\
+  var lexer = new Lexer(options);\n\
+  return lexer.lex(src);\n\
+};\n\
+\n\
+/**\n\
+ * Preprocessing\n\
+ */\n\
+\n\
+Lexer.prototype.lex = function(src) {\n\
+  src = src\n\
+    .replace(/\\r\\n\
+|\\r/g, '\\n\
+')\n\
+    .replace(/\\t/g, '    ')\n\
+    .replace(/\\u00a0/g, ' ')\n\
+    .replace(/\\u2424/g, '\\n\
+');\n\
+\n\
+  return this.token(src, true);\n\
+};\n\
+\n\
+/**\n\
+ * Lexing\n\
+ */\n\
+\n\
+Lexer.prototype.token = function(src, top) {\n\
+  var src = src.replace(/^ +$/gm, '')\n\
+    , next\n\
+    , loose\n\
+    , cap\n\
+    , bull\n\
+    , b\n\
+    , item\n\
+    , space\n\
+    , i\n\
+    , l;\n\
+\n\
+  while (src) {\n\
+    // newline\n\
+    if (cap = this.rules.newline.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      if (cap[0].length > 1) {\n\
+        this.tokens.push({\n\
+          type: 'space'\n\
+        });\n\
+      }\n\
+    }\n\
+\n\
+    // code\n\
+    if (cap = this.rules.code.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      cap = cap[0].replace(/^ {4}/gm, '');\n\
+      this.tokens.push({\n\
+        type: 'code',\n\
+        text: !this.options.pedantic\n\
+          ? cap.replace(/\\n\
++$/, '')\n\
+          : cap\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // fences (gfm)\n\
+    if (cap = this.rules.fences.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: 'code',\n\
+        lang: cap[2],\n\
+        text: cap[3]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // heading\n\
+    if (cap = this.rules.heading.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: 'heading',\n\
+        depth: cap[1].length,\n\
+        text: cap[2]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // table no leading pipe (gfm)\n\
+    if (top && (cap = this.rules.nptable.exec(src))) {\n\
+      src = src.substring(cap[0].length);\n\
+\n\
+      item = {\n\
+        type: 'table',\n\
+        header: cap[1].replace(/^ *| *\\| *$/g, '').split(/ *\\| */),\n\
+        align: cap[2].replace(/^ *|\\| *$/g, '').split(/ *\\| */),\n\
+        cells: cap[3].replace(/\\n\
+$/, '').split('\\n\
+')\n\
+      };\n\
+\n\
+      for (i = 0; i < item.align.length; i++) {\n\
+        if (/^ *-+: *$/.test(item.align[i])) {\n\
+          item.align[i] = 'right';\n\
+        } else if (/^ *:-+: *$/.test(item.align[i])) {\n\
+          item.align[i] = 'center';\n\
+        } else if (/^ *:-+ *$/.test(item.align[i])) {\n\
+          item.align[i] = 'left';\n\
+        } else {\n\
+          item.align[i] = null;\n\
+        }\n\
+      }\n\
+\n\
+      for (i = 0; i < item.cells.length; i++) {\n\
+        item.cells[i] = item.cells[i].split(/ *\\| */);\n\
+      }\n\
+\n\
+      this.tokens.push(item);\n\
+\n\
+      continue;\n\
+    }\n\
+\n\
+    // lheading\n\
+    if (cap = this.rules.lheading.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: 'heading',\n\
+        depth: cap[2] === '=' ? 1 : 2,\n\
+        text: cap[1]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // hr\n\
+    if (cap = this.rules.hr.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: 'hr'\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // blockquote\n\
+    if (cap = this.rules.blockquote.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+\n\
+      this.tokens.push({\n\
+        type: 'blockquote_start'\n\
+      });\n\
+\n\
+      cap = cap[0].replace(/^ *> ?/gm, '');\n\
+\n\
+      // Pass `top` to keep the current\n\
+      // \"toplevel\" state. This is exactly\n\
+      // how markdown.pl works.\n\
+      this.token(cap, top);\n\
+\n\
+      this.tokens.push({\n\
+        type: 'blockquote_end'\n\
+      });\n\
+\n\
+      continue;\n\
+    }\n\
+\n\
+    // list\n\
+    if (cap = this.rules.list.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      bull = cap[2];\n\
+\n\
+      this.tokens.push({\n\
+        type: 'list_start',\n\
+        ordered: bull.length > 1\n\
+      });\n\
+\n\
+      // Get each top-level item.\n\
+      cap = cap[0].match(this.rules.item);\n\
+\n\
+      next = false;\n\
+      l = cap.length;\n\
+      i = 0;\n\
+\n\
+      for (; i < l; i++) {\n\
+        item = cap[i];\n\
+\n\
+        // Remove the list item's bullet\n\
+        // so it is seen as the next token.\n\
+        space = item.length;\n\
+        item = item.replace(/^ *([*+-]|\\d+\\.) +/, '');\n\
+\n\
+        // Outdent whatever the\n\
+        // list item contains. Hacky.\n\
+        if (~item.indexOf('\\n\
+ ')) {\n\
+          space -= item.length;\n\
+          item = !this.options.pedantic\n\
+            ? item.replace(new RegExp('^ {1,' + space + '}', 'gm'), '')\n\
+            : item.replace(/^ {1,4}/gm, '');\n\
+        }\n\
+\n\
+        // Determine whether the next list item belongs here.\n\
+        // Backpedal if it does not belong in this list.\n\
+        if (this.options.smartLists && i !== l - 1) {\n\
+          b = block.bullet.exec(cap[i+1])[0];\n\
+          if (bull !== b && !(bull.length > 1 && b.length > 1)) {\n\
+            src = cap.slice(i + 1).join('\\n\
+') + src;\n\
+            i = l - 1;\n\
+          }\n\
+        }\n\
+\n\
+        // Determine whether item is loose or not.\n\
+        // Use: /(^|\\n\
+)(?! )[^\\n\
+]+\\n\
+\\n\
+(?!\\s*$)/\n\
+        // for discount behavior.\n\
+        loose = next || /\\n\
+\\n\
+(?!\\s*$)/.test(item);\n\
+        if (i !== l - 1) {\n\
+          next = item[item.length-1] === '\\n\
+';\n\
+          if (!loose) loose = next;\n\
+        }\n\
+\n\
+        this.tokens.push({\n\
+          type: loose\n\
+            ? 'loose_item_start'\n\
+            : 'list_item_start'\n\
+        });\n\
+\n\
+        // Recurse.\n\
+        this.token(item, false);\n\
+\n\
+        this.tokens.push({\n\
+          type: 'list_item_end'\n\
+        });\n\
+      }\n\
+\n\
+      this.tokens.push({\n\
+        type: 'list_end'\n\
+      });\n\
+\n\
+      continue;\n\
+    }\n\
+\n\
+    // html\n\
+    if (cap = this.rules.html.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: this.options.sanitize\n\
+          ? 'paragraph'\n\
+          : 'html',\n\
+        pre: cap[1] === 'pre' || cap[1] === 'script',\n\
+        text: cap[0]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // def\n\
+    if (top && (cap = this.rules.def.exec(src))) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.links[cap[1].toLowerCase()] = {\n\
+        href: cap[2],\n\
+        title: cap[3]\n\
+      };\n\
+      continue;\n\
+    }\n\
+\n\
+    // table (gfm)\n\
+    if (top && (cap = this.rules.table.exec(src))) {\n\
+      src = src.substring(cap[0].length);\n\
+\n\
+      item = {\n\
+        type: 'table',\n\
+        header: cap[1].replace(/^ *| *\\| *$/g, '').split(/ *\\| */),\n\
+        align: cap[2].replace(/^ *|\\| *$/g, '').split(/ *\\| */),\n\
+        cells: cap[3].replace(/(?: *\\| *)?\\n\
+$/, '').split('\\n\
+')\n\
+      };\n\
+\n\
+      for (i = 0; i < item.align.length; i++) {\n\
+        if (/^ *-+: *$/.test(item.align[i])) {\n\
+          item.align[i] = 'right';\n\
+        } else if (/^ *:-+: *$/.test(item.align[i])) {\n\
+          item.align[i] = 'center';\n\
+        } else if (/^ *:-+ *$/.test(item.align[i])) {\n\
+          item.align[i] = 'left';\n\
+        } else {\n\
+          item.align[i] = null;\n\
+        }\n\
+      }\n\
+\n\
+      for (i = 0; i < item.cells.length; i++) {\n\
+        item.cells[i] = item.cells[i]\n\
+          .replace(/^ *\\| *| *\\| *$/g, '')\n\
+          .split(/ *\\| */);\n\
+      }\n\
+\n\
+      this.tokens.push(item);\n\
+\n\
+      continue;\n\
+    }\n\
+\n\
+    // top-level paragraph\n\
+    if (top && (cap = this.rules.paragraph.exec(src))) {\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: 'paragraph',\n\
+        text: cap[1][cap[1].length-1] === '\\n\
+'\n\
+          ? cap[1].slice(0, -1)\n\
+          : cap[1]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // text\n\
+    if (cap = this.rules.text.exec(src)) {\n\
+      // Top-level should never reach here.\n\
+      src = src.substring(cap[0].length);\n\
+      this.tokens.push({\n\
+        type: 'text',\n\
+        text: cap[0]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    if (src) {\n\
+      throw new\n\
+        Error('Infinite loop on byte: ' + src.charCodeAt(0));\n\
+    }\n\
+  }\n\
+\n\
+  return this.tokens;\n\
+};\n\
+\n\
+/**\n\
+ * Inline-Level Grammar\n\
+ */\n\
+\n\
+var inline = {\n\
+  escape: /^\\\\([\\\\`*{}\\[\\]()#+\\-.!_>])/,\n\
+  autolink: /^<([^ >]+(@|:\\/)[^ >]+)>/,\n\
+  url: noop,\n\
+  tag: /^<!--[\\s\\S]*?-->|^<\\/?\\w+(?:\"[^\"]*\"|'[^']*'|[^'\">])*?>/,\n\
+  link: /^!?\\[(inside)\\]\\(href\\)/,\n\
+  reflink: /^!?\\[(inside)\\]\\s*\\[([^\\]]*)\\]/,\n\
+  nolink: /^!?\\[((?:\\[[^\\]]*\\]|[^\\[\\]])*)\\]/,\n\
+  strong: /^__([\\s\\S]+?)__(?!_)|^\\*\\*([\\s\\S]+?)\\*\\*(?!\\*)/,\n\
+  em: /^\\b_((?:__|[\\s\\S])+?)_\\b|^\\*((?:\\*\\*|[\\s\\S])+?)\\*(?!\\*)/,\n\
+  code: /^(`+)\\s*([\\s\\S]*?[^`])\\s*\\1(?!`)/,\n\
+  br: /^ {2,}\\n\
+(?!\\s*$)/,\n\
+  del: noop,\n\
+  text: /^[\\s\\S]+?(?=[\\\\<!\\[_*`]| {2,}\\n\
+|$)/\n\
+};\n\
+\n\
+inline._inside = /(?:\\[[^\\]]*\\]|[^\\]]|\\](?=[^\\[]*\\]))*/;\n\
+inline._href = /\\s*<?([^\\s]*?)>?(?:\\s+['\"]([\\s\\S]*?)['\"])?\\s*/;\n\
+\n\
+inline.link = replace(inline.link)\n\
+  ('inside', inline._inside)\n\
+  ('href', inline._href)\n\
+  ();\n\
+\n\
+inline.reflink = replace(inline.reflink)\n\
+  ('inside', inline._inside)\n\
+  ();\n\
+\n\
+/**\n\
+ * Normal Inline Grammar\n\
+ */\n\
+\n\
+inline.normal = merge({}, inline);\n\
+\n\
+/**\n\
+ * Pedantic Inline Grammar\n\
+ */\n\
+\n\
+inline.pedantic = merge({}, inline.normal, {\n\
+  strong: /^__(?=\\S)([\\s\\S]*?\\S)__(?!_)|^\\*\\*(?=\\S)([\\s\\S]*?\\S)\\*\\*(?!\\*)/,\n\
+  em: /^_(?=\\S)([\\s\\S]*?\\S)_(?!_)|^\\*(?=\\S)([\\s\\S]*?\\S)\\*(?!\\*)/\n\
+});\n\
+\n\
+/**\n\
+ * GFM Inline Grammar\n\
+ */\n\
+\n\
+inline.gfm = merge({}, inline.normal, {\n\
+  escape: replace(inline.escape)('])', '~|])')(),\n\
+  url: /^(https?:\\/\\/[^\\s<]+[^<.,:;\"')\\]\\s])/,\n\
+  del: /^~~(?=\\S)([\\s\\S]*?\\S)~~/,\n\
+  text: replace(inline.text)\n\
+    (']|', '~]|')\n\
+    ('|', '|https?://|')\n\
+    ()\n\
+});\n\
+\n\
+/**\n\
+ * GFM + Line Breaks Inline Grammar\n\
+ */\n\
+\n\
+inline.breaks = merge({}, inline.gfm, {\n\
+  br: replace(inline.br)('{2,}', '*')(),\n\
+  text: replace(inline.gfm.text)('{2,}', '*')()\n\
+});\n\
+\n\
+/**\n\
+ * Inline Lexer & Compiler\n\
+ */\n\
+\n\
+function InlineLexer(links, options) {\n\
+  this.options = options || marked.defaults;\n\
+  this.links = links;\n\
+  this.rules = inline.normal;\n\
+\n\
+  if (!this.links) {\n\
+    throw new\n\
+      Error('Tokens array requires a `links` property.');\n\
+  }\n\
+\n\
+  if (this.options.gfm) {\n\
+    if (this.options.breaks) {\n\
+      this.rules = inline.breaks;\n\
+    } else {\n\
+      this.rules = inline.gfm;\n\
+    }\n\
+  } else if (this.options.pedantic) {\n\
+    this.rules = inline.pedantic;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Expose Inline Rules\n\
+ */\n\
+\n\
+InlineLexer.rules = inline;\n\
+\n\
+/**\n\
+ * Static Lexing/Compiling Method\n\
+ */\n\
+\n\
+InlineLexer.output = function(src, links, options) {\n\
+  var inline = new InlineLexer(links, options);\n\
+  return inline.output(src);\n\
+};\n\
+\n\
+/**\n\
+ * Lexing/Compiling\n\
+ */\n\
+\n\
+InlineLexer.prototype.output = function(src) {\n\
+  var out = ''\n\
+    , link\n\
+    , text\n\
+    , href\n\
+    , cap;\n\
+\n\
+  while (src) {\n\
+    // escape\n\
+    if (cap = this.rules.escape.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += cap[1];\n\
+      continue;\n\
+    }\n\
+\n\
+    // autolink\n\
+    if (cap = this.rules.autolink.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      if (cap[2] === '@') {\n\
+        text = cap[1][6] === ':'\n\
+          ? this.mangle(cap[1].substring(7))\n\
+          : this.mangle(cap[1]);\n\
+        href = this.mangle('mailto:') + text;\n\
+      } else {\n\
+        text = escape(cap[1]);\n\
+        href = text;\n\
+      }\n\
+      out += '<a href=\"'\n\
+        + href\n\
+        + '\">'\n\
+        + text\n\
+        + '</a>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // url (gfm)\n\
+    if (cap = this.rules.url.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      text = escape(cap[1]);\n\
+      href = text;\n\
+      out += '<a href=\"'\n\
+        + href\n\
+        + '\">'\n\
+        + text\n\
+        + '</a>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // tag\n\
+    if (cap = this.rules.tag.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += this.options.sanitize\n\
+        ? escape(cap[0])\n\
+        : cap[0];\n\
+      continue;\n\
+    }\n\
+\n\
+    // link\n\
+    if (cap = this.rules.link.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += this.outputLink(cap, {\n\
+        href: cap[2],\n\
+        title: cap[3]\n\
+      });\n\
+      continue;\n\
+    }\n\
+\n\
+    // reflink, nolink\n\
+    if ((cap = this.rules.reflink.exec(src))\n\
+        || (cap = this.rules.nolink.exec(src))) {\n\
+      src = src.substring(cap[0].length);\n\
+      link = (cap[2] || cap[1]).replace(/\\s+/g, ' ');\n\
+      link = this.links[link.toLowerCase()];\n\
+      if (!link || !link.href) {\n\
+        out += cap[0][0];\n\
+        src = cap[0].substring(1) + src;\n\
+        continue;\n\
+      }\n\
+      out += this.outputLink(cap, link);\n\
+      continue;\n\
+    }\n\
+\n\
+    // strong\n\
+    if (cap = this.rules.strong.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += '<strong>'\n\
+        + this.output(cap[2] || cap[1])\n\
+        + '</strong>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // em\n\
+    if (cap = this.rules.em.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += '<em>'\n\
+        + this.output(cap[2] || cap[1])\n\
+        + '</em>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // code\n\
+    if (cap = this.rules.code.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += '<code>'\n\
+        + escape(cap[2], true)\n\
+        + '</code>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // br\n\
+    if (cap = this.rules.br.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += '<br>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // del (gfm)\n\
+    if (cap = this.rules.del.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += '<del>'\n\
+        + this.output(cap[1])\n\
+        + '</del>';\n\
+      continue;\n\
+    }\n\
+\n\
+    // text\n\
+    if (cap = this.rules.text.exec(src)) {\n\
+      src = src.substring(cap[0].length);\n\
+      out += escape(this.smartypants(cap[0]));\n\
+      continue;\n\
+    }\n\
+\n\
+    if (src) {\n\
+      throw new\n\
+        Error('Infinite loop on byte: ' + src.charCodeAt(0));\n\
+    }\n\
+  }\n\
+\n\
+  return out;\n\
+};\n\
+\n\
+/**\n\
+ * Compile Link\n\
+ */\n\
+\n\
+InlineLexer.prototype.outputLink = function(cap, link) {\n\
+  if (cap[0][0] !== '!') {\n\
+    return '<a href=\"'\n\
+      + escape(link.href)\n\
+      + '\"'\n\
+      + (link.title\n\
+      ? ' title=\"'\n\
+      + escape(link.title)\n\
+      + '\"'\n\
+      : '')\n\
+      + '>'\n\
+      + this.output(cap[1])\n\
+      + '</a>';\n\
+  } else {\n\
+    return '<img src=\"'\n\
+      + escape(link.href)\n\
+      + '\" alt=\"'\n\
+      + escape(cap[1])\n\
+      + '\"'\n\
+      + (link.title\n\
+      ? ' title=\"'\n\
+      + escape(link.title)\n\
+      + '\"'\n\
+      : '')\n\
+      + '>';\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Smartypants Transformations\n\
+ */\n\
+\n\
+InlineLexer.prototype.smartypants = function(text) {\n\
+  if (!this.options.smartypants) return text;\n\
+  return text\n\
+    .replace(/(^|[-\\u2014\\s(\\[\"])'/g, \"$1\\u2018\")       // opening singles\n\
+    .replace(/'/g, \"\\u2019\")                            // closing singles & apostrophes\n\
+    .replace(/(^|[-\\u2014/\\[(\\u2018\\s])\"/g, \"$1\\u201C\") // opening doubles\n\
+    .replace(/\"/g, \"\\u201D\")                            // closing doubles\n\
+    .replace(/--/g, \"\\u2014\")                           // em-dashes\n\
+    .replace(/\\.{3}/g, '\\u2026');                       // ellipsis\n\
+};\n\
+\n\
+/**\n\
+ * Mangle Links\n\
+ */\n\
+\n\
+InlineLexer.prototype.mangle = function(text) {\n\
+  var out = ''\n\
+    , l = text.length\n\
+    , i = 0\n\
+    , ch;\n\
+\n\
+  for (; i < l; i++) {\n\
+    ch = text.charCodeAt(i);\n\
+    if (Math.random() > 0.5) {\n\
+      ch = 'x' + ch.toString(16);\n\
+    }\n\
+    out += '&#' + ch + ';';\n\
+  }\n\
+\n\
+  return out;\n\
+};\n\
+\n\
+/**\n\
+ * Parsing & Compiling\n\
+ */\n\
+\n\
+function Parser(options) {\n\
+  this.tokens = [];\n\
+  this.token = null;\n\
+  this.options = options || marked.defaults;\n\
+}\n\
+\n\
+/**\n\
+ * Static Parse Method\n\
+ */\n\
+\n\
+Parser.parse = function(src, options) {\n\
+  var parser = new Parser(options);\n\
+  return parser.parse(src);\n\
+};\n\
+\n\
+/**\n\
+ * Parse Loop\n\
+ */\n\
+\n\
+Parser.prototype.parse = function(src) {\n\
+  this.inline = new InlineLexer(src.links, this.options);\n\
+  this.tokens = src.reverse();\n\
+\n\
+  var out = '';\n\
+  while (this.next()) {\n\
+    out += this.tok();\n\
+  }\n\
+\n\
+  return out;\n\
+};\n\
+\n\
+/**\n\
+ * Next Token\n\
+ */\n\
+\n\
+Parser.prototype.next = function() {\n\
+  return this.token = this.tokens.pop();\n\
+};\n\
+\n\
+/**\n\
+ * Preview Next Token\n\
+ */\n\
+\n\
+Parser.prototype.peek = function() {\n\
+  return this.tokens[this.tokens.length-1] || 0;\n\
+};\n\
+\n\
+/**\n\
+ * Parse Text Tokens\n\
+ */\n\
+\n\
+Parser.prototype.parseText = function() {\n\
+  var body = this.token.text;\n\
+\n\
+  while (this.peek().type === 'text') {\n\
+    body += '\\n\
+' + this.next().text;\n\
+  }\n\
+\n\
+  return this.inline.output(body);\n\
+};\n\
+\n\
+/**\n\
+ * Parse Current Token\n\
+ */\n\
+\n\
+Parser.prototype.tok = function() {\n\
+  switch (this.token.type) {\n\
+    case 'space': {\n\
+      return '';\n\
+    }\n\
+    case 'hr': {\n\
+      return '<hr>\\n\
+';\n\
+    }\n\
+    case 'heading': {\n\
+      return '<h'\n\
+        + this.token.depth\n\
+        + '>'\n\
+        + this.inline.output(this.token.text)\n\
+        + '</h'\n\
+        + this.token.depth\n\
+        + '>\\n\
+';\n\
+    }\n\
+    case 'code': {\n\
+      if (this.options.highlight) {\n\
+        var code = this.options.highlight(this.token.text, this.token.lang);\n\
+        if (code != null && code !== this.token.text) {\n\
+          this.token.escaped = true;\n\
+          this.token.text = code;\n\
+        }\n\
+      }\n\
+\n\
+      if (!this.token.escaped) {\n\
+        this.token.text = escape(this.token.text, true);\n\
+      }\n\
+\n\
+      return '<pre><code'\n\
+        + (this.token.lang\n\
+        ? ' class=\"'\n\
+        + this.options.langPrefix\n\
+        + this.token.lang\n\
+        + '\"'\n\
+        : '')\n\
+        + '>'\n\
+        + this.token.text\n\
+        + '</code></pre>\\n\
+';\n\
+    }\n\
+    case 'table': {\n\
+      var body = ''\n\
+        , heading\n\
+        , i\n\
+        , row\n\
+        , cell\n\
+        , j;\n\
+\n\
+      // header\n\
+      body += '<thead>\\n\
+<tr>\\n\
+';\n\
+      for (i = 0; i < this.token.header.length; i++) {\n\
+        heading = this.inline.output(this.token.header[i]);\n\
+        body += this.token.align[i]\n\
+          ? '<th align=\"' + this.token.align[i] + '\">' + heading + '</th>\\n\
+'\n\
+          : '<th>' + heading + '</th>\\n\
+';\n\
+      }\n\
+      body += '</tr>\\n\
+</thead>\\n\
+';\n\
+\n\
+      // body\n\
+      body += '<tbody>\\n\
+'\n\
+      for (i = 0; i < this.token.cells.length; i++) {\n\
+        row = this.token.cells[i];\n\
+        body += '<tr>\\n\
+';\n\
+        for (j = 0; j < row.length; j++) {\n\
+          cell = this.inline.output(row[j]);\n\
+          body += this.token.align[j]\n\
+            ? '<td align=\"' + this.token.align[j] + '\">' + cell + '</td>\\n\
+'\n\
+            : '<td>' + cell + '</td>\\n\
+';\n\
+        }\n\
+        body += '</tr>\\n\
+';\n\
+      }\n\
+      body += '</tbody>\\n\
+';\n\
+\n\
+      return '<table>\\n\
+'\n\
+        + body\n\
+        + '</table>\\n\
+';\n\
+    }\n\
+    case 'blockquote_start': {\n\
+      var body = '';\n\
+\n\
+      while (this.next().type !== 'blockquote_end') {\n\
+        body += this.tok();\n\
+      }\n\
+\n\
+      return '<blockquote>\\n\
+'\n\
+        + body\n\
+        + '</blockquote>\\n\
+';\n\
+    }\n\
+    case 'list_start': {\n\
+      var type = this.token.ordered ? 'ol' : 'ul'\n\
+        , body = '';\n\
+\n\
+      while (this.next().type !== 'list_end') {\n\
+        body += this.tok();\n\
+      }\n\
+\n\
+      return '<'\n\
+        + type\n\
+        + '>\\n\
+'\n\
+        + body\n\
+        + '</'\n\
+        + type\n\
+        + '>\\n\
+';\n\
+    }\n\
+    case 'list_item_start': {\n\
+      var body = '';\n\
+\n\
+      while (this.next().type !== 'list_item_end') {\n\
+        body += this.token.type === 'text'\n\
+          ? this.parseText()\n\
+          : this.tok();\n\
+      }\n\
+\n\
+      return '<li>'\n\
+        + body\n\
+        + '</li>\\n\
+';\n\
+    }\n\
+    case 'loose_item_start': {\n\
+      var body = '';\n\
+\n\
+      while (this.next().type !== 'list_item_end') {\n\
+        body += this.tok();\n\
+      }\n\
+\n\
+      return '<li>'\n\
+        + body\n\
+        + '</li>\\n\
+';\n\
+    }\n\
+    case 'html': {\n\
+      return !this.token.pre && !this.options.pedantic\n\
+        ? this.inline.output(this.token.text)\n\
+        : this.token.text;\n\
+    }\n\
+    case 'paragraph': {\n\
+      return '<p>'\n\
+        + this.inline.output(this.token.text)\n\
+        + '</p>\\n\
+';\n\
+    }\n\
+    case 'text': {\n\
+      return '<p>'\n\
+        + this.parseText()\n\
+        + '</p>\\n\
+';\n\
+    }\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Helpers\n\
+ */\n\
+\n\
+function escape(html, encode) {\n\
+  return html\n\
+    .replace(!encode ? /&(?!#?\\w+;)/g : /&/g, '&amp;')\n\
+    .replace(/</g, '&lt;')\n\
+    .replace(/>/g, '&gt;')\n\
+    .replace(/\"/g, '&quot;')\n\
+    .replace(/'/g, '&#39;');\n\
+}\n\
+\n\
+function replace(regex, opt) {\n\
+  regex = regex.source;\n\
+  opt = opt || '';\n\
+  return function self(name, val) {\n\
+    if (!name) return new RegExp(regex, opt);\n\
+    val = val.source || val;\n\
+    val = val.replace(/(^|[^\\[])\\^/g, '$1');\n\
+    regex = regex.replace(name, val);\n\
+    return self;\n\
+  };\n\
+}\n\
+\n\
+function noop() {}\n\
+noop.exec = noop;\n\
+\n\
+function merge(obj) {\n\
+  var i = 1\n\
+    , target\n\
+    , key;\n\
+\n\
+  for (; i < arguments.length; i++) {\n\
+    target = arguments[i];\n\
+    for (key in target) {\n\
+      if (Object.prototype.hasOwnProperty.call(target, key)) {\n\
+        obj[key] = target[key];\n\
+      }\n\
+    }\n\
+  }\n\
+\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Marked\n\
+ */\n\
+\n\
+function marked(src, opt, callback) {\n\
+  if (callback || typeof opt === 'function') {\n\
+    if (!callback) {\n\
+      callback = opt;\n\
+      opt = null;\n\
+    }\n\
+\n\
+    if (opt) opt = merge({}, marked.defaults, opt);\n\
+\n\
+    var highlight = opt.highlight\n\
+      , tokens\n\
+      , pending\n\
+      , i = 0;\n\
+\n\
+    try {\n\
+      tokens = Lexer.lex(src, opt)\n\
+    } catch (e) {\n\
+      return callback(e);\n\
+    }\n\
+\n\
+    pending = tokens.length;\n\
+\n\
+    var done = function(hi) {\n\
+      var out, err;\n\
+\n\
+      if (hi !== true) {\n\
+        delete opt.highlight;\n\
+      }\n\
+\n\
+      try {\n\
+        out = Parser.parse(tokens, opt);\n\
+      } catch (e) {\n\
+        err = e;\n\
+      }\n\
+\n\
+      opt.highlight = highlight;\n\
+\n\
+      return err\n\
+        ? callback(err)\n\
+        : callback(null, out);\n\
+    };\n\
+\n\
+    if (!highlight || highlight.length < 3) {\n\
+      return done(true);\n\
+    }\n\
+\n\
+    if (!pending) return done();\n\
+\n\
+    for (; i < tokens.length; i++) {\n\
+      (function(token) {\n\
+        if (token.type !== 'code') {\n\
+          return --pending || done();\n\
+        }\n\
+        return highlight(token.text, token.lang, function(err, code) {\n\
+          if (code == null || code === token.text) {\n\
+            return --pending || done();\n\
+          }\n\
+          token.text = code;\n\
+          token.escaped = true;\n\
+          --pending || done();\n\
+        });\n\
+      })(tokens[i]);\n\
+    }\n\
+\n\
+    return;\n\
+  }\n\
+  try {\n\
+    if (opt) opt = merge({}, marked.defaults, opt);\n\
+    return Parser.parse(Lexer.lex(src, opt), opt);\n\
+  } catch (e) {\n\
+    e.message += '\\n\
+Please report this to https://github.com/chjj/marked.';\n\
+    if ((opt || marked.defaults).silent) {\n\
+      return '<p>An error occured:</p><pre>'\n\
+        + escape(e.message + '', true)\n\
+        + '</pre>';\n\
+    }\n\
+    throw e;\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Options\n\
+ */\n\
+\n\
+marked.options =\n\
+marked.setOptions = function(opt) {\n\
+  merge(marked.defaults, opt);\n\
+  return marked;\n\
+};\n\
+\n\
+marked.defaults = {\n\
+  gfm: true,\n\
+  tables: true,\n\
+  breaks: false,\n\
+  pedantic: false,\n\
+  sanitize: false,\n\
+  smartLists: false,\n\
+  silent: false,\n\
+  highlight: null,\n\
+  langPrefix: 'lang-',\n\
+  smartypants: false\n\
+};\n\
+\n\
+/**\n\
+ * Expose\n\
+ */\n\
+\n\
+marked.Parser = Parser;\n\
+marked.parser = Parser.parse;\n\
+\n\
+marked.Lexer = Lexer;\n\
+marked.lexer = Lexer.lex;\n\
+\n\
+marked.InlineLexer = InlineLexer;\n\
+marked.inlineLexer = InlineLexer.output;\n\
+\n\
+marked.parse = marked;\n\
+\n\
+if (typeof exports === 'object') {\n\
+  module.exports = marked;\n\
+} else if (typeof define === 'function' && define.amd) {\n\
+  define(function() { return marked; });\n\
+} else {\n\
+  this.marked = marked;\n\
+}\n\
+\n\
+}).call(function() {\n\
+  return this || (typeof window !== 'undefined' ? window : global);\n\
+}());\n\
+//@ sourceURL=segmentio-marked/lib/marked.js"
+));
+require.register("segmentio-mathjax/MathJax.js", Function("exports, require, module",
+"/*************************************************************\n\
+ *\n\
+ *  MathJax.js\n\
+ *\n\
+ *  The main code for the MathJax math-typesetting library.  See\n\
+ *  http://www.mathjax.org/ for details.\n\
+ *\n\
+ *  ---------------------------------------------------------------------\n\
+ *\n\
+ *  Copyright (c) 2009-2013 The MathJax Consortium\n\
+ *\n\
+ *  Licensed under the Apache License, Version 2.0 (the \"License\");\n\
+ *  you may not use this file except in compliance with the License.\n\
+ *  You may obtain a copy of the License at\n\
+ *\n\
+ *      http://www.apache.org/licenses/LICENSE-2.0\n\
+ *\n\
+ *  Unless required by applicable law or agreed to in writing, software\n\
+ *  distributed under the License is distributed on an \"AS IS\" BASIS,\n\
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n\
+ *  See the License for the specific language governing permissions and\n\
+ *  limitations under the License.\n\
+ */\n\
+\n\
+if (!window.MathJax) {window.MathJax = {}}\n\
+\n\
+MathJax.isPacked = true;\n\
+\n\
+if(document.getElementById&&document.childNodes&&document.createElement){if(!window.MathJax){window.MathJax={}}if(!MathJax.Hub){MathJax.version=\"2.2\";MathJax.fileversion=\"2.2\";(function(d){var b=window[d];if(!b){b=window[d]={}}var f=[];var c=function(g){var h=g.constructor;if(!h){h=new Function(\"\")}for(var i in g){if(i!==\"constructor\"&&g.hasOwnProperty(i)){h[i]=g[i]}}return h};var a=function(){return new Function(\"return arguments.callee.Init.call(this,arguments)\")};var e=a();e.prototype={bug_test:1};if(!e.prototype.bug_test){a=function(){return function(){return arguments.callee.Init.call(this,arguments)}}}b.Object=c({constructor:a(),Subclass:function(g,i){var h=a();h.SUPER=this;h.Init=this.Init;h.Subclass=this.Subclass;h.Augment=this.Augment;h.protoFunction=this.protoFunction;h.can=this.can;h.has=this.has;h.isa=this.isa;h.prototype=new this(f);h.prototype.constructor=h;h.Augment(g,i);return h},Init:function(g){var h=this;if(g.length===1&&g[0]===f){return h}if(!(h instanceof g.callee)){h=new g.callee(f)}return h.Init.apply(h,g)||h},Augment:function(g,h){var i;if(g!=null){for(i in g){if(g.hasOwnProperty(i)){this.protoFunction(i,g[i])}}if(g.toString!==this.prototype.toString&&g.toString!=={}.toString){this.protoFunction(\"toString\",g.toString)}}if(h!=null){for(i in h){if(h.hasOwnProperty(i)){this[i]=h[i]}}}return this},protoFunction:function(h,g){this.prototype[h]=g;if(typeof g===\"function\"){g.SUPER=this.SUPER.prototype}},prototype:{Init:function(){},SUPER:function(g){return g.callee.SUPER},can:function(g){return typeof(this[g])===\"function\"},has:function(g){return typeof(this[g])!==\"undefined\"},isa:function(g){return(g instanceof Object)&&(this instanceof g)}},can:function(g){return this.prototype.can.call(this,g)},has:function(g){return this.prototype.has.call(this,g)},isa:function(h){var g=this;while(g){if(g===h){return true}else{g=g.SUPER}}return false},SimpleSUPER:c({constructor:function(g){return this.SimpleSUPER.define(g)},define:function(g){var i={};if(g!=null){for(var h in g){if(g.hasOwnProperty(h)){i[h]=this.wrap(h,g[h])}}if(g.toString!==this.prototype.toString&&g.toString!=={}.toString){i.toString=this.wrap(\"toString\",g.toString)}}return i},wrap:function(i,h){if(typeof(h)===\"function\"&&h.toString().match(/\\.\\s*SUPER\\s*\\(/)){var g=new Function(this.wrapper);g.label=i;g.original=h;h=g;g.toString=this.stringify}return h},wrapper:function(){var h=arguments.callee;this.SUPER=h.SUPER[h.label];try{var g=h.original.apply(this,arguments)}catch(i){delete this.SUPER;throw i}delete this.SUPER;return g}.toString().replace(/^\\s*function\\s*\\(\\)\\s*\\{\\s*/i,\"\").replace(/\\s*\\}\\s*$/i,\"\"),toString:function(){return this.original.toString.apply(this.original,arguments)}})})})(\"MathJax\");(function(BASENAME){var BASE=window[BASENAME];if(!BASE){BASE=window[BASENAME]={}}var CALLBACK=function(data){var cb=new Function(\"return arguments.callee.execute.apply(arguments.callee,arguments)\");for(var id in CALLBACK.prototype){if(CALLBACK.prototype.hasOwnProperty(id)){if(typeof(data[id])!==\"undefined\"){cb[id]=data[id]}else{cb[id]=CALLBACK.prototype[id]}}}cb.toString=CALLBACK.prototype.toString;return cb};CALLBACK.prototype={isCallback:true,hook:function(){},data:[],object:window,execute:function(){if(!this.called||this.autoReset){this.called=!this.autoReset;return this.hook.apply(this.object,this.data.concat([].slice.call(arguments,0)))}},reset:function(){delete this.called},toString:function(){return this.hook.toString.apply(this.hook,arguments)}};var ISCALLBACK=function(f){return(typeof(f)===\"function\"&&f.isCallback)};var EVAL=function(code){return eval.call(window,code)};EVAL(\"var __TeSt_VaR__ = 1\");if(window.__TeSt_VaR__){try{delete window.__TeSt_VaR__}catch(error){window.__TeSt_VaR__=null}}else{if(window.execScript){EVAL=function(code){BASE.__code=code;code=\"try {\"+BASENAME+\".__result = eval(\"+BASENAME+\".__code)} catch(err) {\"+BASENAME+\".__result = err}\";window.execScript(code);var result=BASE.__result;delete BASE.__result;delete BASE.__code;if(result instanceof Error){throw result}return result}}else{EVAL=function(code){BASE.__code=code;code=\"try {\"+BASENAME+\".__result = eval(\"+BASENAME+\".__code)} catch(err) {\"+BASENAME+\".__result = err}\";var head=(document.getElementsByTagName(\"head\"))[0];if(!head){head=document.body}var script=document.createElement(\"script\");script.appendChild(document.createTextNode(code));head.appendChild(script);head.removeChild(script);var result=BASE.__result;delete BASE.__result;delete BASE.__code;if(result instanceof Error){throw result}return result}}}var USING=function(args,i){if(arguments.length>1){if(arguments.length===2&&!(typeof arguments[0]===\"function\")&&arguments[0] instanceof Object&&typeof arguments[1]===\"number\"){args=[].slice.call(args,i)}else{args=[].slice.call(arguments,0)}}if(args instanceof Array&&args.length===1){args=args[0]}if(typeof args===\"function\"){if(args.execute===CALLBACK.prototype.execute){return args}return CALLBACK({hook:args})}else{if(args instanceof Array){if(typeof(args[0])===\"string\"&&args[1] instanceof Object&&typeof args[1][args[0]]===\"function\"){return CALLBACK({hook:args[1][args[0]],object:args[1],data:args.slice(2)})}else{if(typeof args[0]===\"function\"){return CALLBACK({hook:args[0],data:args.slice(1)})}else{if(typeof args[1]===\"function\"){return CALLBACK({hook:args[1],object:args[0],data:args.slice(2)})}}}}else{if(typeof(args)===\"string\"){return CALLBACK({hook:EVAL,data:[args]})}else{if(args instanceof Object){return CALLBACK(args)}else{if(typeof(args)===\"undefined\"){return CALLBACK({})}}}}}throw Error(\"Can't make callback from given data\")};var DELAY=function(time,callback){callback=USING(callback);callback.timeout=setTimeout(callback,time);return callback};var WAITFOR=function(callback,signal){callback=USING(callback);if(!callback.called){WAITSIGNAL(callback,signal);signal.pending++}};var WAITEXECUTE=function(){var signals=this.signal;delete this.signal;this.execute=this.oldExecute;delete this.oldExecute;var result=this.execute.apply(this,arguments);if(ISCALLBACK(result)&&!result.called){WAITSIGNAL(result,signals)}else{for(var i=0,m=signals.length;i<m;i++){signals[i].pending--;if(signals[i].pending<=0){signals[i].call()}}}};var WAITSIGNAL=function(callback,signals){if(!(signals instanceof Array)){signals=[signals]}if(!callback.signal){callback.oldExecute=callback.execute;callback.execute=WAITEXECUTE;callback.signal=signals}else{if(signals.length===1){callback.signal.push(signals[0])}else{callback.signal=callback.signal.concat(signals)}}};var AFTER=function(callback){callback=USING(callback);callback.pending=0;for(var i=1,m=arguments.length;i<m;i++){if(arguments[i]){WAITFOR(arguments[i],callback)}}if(callback.pending===0){var result=callback();if(ISCALLBACK(result)){callback=result}}return callback};var HOOKS=MathJax.Object.Subclass({Init:function(reset){this.hooks=[];this.reset=reset},Add:function(hook,priority){if(priority==null){priority=10}if(!ISCALLBACK(hook)){hook=USING(hook)}hook.priority=priority;var i=this.hooks.length;while(i>0&&priority<this.hooks[i-1].priority){i--}this.hooks.splice(i,0,hook);return hook},Remove:function(hook){for(var i=0,m=this.hooks.length;i<m;i++){if(this.hooks[i]===hook){this.hooks.splice(i,1);return}}},Execute:function(){var callbacks=[{}];for(var i=0,m=this.hooks.length;i<m;i++){if(this.reset){this.hooks[i].reset()}var result=this.hooks[i].apply(window,arguments);if(ISCALLBACK(result)&&!result.called){callbacks.push(result)}}if(callbacks.length===1){return null}if(callbacks.length===2){return callbacks[1]}return AFTER.apply({},callbacks)}});var EXECUTEHOOKS=function(hooks,data,reset){if(!hooks){return null}if(!(hooks instanceof Array)){hooks=[hooks]}if(!(data instanceof Array)){data=(data==null?[]:[data])}var handler=HOOKS(reset);for(var i=0,m=hooks.length;i<m;i++){handler.Add(hooks[i])}return handler.Execute.apply(handler,data)};var QUEUE=BASE.Object.Subclass({Init:function(){this.pending=0;this.running=0;this.queue=[];this.Push.apply(this,arguments)},Push:function(){var callback;for(var i=0,m=arguments.length;i<m;i++){callback=USING(arguments[i]);if(callback===arguments[i]&&!callback.called){callback=USING([\"wait\",this,callback])}this.queue.push(callback)}if(!this.running&&!this.pending){this.Process()}return callback},Process:function(queue){while(!this.running&&!this.pending&&this.queue.length){var callback=this.queue[0];queue=this.queue.slice(1);this.queue=[];this.Suspend();var result=callback();this.Resume();if(queue.length){this.queue=queue.concat(this.queue)}if(ISCALLBACK(result)&&!result.called){WAITFOR(result,this)}}},Suspend:function(){this.running++},Resume:function(){if(this.running){this.running--}},call:function(){this.Process.apply(this,arguments)},wait:function(callback){return callback}});var SIGNAL=QUEUE.Subclass({Init:function(name){QUEUE.prototype.Init.call(this);this.name=name;this.posted=[];this.listeners=HOOKS(true)},Post:function(message,callback,forget){callback=USING(callback);if(this.posting||this.pending){this.Push([\"Post\",this,message,callback,forget])}else{this.callback=callback;callback.reset();if(!forget){this.posted.push(message)}this.Suspend();this.posting=true;var result=this.listeners.Execute(message);if(ISCALLBACK(result)&&!result.called){WAITFOR(result,this)}this.Resume();delete this.posting;if(!this.pending){this.call()}}return callback},Clear:function(callback){callback=USING(callback);if(this.posting||this.pending){callback=this.Push([\"Clear\",this,callback])}else{this.posted=[];callback()}return callback},call:function(){this.callback(this);this.Process()},Interest:function(callback,ignorePast,priority){callback=USING(callback);this.listeners.Add(callback,priority);if(!ignorePast){for(var i=0,m=this.posted.length;i<m;i++){callback.reset();var result=callback(this.posted[i]);if(ISCALLBACK(result)&&i===this.posted.length-1){WAITFOR(result,this)}}}return callback},NoInterest:function(callback){this.listeners.Remove(callback)},MessageHook:function(msg,callback,priority){callback=USING(callback);if(!this.hooks){this.hooks={};this.Interest([\"ExecuteHooks\",this])}if(!this.hooks[msg]){this.hooks[msg]=HOOKS(true)}this.hooks[msg].Add(callback,priority);for(var i=0,m=this.posted.length;i<m;i++){if(this.posted[i]==msg){callback.reset();callback(this.posted[i])}}return callback},ExecuteHooks:function(msg,more){var type=((msg instanceof Array)?msg[0]:msg);if(!this.hooks[type]){return null}return this.hooks[type].Execute(msg)}},{signals:{},find:function(name){if(!SIGNAL.signals[name]){SIGNAL.signals[name]=new SIGNAL(name)}return SIGNAL.signals[name]}});BASE.Callback=BASE.CallBack=USING;BASE.Callback.Delay=DELAY;BASE.Callback.After=AFTER;BASE.Callback.Queue=QUEUE;BASE.Callback.Signal=SIGNAL.find;BASE.Callback.Hooks=HOOKS;BASE.Callback.ExecuteHooks=EXECUTEHOOKS})(\"MathJax\");(function(d){var a=window[d];if(!a){a=window[d]={}}var c=(navigator.vendor===\"Apple Computer, Inc.\"&&typeof navigator.vendorSub===\"undefined\");var f=0;var g=function(h){if(document.styleSheets&&document.styleSheets.length>f){f=document.styleSheets.length}if(!h){h=(document.getElementsByTagName(\"head\"))[0];if(!h){h=document.body}}return h};var e=[];var b=function(){for(var j=0,h=e.length;j<h;j++){a.Ajax.head.removeChild(e[j])}e=[]};a.Ajax={loaded:{},loading:{},loadHooks:{},timeout:15*1000,styleDelay:1,config:{root:\"\"},STATUS:{OK:1,ERROR:-1},rootPattern:new RegExp(\"^\\\\[\"+d+\"\\\\]\"),fileURL:function(h){return h.replace(this.rootPattern,this.config.root)},Require:function(j,m){m=a.Callback(m);var k;if(j instanceof Object){for(var h in j){if(j.hasOwnProperty(h)){k=h.toUpperCase();j=j[h]}}}else{k=j.split(/\\./).pop().toUpperCase()}j=this.fileURL(j);if(this.loaded[j]){m(this.loaded[j])}else{var l={};l[k]=j;this.Load(l,m)}return m},Load:function(j,l){l=a.Callback(l);var k;if(j instanceof Object){for(var h in j){if(j.hasOwnProperty(h)){k=h.toUpperCase();j=j[h]}}}else{k=j.split(/\\./).pop().toUpperCase()}j=this.fileURL(j);if(this.loading[j]){this.addHook(j,l)}else{this.head=g(this.head);if(this.loader[k]){this.loader[k].call(this,j,l)}else{throw Error(\"Can't load files of type \"+k)}}return l},LoadHook:function(k,l,j){l=a.Callback(l);if(k instanceof Object){for(var h in k){if(k.hasOwnProperty(h)){k=k[h]}}}k=this.fileURL(k);if(this.loaded[k]){l(this.loaded[k])}else{this.addHook(k,l,j)}return l},addHook:function(i,j,h){if(!this.loadHooks[i]){this.loadHooks[i]=MathJax.Callback.Hooks()}this.loadHooks[i].Add(j,h)},Preloading:function(){for(var k=0,h=arguments.length;k<h;k++){var j=this.fileURL(arguments[k]);if(!this.loading[j]){this.loading[j]={preloaded:true}}}},loader:{JS:function(i,k){var h=document.createElement(\"script\");var j=a.Callback([\"loadTimeout\",this,i]);this.loading[i]={callback:k,timeout:setTimeout(j,this.timeout),status:this.STATUS.OK,script:h};this.loading[i].message=a.Message.File(i);h.onerror=j;h.type=\"text/javascript\";h.src=i;this.head.appendChild(h)},CSS:function(h,j){var i=document.createElement(\"link\");i.rel=\"stylesheet\";i.type=\"text/css\";i.href=h;this.loading[h]={callback:j,message:a.Message.File(h),status:this.STATUS.OK};this.head.appendChild(i);this.timer.create.call(this,[this.timer.file,h],i)}},timer:{create:function(i,h){i=a.Callback(i);if(h.nodeName===\"STYLE\"&&h.styleSheet&&typeof(h.styleSheet.cssText)!==\"undefined\"){i(this.STATUS.OK)}else{if(window.chrome&&typeof(window.sessionStorage)!==\"undefined\"&&h.nodeName===\"STYLE\"){i(this.STATUS.OK)}else{if(c){this.timer.start(this,[this.timer.checkSafari2,f++,i],this.styleDelay)}else{this.timer.start(this,[this.timer.checkLength,h,i],this.styleDelay)}}}return i},start:function(i,h,j,k){h=a.Callback(h);h.execute=this.execute;h.time=this.time;h.STATUS=i.STATUS;h.timeout=k||i.timeout;h.delay=h.total=0;if(j){setTimeout(h,j)}else{h()}},time:function(h){this.total+=this.delay;this.delay=Math.floor(this.delay*1.05+5);if(this.total>=this.timeout){h(this.STATUS.ERROR);return 1}return 0},file:function(i,h){if(h<0){a.Ajax.loadTimeout(i)}else{a.Ajax.loadComplete(i)}},execute:function(){this.hook.call(this.object,this,this.data[0],this.data[1])},checkSafari2:function(h,i,j){if(h.time(j)){return}if(document.styleSheets.length>i&&document.styleSheets[i].cssRules&&document.styleSheets[i].cssRules.length){j(h.STATUS.OK)}else{setTimeout(h,h.delay)}},checkLength:function(h,k,m){if(h.time(m)){return}var l=0;var i=(k.sheet||k.styleSheet);try{if((i.cssRules||i.rules||[]).length>0){l=1}}catch(j){if(j.message.match(/protected variable|restricted URI/)){l=1}else{if(j.message.match(/Security error/)){l=1}}}if(l){setTimeout(a.Callback([m,h.STATUS.OK]),0)}else{setTimeout(h,h.delay)}}},loadComplete:function(h){h=this.fileURL(h);var i=this.loading[h];if(i&&!i.preloaded){a.Message.Clear(i.message);clearTimeout(i.timeout);if(i.script){if(e.length===0){setTimeout(b,0)}e.push(i.script)}this.loaded[h]=i.status;delete this.loading[h];this.addHook(h,i.callback)}else{if(i){delete this.loading[h]}this.loaded[h]=this.STATUS.OK;i={status:this.STATUS.OK}}if(!this.loadHooks[h]){return null}return this.loadHooks[h].Execute(i.status)},loadTimeout:function(h){if(this.loading[h].timeout){clearTimeout(this.loading[h].timeout)}this.loading[h].status=this.STATUS.ERROR;this.loadError(h);this.loadComplete(h)},loadError:function(h){a.Message.Set([\"LoadFailed\",\"File failed to load: %1\",h],null,2000);a.Hub.signal.Post([\"file load error\",h])},Styles:function(j,k){var h=this.StyleString(j);if(h===\"\"){k=a.Callback(k);k()}else{var i=document.createElement(\"style\");i.type=\"text/css\";this.head=g(this.head);this.head.appendChild(i);if(i.styleSheet&&typeof(i.styleSheet.cssText)!==\"undefined\"){i.styleSheet.cssText=h}else{i.appendChild(document.createTextNode(h))}k=this.timer.create.call(this,k,i)}return k},StyleString:function(m){if(typeof(m)===\"string\"){return m}var j=\"\",n,l;for(n in m){if(m.hasOwnProperty(n)){if(typeof m[n]===\"string\"){j+=n+\" {\"+m[n]+\"}\\n\
+\"}else{if(m[n] instanceof Array){for(var k=0;k<m[n].length;k++){l={};l[n]=m[n][k];j+=this.StyleString(l)}}else{if(n.substr(0,6)===\"@media\"){j+=n+\" {\"+this.StyleString(m[n])+\"}\\n\
+\"}else{if(m[n]!=null){l=[];for(var h in m[n]){if(m[n].hasOwnProperty(h)){if(m[n][h]!=null){l[l.length]=h+\": \"+m[n][h]}}}j+=n+\" {\"+l.join(\"; \")+\"}\\n\
+\"}}}}}}return j}}})(\"MathJax\");MathJax.HTML={Element:function(c,e,d){var f=document.createElement(c);if(e){if(e.style){var b=e.style;e.style={};for(var g in b){if(b.hasOwnProperty(g)){e.style[g.replace(/-([a-z])/g,this.ucMatch)]=b[g]}}}MathJax.Hub.Insert(f,e)}if(d){if(!(d instanceof Array)){d=[d]}for(var a=0;a<d.length;a++){if(d[a] instanceof Array){f.appendChild(this.Element(d[a][0],d[a][1],d[a][2]))}else{if(c===\"script\"){this.setScript(f,d[a])}else{f.appendChild(document.createTextNode(d[a]))}}}}return f},ucMatch:function(a,b){return b.toUpperCase()},addElement:function(b,a,d,c){return b.appendChild(this.Element(a,d,c))},TextNode:function(a){return document.createTextNode(a)},addText:function(a,b){return a.appendChild(this.TextNode(b))},setScript:function(a,b){if(this.setScriptBug){a.text=b}else{while(a.firstChild){a.removeChild(a.firstChild)}this.addText(a,b)}},getScript:function(a){var b=(a.text===\"\"?a.innerHTML:a.text);return b.replace(/^\\s+/,\"\").replace(/\\s+$/,\"\")},Cookie:{prefix:\"mjx\",expires:365,Set:function(a,e){var d=[];if(e){for(var g in e){if(e.hasOwnProperty(g)){d.push(g+\":\"+e[g].toString().replace(/&/g,\"&&\"))}}}var b=this.prefix+\".\"+a+\"=\"+escape(d.join(\"&;\"));if(this.expires){var f=new Date();f.setDate(f.getDate()+this.expires);b+=\"; expires=\"+f.toGMTString()}try{document.cookie=b+\"; path=/\"}catch(c){}},Get:function(c,h){if(!h){h={}}var g=new RegExp(\"(?:^|;\\\\s*)\"+this.prefix+\"\\\\.\"+c+\"=([^;]*)(?:;|$)\");var b=g.exec(document.cookie);if(b&&b[1]!==\"\"){var e=unescape(b[1]).split(\"&;\");for(var d=0,a=e.length;d<a;d++){b=e[d].match(/([^:]+):(.*)/);var f=b[2].replace(/&&/g,\"&\");if(f===\"true\"){f=true}else{if(f===\"false\"){f=false}else{if(f.match(/^-?(\\d+(\\.\\d+)?|\\.\\d+)$/)){f=parseFloat(f)}}}h[b[1]]=f}}return h}}};MathJax.Localization={locale:\"en\",directory:\"[MathJax]/localization\",strings:{en:{menuTitle:\"English\",isLoaded:true},de:{menuTitle:\"Deutsch\"},fr:{menuTitle:\"Fran\\u00E7ais\"}},pattern:/%(\\d+|\\{\\d+\\}|\\{[a-z]+:\\%\\d+(?:\\|(?:%\\{\\d+\\}|%.|[^\\}])*)+\\}|.)/g,SPLIT:(\"axb\".split(/(x)/).length===3?function(a,b){return a.split(b)}:function(c,e){var a=[],b,d=0;e.lastIndex=0;while(b=e.exec(c)){a.push(c.substr(d,b.index));a.push.apply(a,b.slice(1));d=b.index+b[0].length}a.push(c.substr(d));return a}),_:function(b,a){if(a instanceof Array){return this.processSnippet(b,a)}return this.processString(this.lookupPhrase(b,a),[].slice.call(arguments,2))},processString:function(l,o,g){var j,e;for(j=0,e=o.length;j<e;j++){if(g&&o[j] instanceof Array){o[j]=this.processSnippet(g,o[j])}}var f=this.SPLIT(l,this.pattern);for(j=1,e=f.length;j<e;j+=2){var p=f[j].charAt(0);if(p>=\"0\"&&p<=\"9\"){f[j]=o[f[j]-1];if(typeof f[j]===\"number\"){f[j]=this.number(f[j])}}else{if(p===\"{\"){p=f[j].substr(1);if(p>=\"0\"&&p<=\"9\"){f[j]=o[f[j].substr(1,f[j].length-2)-1];if(typeof f[j]===\"number\"){f[j]=this.number(f[j])}}else{var k=f[j].match(/^\\{([a-z]+):%(\\d+)\\|(.*)\\}$/);if(k){if(k[1]===\"plural\"){var d=o[k[2]-1];if(typeof d===\"undefined\"){f[j]=\"???\"}else{d=this.plural(d)-1;var h=k[3].replace(/(^|[^%])(%%)*%\\|/g,\"$1$2%\\uEFEF\").split(/\\|/);if(d>=0&&d<h.length){f[j]=this.processString(h[d].replace(/\\uEFEF/g,\"|\"),o,g)}else{f[j]=\"???\"}}}else{f[j]=\"%\"+f[j]}}}}}if(f[j]==null){f[j]=\"???\"}}if(!g){return f.join(\"\")}var a=[],b=\"\";for(j=0;j<e;j++){b+=f[j];j++;if(j<e){if(f[j] instanceof Array){a.push(b);a=a.concat(f[j]);b=\"\"}else{b+=f[j]}}}if(b!==\"\"){a.push(b)}return a},processSnippet:function(g,e){var c=[];for(var d=0,b=e.length;d<b;d++){if(e[d] instanceof Array){var f=e[d];if(typeof f[1]===\"string\"){var h=f[0];if(!(h instanceof Array)){h=[g,h]}var a=this.lookupPhrase(h,f[1]);c=c.concat(this.processMarkdown(a,f.slice(2),g))}else{if(f[1] instanceof Array){c=c.concat(this.processSnippet.apply(this,f))}else{if(f.length>=3){c.push([f[0],f[1],this.processSnippet(g,f[2])])}else{c.push(e[d])}}}}else{c.push(e[d])}}return c},markdownPattern:/(%.)|(\\*{1,3})((?:%.|.)+?)\\2|(`+)((?:%.|.)+?)\\4|\\[((?:%.|.)+?)\\]\\(([^\\s\\)]+)\\)/,processMarkdown:function(b,h,d){var j=[],e;var c=b.split(this.markdownPattern);var g=c[0];for(var f=1,a=c.length;f<a;f+=8){if(c[f+1]){e=this.processString(c[f+2],h,d);if(!(e instanceof Array)){e=[e]}e=[[\"b\",\"i\",\"i\"][c[f+1].length-1],{},e];if(c[f+1].length===3){e=[\"b\",{},e]}}else{if(c[f+3]){e=this.processString(c[f+4].replace(/^\\s/,\"\").replace(/\\s$/,\"\"),h,d);if(!(e instanceof Array)){e=[e]}e=[\"code\",{},e]}else{if(c[f+5]){e=this.processString(c[f+5],h,d);if(!(e instanceof Array)){e=[e]}e=[\"a\",{href:this.processString(c[f+6],h),target:\"_blank\"},e]}else{g+=c[f];e=null}}}if(e){j=this.concatString(j,g,h,d);j.push(e);g=\"\"}if(c[f+7]!==\"\"){g+=c[f+7]}}j=this.concatString(j,g,h,d);return j},concatString:function(a,c,b,d){if(c!=\"\"){c=this.processString(c,b,d);if(!(c instanceof Array)){c=[c]}a=a.concat(c)}return a},lookupPhrase:function(f,a,d){if(!d){d=\"_\"}if(f instanceof Array){d=(f[0]||\"_\");f=(f[1]||\"\")}var c=this.loadDomain(d);if(c){MathJax.Hub.RestartAfter(c)}var b=this.strings[this.locale];if(b){if(b.domains&&d in b.domains){var e=b.domains[d];if(e.strings&&f in e.strings){a=e.strings[f]}}}return a},loadFile:function(b,d,e){e=MathJax.Callback(e||{});b=(d.file||b);if(!b.match(/\\.js$/)){b+=\".js\"}if(!b.match(/^([a-z]+:|\\[MathJax\\])/)){var a=(this.strings[this.locale].directory||this.directory+\"/\"+this.locale||\"[MathJax]/localization/\"+this.locale);b=a+\"/\"+b}var c=MathJax.Ajax.Require(b,function(){d.isLoaded=true;return e()});return(c.called?null:c)},loadDomain:function(c,e){var b,a=this.strings[this.locale];if(a){if(!a.isLoaded){b=this.loadFile(this.locale,a);if(b){return MathJax.Callback.Queue(b,[\"loadDomain\",this,c]).Push(e)}}if(a.domains&&c in a.domains){var d=a.domains[c];if(!d.isLoaded){b=this.loadFile(c,d);if(b){return MathJax.Callback.Queue(b).Push(e)}}}}return MathJax.Callback(e)()},Try:function(a){a=MathJax.Callback(a);a.autoReset=true;try{a()}catch(b){if(!b.restart){throw b}MathJax.Callback.After([\"Try\",this,a],b.restart)}},setLocale:function(a){if(this.strings[a]){this.locale=a}if(MathJax.Menu){this.loadDomain(\"MathMenu\")}},addTranslation:function(b,e,c){var d=this.strings[b],a=false;if(!d){d=this.strings[b]={};a=true}if(!d.domains){d.domains={}}if(e){if(!d.domains[e]){d.domains[e]={}}d=d.domains[e]}MathJax.Hub.Insert(d,c);if(a&&MathJax.Menu.menu){MathJax.Menu.CreateLocaleMenu()}},setCSS:function(b){var a=this.strings[this.locale];if(a){if(a.fontFamily){b.style.fontFamily=a.fontFamily}if(a.fontDirection){b.style.direction=a.fontDirection;if(a.fontDirection===\"rtl\"){b.style.textAlign=\"right\"}}}return b},fontFamily:function(){var a=this.strings[this.locale];return(a?a.fontFamily:null)},fontDirection:function(){var a=this.strings[this.locale];return(a?a.fontDirection:null)},plural:function(b){var a=this.strings[this.locale];if(a&&a.plural){return a.plural(b)}if(b==1){return 1}return 2},number:function(b){var a=this.strings[this.locale];if(a&&a.number){return a.number(b)}return b}};MathJax.Message={ready:false,log:[{}],current:null,textNodeBug:(navigator.vendor===\"Apple Computer, Inc.\"&&typeof navigator.vendorSub===\"undefined\")||(window.hasOwnProperty&&window.hasOwnProperty(\"konqueror\")),styles:{\"#MathJax_Message\":{position:\"fixed\",left:\"1px\",bottom:\"2px\",\"background-color\":\"#E6E6E6\",border:\"1px solid #959595\",margin:\"0px\",padding:\"2px 8px\",\"z-index\":\"102\",color:\"black\",\"font-size\":\"80%\",width:\"auto\",\"white-space\":\"nowrap\"},\"#MathJax_MSIE_Frame\":{position:\"absolute\",top:0,left:0,width:\"0px\",\"z-index\":101,border:\"0px\",margin:\"0px\",padding:\"0px\"}},browsers:{MSIE:function(a){MathJax.Hub.config.styles[\"#MathJax_Message\"].position=\"absolute\";MathJax.Message.quirks=(document.compatMode===\"BackCompat\")},Chrome:function(a){MathJax.Hub.config.styles[\"#MathJax_Message\"].bottom=\"1.5em\";MathJax.Hub.config.styles[\"#MathJax_Message\"].left=\"1em\"}},Init:function(a){if(a){this.ready=true}if(!document.body||!this.ready){return false}if(this.div&&this.div.parentNode==null){this.div=document.getElementById(\"MathJax_Message\");if(this.div){this.text=this.div.firstChild}}if(!this.div){var b=document.body;if(MathJax.Hub.Browser.isMSIE){b=this.frame=this.addDiv(document.body);b.removeAttribute(\"id\");b.style.position=\"absolute\";b.style.border=b.style.margin=b.style.padding=\"0px\";b.style.zIndex=\"101\";b.style.height=\"0px\";b=this.addDiv(b);b.id=\"MathJax_MSIE_Frame\";window.attachEvent(\"onscroll\",this.MoveFrame);window.attachEvent(\"onresize\",this.MoveFrame);this.MoveFrame()}this.div=this.addDiv(b);this.div.style.display=\"none\";this.text=this.div.appendChild(document.createTextNode(\"\"))}return true},addDiv:function(a){var b=document.createElement(\"div\");b.id=\"MathJax_Message\";if(a.firstChild){a.insertBefore(b,a.firstChild)}else{a.appendChild(b)}return b},MoveFrame:function(){var a=(MathJax.Message.quirks?document.body:document.documentElement);var b=MathJax.Message.frame;b.style.left=a.scrollLeft+\"px\";b.style.top=a.scrollTop+\"px\";b.style.width=a.clientWidth+\"px\";b=b.firstChild;b.style.height=a.clientHeight+\"px\"},localize:function(a){return MathJax.Localization._(a,a)},filterText:function(a,c,b){if(MathJax.Hub.config.messageStyle===\"simple\"){if(b===\"LoadFile\"){if(!this.loading){this.loading=this.localize(\"Loading\")+\" \"}a=this.loading;this.loading+=\".\"}else{if(b===\"ProcessMath\"){if(!this.processing){this.processing=this.localize(\"Processing\")+\" \"}a=this.processing;this.processing+=\".\"}else{if(b===\"TypesetMath\"){if(!this.typesetting){this.typesetting=this.localize(\"Typesetting\")+\" \"}a=this.typesetting;this.typesetting+=\".\"}}}}return a},Set:function(c,e,b){if(e==null){e=this.log.length;this.log[e]={}}var d=\"\";if(c instanceof Array){d=c[0];if(d instanceof Array){d=d[1]}try{c=MathJax.Localization._.apply(MathJax.Localization,c)}catch(a){if(!a.restart){throw a}if(!a.restart.called){if(this.log[e].restarted==null){this.log[e].restarted=0}this.log[e].restarted++;delete this.log[e].cleared;MathJax.Callback.After([\"Set\",this,c,e,b],a.restart);return e}}}if(this.timer){clearTimeout(this.timer);delete this.timer}this.log[e].text=c;this.log[e].filteredText=c=this.filterText(c,e,d);if(typeof(this.log[e].next)===\"undefined\"){this.log[e].next=this.current;if(this.current!=null){this.log[this.current].prev=e}this.current=e}if(this.current===e&&MathJax.Hub.config.messageStyle!==\"none\"){if(this.Init()){if(this.textNodeBug){this.div.innerHTML=c}else{this.text.nodeValue=c}this.div.style.display=\"\";if(this.status){window.status=\"\";delete this.status}}else{window.status=c;this.status=true}}if(this.log[e].restarted){if(this.log[e].cleared){b=0}if(--this.log[e].restarted===0){delete this.log[e].cleared}}if(b){setTimeout(MathJax.Callback([\"Clear\",this,e]),b)}else{if(b==0){this.Clear(e,0)}}return e},Clear:function(b,a){if(this.log[b].prev!=null){this.log[this.log[b].prev].next=this.log[b].next}if(this.log[b].next!=null){this.log[this.log[b].next].prev=this.log[b].prev}if(this.current===b){this.current=this.log[b].next;if(this.text){if(this.div.parentNode==null){this.Init()}if(this.current==null){if(this.timer){clearTimeout(this.timer);delete this.timer}if(a==null){a=600}if(a===0){this.Remove()}else{this.timer=setTimeout(MathJax.Callback([\"Remove\",this]),a)}}else{if(MathJax.Hub.config.messageStyle!==\"none\"){if(this.textNodeBug){this.div.innerHTML=this.log[this.current].filteredText}else{this.text.nodeValue=this.log[this.current].filteredText}}}if(this.status){window.status=\"\";delete this.status}}else{if(this.status){window.status=(this.current==null?\"\":this.log[this.current].text)}}}delete this.log[b].next;delete this.log[b].prev;delete this.log[b].filteredText;if(this.log[b].restarted){this.log[b].cleared=true}},Remove:function(){this.text.nodeValue=\"\";this.div.style.display=\"none\"},File:function(b){var a=MathJax.Ajax.config.root;if(b.substr(0,a.length)===a){b=\"[MathJax]\"+b.substr(a.length)}return this.Set([\"LoadFile\",\"Loading %1\",b],null,null)},Log:function(){var b=[];for(var c=1,a=this.log.length;c<a;c++){b[c]=this.log[c].text}return b.join(\"\\n\
+\")}};MathJax.Hub={config:{root:\"\",config:[],styleSheets:[],styles:{\".MathJax_Preview\":{color:\"#888\"}},jax:[],extensions:[],preJax:null,postJax:null,displayAlign:\"center\",displayIndent:\"0\",preRemoveClass:\"MathJax_Preview\",showProcessingMessages:true,messageStyle:\"normal\",delayStartupUntil:\"none\",skipStartupTypeset:false,elements:[],positionToHash:true,showMathMenu:true,showMathMenuMSIE:true,menuSettings:{zoom:\"None\",CTRL:false,ALT:false,CMD:false,Shift:false,discoverable:false,zscale:\"200%\",renderer:\"\",font:\"Auto\",context:\"MathJax\",locale:\"en\",mpContext:false,mpMouse:false,texHints:true},errorSettings:{message:[\"[\",[\"MathProcessingError\",\"Math Processing Error\"],\"]\"],style:{color:\"#CC0000\",\"font-style\":\"italic\"}}},preProcessors:MathJax.Callback.Hooks(true),inputJax:{},outputJax:{order:{}},processUpdateTime:250,processUpdateDelay:10,signal:MathJax.Callback.Signal(\"Hub\"),Config:function(a){this.Insert(this.config,a);if(this.config.Augment){this.Augment(this.config.Augment)}},CombineConfig:function(c,f){var b=this.config,g,e;c=c.split(/\\./);for(var d=0,a=c.length;d<a;d++){g=c[d];if(!b[g]){b[g]={}}e=b;b=b[g]}e[g]=b=this.Insert(f,b);return b},Register:{PreProcessor:function(){MathJax.Hub.preProcessors.Add.apply(MathJax.Hub.preProcessors,arguments)},MessageHook:function(){return MathJax.Hub.signal.MessageHook.apply(MathJax.Hub.signal,arguments)},StartupHook:function(){return MathJax.Hub.Startup.signal.MessageHook.apply(MathJax.Hub.Startup.signal,arguments)},LoadHook:function(){return MathJax.Ajax.LoadHook.apply(MathJax.Ajax,arguments)}},getAllJax:function(e){var c=[],b=this.elementScripts(e);for(var d=0,a=b.length;d<a;d++){if(b[d].MathJax&&b[d].MathJax.elementJax){c.push(b[d].MathJax.elementJax)}}return c},getJaxByType:function(f,e){var c=[],b=this.elementScripts(e);for(var d=0,a=b.length;d<a;d++){if(b[d].MathJax&&b[d].MathJax.elementJax&&b[d].MathJax.elementJax.mimeType===f){c.push(b[d].MathJax.elementJax)}}return c},getJaxByInputType:function(f,e){var c=[],b=this.elementScripts(e);for(var d=0,a=b.length;d<a;d++){if(b[d].MathJax&&b[d].MathJax.elementJax&&b[d].type&&b[d].type.replace(/ *;(.|\\s)*/,\"\")===f){c.push(b[d].MathJax.elementJax)}}return c},getJaxFor:function(a){if(typeof(a)===\"string\"){a=document.getElementById(a)}if(a&&a.MathJax){return a.MathJax.elementJax}if(a&&a.isMathJax){while(a&&!a.jaxID){a=a.parentNode}if(a){return MathJax.OutputJax[a.jaxID].getJaxFromMath(a)}}return null},isJax:function(a){if(typeof(a)===\"string\"){a=document.getElementById(a)}if(a&&a.isMathJax){return 1}if(a&&a.tagName!=null&&a.tagName.toLowerCase()===\"script\"){if(a.MathJax){return(a.MathJax.state===MathJax.ElementJax.STATE.PROCESSED?1:-1)}if(a.type&&this.inputJax[a.type.replace(/ *;(.|\\s)*/,\"\")]){return -1}}return 0},setRenderer:function(d,c){if(!d){return}if(!MathJax.OutputJax[d]){this.config.menuSettings.renderer=\"\";var b=\"[MathJax]/jax/output/\"+d+\"/config.js\";return MathJax.Ajax.Require(b,[\"setRenderer\",this,d,c])}else{this.config.menuSettings.renderer=d;if(c==null){c=\"jax/mml\"}var a=this.outputJax;if(a[c]&&a[c].length){if(d!==a[c][0].id){a[c].unshift(MathJax.OutputJax[d]);return this.signal.Post([\"Renderer Selected\",d])}}return null}},Queue:function(){return this.queue.Push.apply(this.queue,arguments)},Typeset:function(e,f){if(!MathJax.isReady){return null}var c=this.elementCallback(e,f);var b=MathJax.Callback.Queue();for(var d=0,a=c.elements.length;d<a;d++){if(c.elements[d]){b.Push([\"PreProcess\",this,c.elements[d]],[\"Process\",this,c.elements[d]])}}return b.Push(c.callback)},PreProcess:function(e,f){var c=this.elementCallback(e,f);var b=MathJax.Callback.Queue();for(var d=0,a=c.elements.length;d<a;d++){if(c.elements[d]){b.Push([\"Post\",this.signal,[\"Begin PreProcess\",c.elements[d]]],(arguments.callee.disabled?{}:[\"Execute\",this.preProcessors,c.elements[d]]),[\"Post\",this.signal,[\"End PreProcess\",c.elements[d]]])}}return b.Push(c.callback)},Process:function(a,b){return this.takeAction(\"Process\",a,b)},Update:function(a,b){return this.takeAction(\"Update\",a,b)},Reprocess:function(a,b){return this.takeAction(\"Reprocess\",a,b)},Rerender:function(a,b){return this.takeAction(\"Rerender\",a,b)},takeAction:function(g,e,h){var c=this.elementCallback(e,h);var b=MathJax.Callback.Queue([\"Clear\",this.signal]);for(var d=0,a=c.elements.length;d<a;d++){if(c.elements[d]){var f={scripts:[],start:new Date().getTime(),i:0,j:0,jax:{},jaxIDs:[]};b.Push([\"Post\",this.signal,[\"Begin \"+g,c.elements[d]]],[\"Post\",this.signal,[\"Begin Math\",c.elements[d],g]],[\"prepareScripts\",this,g,c.elements[d],f],[\"Post\",this.signal,[\"Begin Math Input\",c.elements[d],g]],[\"processInput\",this,f],[\"Post\",this.signal,[\"End Math Input\",c.elements[d],g]],[\"prepareOutput\",this,f,\"preProcess\"],[\"Post\",this.signal,[\"Begin Math Output\",c.elements[d],g]],[\"processOutput\",this,f],[\"Post\",this.signal,[\"End Math Output\",c.elements[d],g]],[\"prepareOutput\",this,f,\"postProcess\"],[\"Post\",this.signal,[\"End Math\",c.elements[d],g]],[\"Post\",this.signal,[\"End \"+g,c.elements[d]]])}}return b.Push(c.callback)},scriptAction:{Process:function(a){},Update:function(b){var a=b.MathJax.elementJax;if(a&&a.needsUpdate()){a.Remove(true);b.MathJax.state=a.STATE.UPDATE}else{b.MathJax.state=a.STATE.PROCESSED}},Reprocess:function(b){var a=b.MathJax.elementJax;if(a){a.Remove(true);b.MathJax.state=a.STATE.UPDATE}},Rerender:function(b){var a=b.MathJax.elementJax;if(a){a.Remove(true);b.MathJax.state=a.STATE.OUTPUT}}},prepareScripts:function(h,e,g){if(arguments.callee.disabled){return}var b=this.elementScripts(e);var f=MathJax.ElementJax.STATE;for(var d=0,a=b.length;d<a;d++){var c=b[d];if(c.type&&this.inputJax[c.type.replace(/ *;(.|\\n\
+)*/,\"\")]){if(c.MathJax){if(c.MathJax.elementJax&&c.MathJax.elementJax.hover){MathJax.Extension.MathEvents.Hover.ClearHover(c.MathJax.elementJax)}if(c.MathJax.state!==f.PENDING){this.scriptAction[h](c)}}if(!c.MathJax){c.MathJax={state:f.PENDING}}if(c.MathJax.state!==f.PROCESSED){g.scripts.push(c)}}}},checkScriptSiblings:function(a){if(a.MathJax.checked){return}var b=this.config,f=a.previousSibling;if(f&&f.nodeName===\"#text\"){var d,e,c=a.nextSibling;if(c&&c.nodeName!==\"#text\"){c=null}if(b.preJax){if(typeof(b.preJax)===\"string\"){b.preJax=new RegExp(b.preJax+\"$\")}d=f.nodeValue.match(b.preJax)}if(b.postJax&&c){if(typeof(b.postJax)===\"string\"){b.postJax=new RegExp(\"^\"+b.postJax)}e=c.nodeValue.match(b.postJax)}if(d&&(!b.postJax||e)){f.nodeValue=f.nodeValue.replace(b.preJax,(d.length>1?d[1]:\"\"));f=null}if(e&&(!b.preJax||d)){c.nodeValue=c.nodeValue.replace(b.postJax,(e.length>1?e[1]:\"\"))}if(f&&!f.nodeValue.match(/\\S/)){f=f.previousSibling}}if(b.preRemoveClass&&f&&f.className===b.preRemoveClass){a.MathJax.preview=f}a.MathJax.checked=1},processInput:function(a){var b,i=MathJax.ElementJax.STATE;var h,e,d=a.scripts.length;try{while(a.i<d){h=a.scripts[a.i];if(!h){a.i++;continue}e=h.previousSibling;if(e&&e.className===\"MathJax_Error\"){e.parentNode.removeChild(e)}if(!h.MathJax||h.MathJax.state===i.PROCESSED){a.i++;continue}if(!h.MathJax.elementJax||h.MathJax.state===i.UPDATE){this.checkScriptSiblings(h);var g=h.type.replace(/ *;(.|\\s)*/,\"\");b=this.inputJax[g].Process(h,a);if(typeof b===\"function\"){if(b.called){continue}this.RestartAfter(b)}b.Attach(h,this.inputJax[g].id);this.saveScript(b,a,h,i)}else{if(h.MathJax.state===i.OUTPUT){this.saveScript(h.MathJax.elementJax,a,h,i)}}a.i++;var c=new Date().getTime();if(c-a.start>this.processUpdateTime&&a.i<a.scripts.length){a.start=c;this.RestartAfter(MathJax.Callback.Delay(1))}}}catch(f){return this.processError(f,a,\"Input\")}if(a.scripts.length&&this.config.showProcessingMessages){MathJax.Message.Set([\"ProcessMath\",\"Processing math: %1%%\",100],0)}a.start=new Date().getTime();a.i=a.j=0;return null},saveScript:function(a,d,b,c){if(!this.outputJax[a.mimeType]){b.MathJax.state=c.UPDATE;throw Error(\"No output jax registered for \"+a.mimeType)}a.outputJax=this.outputJax[a.mimeType][0].id;if(!d.jax[a.outputJax]){if(d.jaxIDs.length===0){d.jax[a.outputJax]=d.scripts}else{if(d.jaxIDs.length===1){d.jax[d.jaxIDs[0]]=d.scripts.slice(0,d.i)}d.jax[a.outputJax]=[]}d.jaxIDs.push(a.outputJax)}if(d.jaxIDs.length>1){d.jax[a.outputJax].push(b)}b.MathJax.state=c.OUTPUT},prepareOutput:function(c,f){while(c.j<c.jaxIDs.length){var e=c.jaxIDs[c.j],d=MathJax.OutputJax[e];if(d[f]){try{var a=d[f](c);if(typeof a===\"function\"){if(a.called){continue}this.RestartAfter(a)}}catch(b){if(!b.restart){MathJax.Message.Set([\"PrepError\",\"Error preparing %1 output (%2)\",e,f],null,600);MathJax.Hub.lastPrepError=b;c.j++}return MathJax.Callback.After([\"prepareOutput\",this,c,f],b.restart)}}c.j++}return null},processOutput:function(h){var b,g=MathJax.ElementJax.STATE,d,a=h.scripts.length;try{while(h.i<a){d=h.scripts[h.i];if(!d||!d.MathJax||d.MathJax.error){h.i++;continue}var c=d.MathJax.elementJax;if(!c){h.i++;continue}b=MathJax.OutputJax[c.outputJax].Process(d,h);d.MathJax.state=g.PROCESSED;h.i++;if(d.MathJax.preview){d.MathJax.preview.innerHTML=\"\"}this.signal.Post([\"New Math\",c.inputID]);var e=new Date().getTime();if(e-h.start>this.processUpdateTime&&h.i<h.scripts.length){h.start=e;this.RestartAfter(MathJax.Callback.Delay(this.processUpdateDelay))}}}catch(f){return this.processError(f,h,\"Output\")}if(h.scripts.length&&this.config.showProcessingMessages){MathJax.Message.Set([\"TypesetMath\",\"Typesetting math: %1%%\",100],0);MathJax.Message.Clear(0)}h.i=h.j=0;return null},processMessage:function(d,b){var a=Math.floor(d.i/(d.scripts.length)*100);var c=(b===\"Output\"?[\"TypesetMath\",\"Typesetting math: %1%%\"]:[\"ProcessMath\",\"Processing math: %1%%\"]);if(this.config.showProcessingMessages){MathJax.Message.Set(c.concat(a),0)}},processError:function(b,c,a){if(!b.restart){if(!this.config.errorSettings.message){throw b}this.formatError(c.scripts[c.i],b);c.i++}this.processMessage(c,a);return MathJax.Callback.After([\"process\"+a,this,c],b.restart)},formatError:function(b,e){var d=\"Error: \"+e.message+\"\\n\
+\";if(e.sourceURL){d+=\"\\n\
+file: \"+e.sourceURL}if(e.line){d+=\"\\n\
+line: \"+e.line}b.MathJax.error=MathJax.OutputJax.Error.Jax(d,b);var f=this.config.errorSettings;var a=MathJax.Localization._(f.messageId,f.message);var c=MathJax.HTML.Element(\"span\",{className:\"MathJax_Error\",jaxID:\"Error\",isMathJax:true},a);if(MathJax.Extension.MathEvents){c.oncontextmenu=MathJax.Extension.MathEvents.Event.Menu;c.onmousedown=MathJax.Extension.MathEvents.Event.Mousedown}else{MathJax.Ajax.Require(\"[MathJax]/extensions/MathEvents.js\",function(){c.oncontextmenu=MathJax.Extension.MathEvents.Event.Menu;c.onmousedown=MathJax.Extension.MathEvents.Event.Mousedown})}b.parentNode.insertBefore(c,b);if(b.MathJax.preview){b.MathJax.preview.innerHTML=\"\"}this.lastError=e;this.signal.Post([\"Math Processing Error\",b,e])},RestartAfter:function(a){throw this.Insert(Error(\"restart\"),{restart:MathJax.Callback(a)})},elementCallback:function(c,f){if(f==null&&(c instanceof Array||typeof c===\"function\")){try{MathJax.Callback(c);f=c;c=null}catch(d){}}if(c==null){c=this.config.elements||[]}if(!(c instanceof Array)){c=[c]}c=[].concat(c);for(var b=0,a=c.length;b<a;b++){if(typeof(c[b])===\"string\"){c[b]=document.getElementById(c[b])}}if(!document.body){document.body=document.getElementsByTagName(\"body\")[0]}if(c.length==0){c.push(document.body)}if(!f){f={}}return{elements:c,callback:f}},elementScripts:function(a){if(typeof(a)===\"string\"){a=document.getElementById(a)}if(!document.body){document.body=document.getElementsByTagName(\"body\")[0]}if(a==null){a=document.body}if(a.tagName!=null&&a.tagName.toLowerCase()===\"script\"){return[a]}return a.getElementsByTagName(\"script\")},Insert:function(c,a){for(var b in a){if(a.hasOwnProperty(b)){if(typeof a[b]===\"object\"&&!(a[b] instanceof Array)&&(typeof c[b]===\"object\"||typeof c[b]===\"function\")){this.Insert(c[b],a[b])}else{c[b]=a[b]}}}return c},SplitList:(\"trim\" in String.prototype?function(a){return a.trim().split(/\\s+/)}:function(a){return a.replace(/^\\s+/,\"\").replace(/\\s+$/,\"\").split(/\\s+/)})};MathJax.Hub.Insert(MathJax.Hub.config.styles,MathJax.Message.styles);MathJax.Hub.Insert(MathJax.Hub.config.styles,{\".MathJax_Error\":MathJax.Hub.config.errorSettings.style});MathJax.Extension={};MathJax.Hub.Configured=MathJax.Callback({});MathJax.Hub.Startup={script:\"\",queue:MathJax.Callback.Queue(),signal:MathJax.Callback.Signal(\"Startup\"),params:{},Config:function(){this.queue.Push([\"Post\",this.signal,\"Begin Config\"]);if(this.params.locale){MathJax.Localization.locale=this.params.locale;MathJax.Hub.config.menuSettings.locale=this.params.locale}var b=MathJax.HTML.Cookie.Get(\"user\");if(b.URL||b.Config){if(confirm(MathJax.Localization._(\"CookieConfig\",\"MathJax has found a user-configuration cookie that includes code to be run. Do you want to run it?\\n\
+\\n\
+(You should press Cancel unless you set up the cookie yourself.)\"))){if(b.URL){this.queue.Push([\"Require\",MathJax.Ajax,b.URL])}if(b.Config){this.queue.Push(new Function(b.Config))}}else{MathJax.HTML.Cookie.Set(\"user\",{})}}if(this.params.config){var d=this.params.config.split(/,/);for(var c=0,a=d.length;c<a;c++){if(!d[c].match(/\\.js$/)){d[c]+=\".js\"}this.queue.Push([\"Require\",MathJax.Ajax,this.URL(\"config\",d[c])])}}if(this.script.match(/\\S/)){this.queue.Push(this.script+\";\\n\
+1;\")}this.queue.Push([\"ConfigDelay\",this],[\"ConfigBlocks\",this],[function(e){return e.loadArray(MathJax.Hub.config.config,\"config\",null,true)},this],[\"Post\",this.signal,\"End Config\"])},ConfigDelay:function(){var a=this.params.delayStartupUntil||MathJax.Hub.config.delayStartupUntil;if(a===\"onload\"){return this.onload}if(a===\"configured\"){return MathJax.Hub.Configured}return a},ConfigBlocks:function(){var c=document.getElementsByTagName(\"script\");var f=null,b=MathJax.Callback.Queue();for(var d=0,a=c.length;d<a;d++){var e=String(c[d].type).replace(/ /g,\"\");if(e.match(/^text\\/x-mathjax-config(;.*)?$/)&&!e.match(/;executed=true/)){c[d].type+=\";executed=true\";f=b.Push(c[d].innerHTML+\";\\n\
+1;\")}}return f},Cookie:function(){return this.queue.Push([\"Post\",this.signal,\"Begin Cookie\"],[\"Get\",MathJax.HTML.Cookie,\"menu\",MathJax.Hub.config.menuSettings],[function(d){if(d.menuSettings.locale){MathJax.Localization.locale=d.menuSettings.locale}var f=d.menuSettings.renderer,b=d.jax;if(f){var c=\"output/\"+f;b.sort();for(var e=0,a=b.length;e<a;e++){if(b[e].substr(0,7)===\"output/\"){break}}if(e==a-1){b.pop()}else{while(e<a){if(b[e]===c){b.splice(e,1);break}e++}}b.unshift(c)}},MathJax.Hub.config],[\"Post\",this.signal,\"End Cookie\"])},Styles:function(){return this.queue.Push([\"Post\",this.signal,\"Begin Styles\"],[\"loadArray\",this,MathJax.Hub.config.styleSheets,\"config\"],[\"Styles\",MathJax.Ajax,MathJax.Hub.config.styles],[\"Post\",this.signal,\"End Styles\"])},Jax:function(){var f=MathJax.Hub.config,c=MathJax.Hub.outputJax;for(var g=0,b=f.jax.length,d=0;g<b;g++){var e=f.jax[g].substr(7);if(f.jax[g].substr(0,7)===\"output/\"&&c.order[e]==null){c.order[e]=d;d++}}var a=MathJax.Callback.Queue();return a.Push([\"Post\",this.signal,\"Begin Jax\"],[\"loadArray\",this,f.jax,\"jax\",\"config.js\"],[\"Post\",this.signal,\"End Jax\"])},Extensions:function(){var a=MathJax.Callback.Queue();return a.Push([\"Post\",this.signal,\"Begin Extensions\"],[\"loadArray\",this,MathJax.Hub.config.extensions,\"extensions\"],[\"Post\",this.signal,\"End Extensions\"])},Message:function(){MathJax.Message.Init(true)},Menu:function(){var b=MathJax.Hub.config.menuSettings,a=MathJax.Hub.outputJax,d;for(var c in a){if(a.hasOwnProperty(c)){if(a[c].length){d=a[c];break}}}if(d&&d.length){if(b.renderer&&b.renderer!==d[0].id){d.unshift(MathJax.OutputJax[b.renderer])}b.renderer=d[0].id}},Hash:function(){if(MathJax.Hub.config.positionToHash&&document.location.hash&&document.body&&document.body.scrollIntoView){var d=document.location.hash.substr(1);var f=document.getElementById(d);if(!f){var c=document.getElementsByTagName(\"a\");for(var e=0,b=c.length;e<b;e++){if(c[e].name===d){f=c[e];break}}}if(f){while(!f.scrollIntoView){f=f.parentNode}f=this.HashCheck(f);if(f&&f.scrollIntoView){setTimeout(function(){f.scrollIntoView(true)},1)}}}},HashCheck:function(b){if(b.isMathJax){var a=MathJax.Hub.getJaxFor(b);if(a&&MathJax.OutputJax[a.outputJax].hashCheck){b=MathJax.OutputJax[a.outputJax].hashCheck(b)}}return b},MenuZoom:function(){if(!MathJax.Extension.MathMenu){setTimeout(function(){MathJax.Callback.Queue([\"Require\",MathJax.Ajax,\"[MathJax]/extensions/MathMenu.js\",{}],[\"loadDomain\",MathJax.Localization,\"MathMenu\"])},1000)}else{setTimeout(MathJax.Callback([\"loadDomain\",MathJax.Localization,\"MathMenu\"]),1000)}if(!MathJax.Extension.MathZoom){setTimeout(MathJax.Callback([\"Require\",MathJax.Ajax,\"[MathJax]/extensions/MathZoom.js\",{}]),2000)}},onLoad:function(){var a=this.onload=MathJax.Callback(function(){MathJax.Hub.Startup.signal.Post(\"onLoad\")});if(document.body&&document.readyState){if(MathJax.Hub.Browser.isMSIE){if(document.readyState===\"complete\"){return[a]}}else{if(document.readyState!==\"loading\"){return[a]}}}if(window.addEventListener){window.addEventListener(\"load\",a,false);if(!this.params.noDOMContentEvent){window.addEventListener(\"DOMContentLoaded\",a,false)}}else{if(window.attachEvent){window.attachEvent(\"onload\",a)}else{window.onload=a}}return a},Typeset:function(a,b){if(MathJax.Hub.config.skipStartupTypeset){return function(){}}return this.queue.Push([\"Post\",this.signal,\"Begin Typeset\"],[\"Typeset\",MathJax.Hub,a,b],[\"Post\",this.signal,\"End Typeset\"])},URL:function(b,a){if(!a.match(/^([a-z]+:\\/\\/|\\[|\\/)/)){a=\"[MathJax]/\"+b+\"/\"+a}return a},loadArray:function(b,f,c,a){if(b){if(!(b instanceof Array)){b=[b]}if(b.length){var h=MathJax.Callback.Queue(),j={},e;for(var g=0,d=b.length;g<d;g++){e=this.URL(f,b[g]);if(c){e+=\"/\"+c}if(a){h.Push([\"Require\",MathJax.Ajax,e,j])}else{h.Push(MathJax.Ajax.Require(e,j))}}return h.Push({})}}return null}};(function(d){var b=window[d],e=\"[\"+d+\"]\";var c=b.Hub,a=b.Ajax,f=b.Callback;var g=MathJax.Object.Subclass({JAXFILE:\"jax.js\",require:null,config:{},Init:function(i,h){if(arguments.length===0){return this}return(this.constructor.Subclass(i,h))()},Augment:function(k,j){var i=this.constructor,h={};if(k!=null){for(var l in k){if(k.hasOwnProperty(l)){if(typeof k[l]===\"function\"){i.protoFunction(l,k[l])}else{h[l]=k[l]}}}if(k.toString!==i.prototype.toString&&k.toString!=={}.toString){i.protoFunction(\"toString\",k.toString)}}c.Insert(i.prototype,h);i.Augment(null,j);return this},Translate:function(h,i){throw Error(this.directory+\"/\"+this.JAXFILE+\" failed to define the Translate() method\")},Register:function(h){},Config:function(){this.config=c.CombineConfig(this.id,this.config);if(this.config.Augment){this.Augment(this.config.Augment)}},Startup:function(){},loadComplete:function(i){if(i===\"config.js\"){return a.loadComplete(this.directory+\"/\"+i)}else{var h=f.Queue();h.Push(c.Register.StartupHook(\"End Config\",{}),[\"Post\",c.Startup.signal,this.id+\" Jax Config\"],[\"Config\",this],[\"Post\",c.Startup.signal,this.id+\" Jax Require\"],[function(j){return MathJax.Hub.Startup.loadArray(j.require,this.directory)},this],[function(j,k){return MathJax.Hub.Startup.loadArray(j.extensions,\"extensions/\"+k)},this.config||{},this.id],[\"Post\",c.Startup.signal,this.id+\" Jax Startup\"],[\"Startup\",this],[\"Post\",c.Startup.signal,this.id+\" Jax Ready\"]);if(this.copyTranslate){h.Push([function(j){j.preProcess=j.preTranslate;j.Process=j.Translate;j.postProcess=j.postTranslate},this.constructor.prototype])}return h.Push([\"loadComplete\",a,this.directory+\"/\"+i])}}},{id:\"Jax\",version:\"2.2\",directory:e+\"/jax\",extensionDir:e+\"/extensions\"});b.InputJax=g.Subclass({elementJax:\"mml\",sourceMenuTitle:[\"OriginalForm\",\"Original Form\"],copyTranslate:true,Process:function(l,q){var j=f.Queue(),o;var k=this.elementJax;if(!(k instanceof Array)){k=[k]}for(var n=0,h=k.length;n<h;n++){o=b.ElementJax.directory+\"/\"+k[n]+\"/\"+this.JAXFILE;if(!this.require){this.require=[]}else{if(!(this.require instanceof Array)){this.require=[this.require]}}this.require.push(o);j.Push(a.Require(o))}o=this.directory+\"/\"+this.JAXFILE;var p=j.Push(a.Require(o));if(!p.called){this.constructor.prototype.Process=function(){if(!p.called){return p}throw Error(o+\" failed to load properly\")}}k=c.outputJax[\"jax/\"+k[0]];if(k){j.Push(a.Require(k[0].directory+\"/\"+this.JAXFILE))}return j.Push({})},needsUpdate:function(h){var i=h.SourceElement();return(h.originalText!==b.HTML.getScript(i))},Register:function(h){if(!c.inputJax){c.inputJax={}}c.inputJax[h]=this}},{id:\"InputJax\",version:\"2.2\",directory:g.directory+\"/input\",extensionDir:g.extensionDir});b.OutputJax=g.Subclass({copyTranslate:true,preProcess:function(j){var i,h=this.directory+\"/\"+this.JAXFILE;this.constructor.prototype.preProcess=function(k){if(!i.called){return i}throw Error(h+\" failed to load properly\")};i=a.Require(h);return i},Register:function(i){var h=c.outputJax;if(!h[i]){h[i]=[]}if(h[i].length&&(this.id===c.config.menuSettings.renderer||(h.order[this.id]||0)<(h.order[h[i][0].id]||0))){h[i].unshift(this)}else{h[i].push(this)}if(!this.require){this.require=[]}else{if(!(this.require instanceof Array)){this.require=[this.require]}}this.require.push(b.ElementJax.directory+\"/\"+(i.split(/\\//)[1])+\"/\"+this.JAXFILE)},Remove:function(h){}},{id:\"OutputJax\",version:\"2.2\",directory:g.directory+\"/output\",extensionDir:g.extensionDir,fontDir:e+(b.isPacked?\"\":\"/..\")+\"/fonts\",imageDir:e+(b.isPacked?\"\":\"/..\")+\"/images\"});b.ElementJax=g.Subclass({Init:function(i,h){return this.constructor.Subclass(i,h)},inputJax:null,outputJax:null,inputID:null,originalText:\"\",mimeType:\"\",sourceMenuTitle:[\"MathMLcode\",\"MathML Code\"],Text:function(i,j){var h=this.SourceElement();b.HTML.setScript(h,i);h.MathJax.state=this.STATE.UPDATE;return c.Update(h,j)},Reprocess:function(i){var h=this.SourceElement();h.MathJax.state=this.STATE.UPDATE;return c.Reprocess(h,i)},Update:function(h){return this.Rerender(h)},Rerender:function(i){var h=this.SourceElement();h.MathJax.state=this.STATE.OUTPUT;return c.Process(h,i)},Remove:function(h){if(this.hover){this.hover.clear(this)}b.OutputJax[this.outputJax].Remove(this);if(!h){c.signal.Post([\"Remove Math\",this.inputID]);this.Detach()}},needsUpdate:function(){return b.InputJax[this.inputJax].needsUpdate(this)},SourceElement:function(){return document.getElementById(this.inputID)},Attach:function(i,j){var h=i.MathJax.elementJax;if(i.MathJax.state===this.STATE.UPDATE){h.Clone(this)}else{h=i.MathJax.elementJax=this;if(i.id){this.inputID=i.id}else{i.id=this.inputID=b.ElementJax.GetID();this.newID=1}}h.originalText=b.HTML.getScript(i);h.inputJax=j;if(h.root){h.root.inputID=h.inputID}return h},Detach:function(){var h=this.SourceElement();if(!h){return}try{delete h.MathJax}catch(i){h.MathJax=null}if(this.newID){h.id=\"\"}},Clone:function(h){var i;for(i in this){if(!this.hasOwnProperty(i)){continue}if(typeof(h[i])===\"undefined\"&&i!==\"newID\"){delete this[i]}}for(i in h){if(!h.hasOwnProperty(i)){continue}if(typeof(this[i])===\"undefined\"||(this[i]!==h[i]&&i!==\"inputID\")){this[i]=h[i]}}}},{id:\"ElementJax\",version:\"2.2\",directory:g.directory+\"/element\",extensionDir:g.extensionDir,ID:0,STATE:{PENDING:1,PROCESSED:2,UPDATE:3,OUTPUT:4},GetID:function(){this.ID++;return\"MathJax-Element-\"+this.ID},Subclass:function(){var h=g.Subclass.apply(this,arguments);h.loadComplete=this.prototype.loadComplete;return h}});b.ElementJax.prototype.STATE=b.ElementJax.STATE;b.OutputJax.Error={id:\"Error\",version:\"2.2\",config:{},ContextMenu:function(){return b.Extension.MathEvents.Event.ContextMenu.apply(b.Extension.MathEvents.Event,arguments)},Mousedown:function(){return b.Extension.MathEvents.Event.AltContextMenu.apply(b.Extension.MathEvents.Event,arguments)},getJaxFromMath:function(h){return(h.nextSibling.MathJax||{}).error},Jax:function(j,i){var h=MathJax.Hub.inputJax[i.type.replace(/ *;(.|\\s)*/,\"\")];return{inputJax:(h||{id:\"Error\"}).id,outputJax:\"Error\",sourceMenuTitle:[\"ErrorMessage\",\"Error Message\"],sourceMenuFormat:\"Error\",originalText:MathJax.HTML.getScript(i),errorText:j}}};b.InputJax.Error={id:\"Error\",version:\"2.2\",config:{},sourceMenuTitle:[\"OriginalForm\",\"Original Form\"]}})(\"MathJax\");(function(l){var f=window[l];if(!f){f=window[l]={}}var c=f.Hub;var q=c.Startup;var u=c.config;var e=document.getElementsByTagName(\"head\")[0];if(!e){e=document.childNodes[0]}var b=(document.documentElement||document).getElementsByTagName(\"script\");var d=new RegExp(\"(^|/)\"+l+\"\\\\.js(\\\\?.*)?$\");for(var o=b.length-1;o>=0;o--){if((b[o].src||\"\").match(d)){q.script=b[o].innerHTML;if(RegExp.$2){var r=RegExp.$2.substr(1).split(/\\&/);for(var n=0,h=r.length;n<h;n++){var k=r[n].match(/(.*)=(.*)/);if(k){q.params[unescape(k[1])]=unescape(k[2])}}}u.root=b[o].src.replace(/(^|\\/)[^\\/]*(\\?.*)?$/,\"\");break}}f.Ajax.config=u;var a={isMac:(navigator.platform.substr(0,3)===\"Mac\"),isPC:(navigator.platform.substr(0,3)===\"Win\"),isMSIE:(window.ActiveXObject!=null&&window.clipboardData!=null),isFirefox:(navigator.userAgent.match(/Gecko/)!=null&&navigator.userAgent.match(/KHTML/)==null),isSafari:(navigator.userAgent.match(/ (Apple)?WebKit\\//)!=null&&(!window.chrome||window.chrome.loadTimes==null)),isChrome:(window.chrome!=null&&window.chrome.loadTimes!=null),isOpera:(window.opera!=null&&window.opera.version!=null),isKonqueror:(window.hasOwnProperty&&window.hasOwnProperty(\"konqueror\")&&navigator.vendor==\"KDE\"),versionAtLeast:function(x){var w=(this.version).split(\".\");x=(new String(x)).split(\".\");for(var y=0,j=x.length;y<j;y++){if(w[y]!=x[y]){return parseInt(w[y]||\"0\")>=parseInt(x[y])}}return true},Select:function(j){var i=j[c.Browser];if(i){return i(c.Browser)}return null}};var g=navigator.userAgent.replace(/^Mozilla\\/(\\d+\\.)+\\d+ /,\"\").replace(/[a-z][-a-z0-9._: ]+\\/\\d+[^ ]*-[^ ]*\\.([a-z][a-z])?\\d+ /i,\"\").replace(/Gentoo |Ubuntu\\/(\\d+\\.)*\\d+ (\\([^)]*\\) )?/,\"\");c.Browser=c.Insert(c.Insert(new String(\"Unknown\"),{version:\"0.0\"}),a);for(var t in a){if(a.hasOwnProperty(t)){if(a[t]&&t.substr(0,2)===\"is\"){t=t.slice(2);if(t===\"Mac\"||t===\"PC\"){continue}c.Browser=c.Insert(new String(t),a);var p=new RegExp(\".*(Version)/((?:\\\\d+\\\\.)+\\\\d+)|.*(\"+t+\")\"+(t==\"MSIE\"?\" \":\"/\")+\"((?:\\\\d+\\\\.)*\\\\d+)|(?:^|\\\\(| )([a-z][-a-z0-9._: ]+|(?:Apple)?WebKit)/((?:\\\\d+\\\\.)+\\\\d+)\");var s=p.exec(g)||[\"\",\"\",\"\",\"unknown\",\"0.0\"];c.Browser.name=(s[1]==\"Version\"?t:(s[3]||s[5]));c.Browser.version=s[2]||s[4]||s[6];break}}}c.Browser.Select({Safari:function(j){var i=parseInt((String(j.version).split(\".\"))[0]);if(i>85){j.webkit=j.version}if(i>=534){j.version=\"5.1\"}else{if(i>=533){j.version=\"5.0\"}else{if(i>=526){j.version=\"4.0\"}else{if(i>=525){j.version=\"3.1\"}else{if(i>500){j.version=\"3.0\"}else{if(i>400){j.version=\"2.0\"}else{if(i>85){j.version=\"1.0\"}}}}}}}j.isMobile=(navigator.appVersion.match(/Mobile/i)!=null);j.noContextMenu=j.isMobile},Firefox:function(j){if((j.version===\"0.0\"||navigator.userAgent.match(/Firefox/)==null)&&navigator.product===\"Gecko\"){var m=navigator.userAgent.match(/[\\/ ]rv:(\\d+\\.\\d.*?)[\\) ]/);if(m){j.version=m[1]}else{var i=(navigator.buildID||navigator.productSub||\"0\").substr(0,8);if(i>=\"20111220\"){j.version=\"9.0\"}else{if(i>=\"20111120\"){j.version=\"8.0\"}else{if(i>=\"20110927\"){j.version=\"7.0\"}else{if(i>=\"20110816\"){j.version=\"6.0\"}else{if(i>=\"20110621\"){j.version=\"5.0\"}else{if(i>=\"20110320\"){j.version=\"4.0\"}else{if(i>=\"20100121\"){j.version=\"3.6\"}else{if(i>=\"20090630\"){j.version=\"3.5\"}else{if(i>=\"20080617\"){j.version=\"3.0\"}else{if(i>=\"20061024\"){j.version=\"2.0\"}}}}}}}}}}}}j.isMobile=(navigator.appVersion.match(/Android/i)!=null||navigator.userAgent.match(/ Fennec\\//)!=null||navigator.userAgent.match(/Mobile/)!=null)},Opera:function(i){i.version=opera.version()},MSIE:function(j){j.isIE9=!!(document.documentMode&&(window.performance||window.msPerformance));MathJax.HTML.setScriptBug=!j.isIE9||document.documentMode<9;var v=false;try{new ActiveXObject(\"MathPlayer.Factory.1\");j.hasMathPlayer=v=true}catch(m){}try{if(v&&!q.params.NoMathPlayer){var i=document.createElement(\"object\");i.id=\"mathplayer\";i.classid=\"clsid:32F66A20-7614-11D4-BD11-00104BD3F987\";document.getElementsByTagName(\"head\")[0].appendChild(i);document.namespaces.add(\"m\",\"http://www.w3.org/1998/Math/MathML\");j.mpNamespace=true;if(document.readyState&&(document.readyState===\"loading\"||document.readyState===\"interactive\")){document.write('<?import namespace=\"m\" implementation=\"#MathPlayer\">');j.mpImported=true}}else{document.namespaces.add(\"mjx_IE_fix\",\"http://www.w3.org/1999/xlink\")}}catch(m){}}});c.Browser.Select(MathJax.Message.browsers);c.queue=f.Callback.Queue();c.queue.Push([\"Post\",q.signal,\"Begin\"],[\"Config\",q],[\"Cookie\",q],[\"Styles\",q],[\"Message\",q],function(){var i=f.Callback.Queue(q.Jax(),q.Extensions());return i.Push({})},[\"Menu\",q],q.onLoad(),function(){MathJax.isReady=true},[\"Typeset\",q],[\"Hash\",q],[\"MenuZoom\",q],[\"Post\",q.signal,\"End\"])})(\"MathJax\")}};\n\
+\n\
+// Exports for component.\n\
+module.exports = window.MathJax;\n\
+//@ sourceURL=segmentio-mathjax/MathJax.js"
+));
+require.register("segmentio-rainbow/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Dependencies.\n\
+ */\n\
+\n\
+var Rainbow = require('./js/rainbow')\n\
+  , languages = [\n\
+      require('./js/language/c.js'),\n\
+      require('./js/language/coffeescript.js'),\n\
+      require('./js/language/csharp.js'),\n\
+      require('./js/language/css.js'),\n\
+      require('./js/language/d.js'),\n\
+      require('./js/language/generic.js'),\n\
+      require('./js/language/go.js'),\n\
+      require('./js/language/haskell.js'),\n\
+      require('./js/language/html.js'),\n\
+      require('./js/language/java.js'),\n\
+      require('./js/language/javascript.js'),\n\
+      require('./js/language/lua.js'),\n\
+      require('./js/language/php.js'),\n\
+      require('./js/language/python.js'),\n\
+      require('./js/language/r.js'),\n\
+      require('./js/language/ruby.js'),\n\
+      require('./js/language/scheme.js'),\n\
+      require('./js/language/shell.js'),\n\
+      require('./js/language/smalltalk.js')\n\
+    ];\n\
+\n\
+\n\
+/**\n\
+ * Extend Rainbow with each language.\n\
+ */\n\
+\n\
+for (var i = 0, settings; settings = languages[i]; i++) {\n\
+  Rainbow.extend.apply(Rainbow, settings);\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Exports.\n\
+ */\n\
+\n\
+module.exports = Rainbow;//@ sourceURL=segmentio-rainbow/index.js"
+));
+require.register("segmentio-rainbow/js/rainbow.js", Function("exports, require, module",
+"/**\n\
+ * Copyright 2013 Craig Campbell\n\
+ *\n\
+ * Licensed under the Apache License, Version 2.0 (the \"License\");\n\
+ * you may not use this file except in compliance with the License.\n\
+ * You may obtain a copy of the License at\n\
+ *\n\
+ * http://www.apache.org/licenses/LICENSE-2.0\n\
+ *\n\
+ * Unless required by applicable law or agreed to in writing, software\n\
+ * distributed under the License is distributed on an \"AS IS\" BASIS,\n\
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n\
+ * See the License for the specific language governing permissions and\n\
+ * limitations under the License.\n\
+ *\n\
+ * Rainbow is a simple code syntax highlighter\n\
+ *\n\
+ * @preserve @version 1.2\n\
+ * @url rainbowco.de\n\
+ */\n\
+module.exports = (function() {\n\
+\n\
+    /**\n\
+     * array of replacements to process at the end\n\
+     *\n\
+     * @type {Object}\n\
+     */\n\
+    var replacements = {},\n\
+\n\
+        /**\n\
+         * an array of start and end positions of blocks to be replaced\n\
+         *\n\
+         * @type {Object}\n\
+         */\n\
+        replacement_positions = {},\n\
+\n\
+        /**\n\
+         * an array of the language patterns specified for each language\n\
+         *\n\
+         * @type {Object}\n\
+         */\n\
+        language_patterns = {},\n\
+\n\
+        /**\n\
+         * an array of languages and whether they should bypass the default patterns\n\
+         *\n\
+         * @type {Object}\n\
+         */\n\
+        bypass_defaults = {},\n\
+\n\
+        /**\n\
+         * processing level\n\
+         *\n\
+         * replacements are stored at this level so if there is a sub block of code\n\
+         * (for example php inside of html) it runs at a different level\n\
+         *\n\
+         * @type {number}\n\
+         */\n\
+        CURRENT_LEVEL = 0,\n\
+\n\
+        /**\n\
+         * constant used to refer to the default language\n\
+         *\n\
+         * @type {number}\n\
+         */\n\
+        DEFAULT_LANGUAGE = 0,\n\
+\n\
+        /**\n\
+         * used as counters so we can selectively call setTimeout\n\
+         * after processing a certain number of matches/replacements\n\
+         *\n\
+         * @type {number}\n\
+         */\n\
+        match_counter = 0,\n\
+\n\
+        /**\n\
+         * @type {number}\n\
+         */\n\
+        replacement_counter = 0,\n\
+\n\
+        /**\n\
+         * @type {null|string}\n\
+         */\n\
+        global_class,\n\
+\n\
+        /**\n\
+         * @type {null|Function}\n\
+         */\n\
+        onHighlight;\n\
+\n\
+    /**\n\
+     * cross browser get attribute for an element\n\
+     *\n\
+     * @see http://stackoverflow.com/questions/3755227/cross-browser-javascript-getattribute-method\n\
+     *\n\
+     * @param {Node} el\n\
+     * @param {string} attr     attribute you are trying to get\n\
+     * @returns {string|number}\n\
+     */\n\
+    function _attr(el, attr, attrs, i) {\n\
+        var result = (el.getAttribute && el.getAttribute(attr)) || 0;\n\
+\n\
+        if (!result) {\n\
+            attrs = el.attributes;\n\
+\n\
+            for (i = 0; i < attrs.length; ++i) {\n\
+                if (attrs[i].nodeName === attr) {\n\
+                    return attrs[i].nodeValue;\n\
+                }\n\
+            }\n\
+        }\n\
+\n\
+        return result;\n\
+    }\n\
+\n\
+    /**\n\
+     * adds a class to a given code block\n\
+     *\n\
+     * @param {Element} el\n\
+     * @param {string} class_name   class name to add\n\
+     * @returns void\n\
+     */\n\
+    function _addClass(el, class_name) {\n\
+        el.className += el.className ? ' ' + class_name : class_name;\n\
+    }\n\
+\n\
+    /**\n\
+     * checks if a block has a given class\n\
+     *\n\
+     * @param {Element} el\n\
+     * @param {string} class_name   class name to check for\n\
+     * @returns {boolean}\n\
+     */\n\
+    function _hasClass(el, class_name) {\n\
+        return (' ' + el.className + ' ').indexOf(' ' + class_name + ' ') > -1;\n\
+    }\n\
+\n\
+    /**\n\
+     * gets the language for this block of code\n\
+     *\n\
+     * @param {Element} block\n\
+     * @returns {string|null}\n\
+     */\n\
+    function _getLanguageForBlock(block) {\n\
+\n\
+        // if this doesn't have a language but the parent does then use that\n\
+        // this means if for example you have: <pre data-language=\"php\">\n\
+        // with a bunch of <code> blocks inside then you do not have\n\
+        // to specify the language for each block\n\
+        var language = _attr(block, 'data-language') || _attr(block.parentNode, 'data-language');\n\
+\n\
+        // this adds support for specifying language via a css class\n\
+        // you can use the Google Code Prettify style: <pre class=\"lang-php\">\n\
+        // or the HTML5 style: <pre><code class=\"language-php\">\n\
+        if (!language) {\n\
+            var pattern = /\\blang(?:uage)?-(\\w+)/,\n\
+                match = block.className.match(pattern) || block.parentNode.className.match(pattern);\n\
+\n\
+            if (match) {\n\
+                language = match[1];\n\
+            }\n\
+        }\n\
+\n\
+        return language;\n\
+    }\n\
+\n\
+    /**\n\
+     * makes sure html entities are always used for tags\n\
+     *\n\
+     * @param {string} code\n\
+     * @returns {string}\n\
+     */\n\
+    function _htmlEntities(code) {\n\
+        return code.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&(?![\\w\\#]+;)/g, '&amp;');\n\
+    }\n\
+\n\
+    /**\n\
+     * determines if a new match intersects with an existing one\n\
+     *\n\
+     * @param {number} start1    start position of existing match\n\
+     * @param {number} end1      end position of existing match\n\
+     * @param {number} start2    start position of new match\n\
+     * @param {number} end2      end position of new match\n\
+     * @returns {boolean}\n\
+     */\n\
+    function _intersects(start1, end1, start2, end2) {\n\
+        if (start2 >= start1 && start2 < end1) {\n\
+            return true;\n\
+        }\n\
+\n\
+        return end2 > start1 && end2 < end1;\n\
+    }\n\
+\n\
+    /**\n\
+     * determines if two different matches have complete overlap with each other\n\
+     *\n\
+     * @param {number} start1   start position of existing match\n\
+     * @param {number} end1     end position of existing match\n\
+     * @param {number} start2   start position of new match\n\
+     * @param {number} end2     end position of new match\n\
+     * @returns {boolean}\n\
+     */\n\
+    function _hasCompleteOverlap(start1, end1, start2, end2) {\n\
+\n\
+        // if the starting and end positions are exactly the same\n\
+        // then the first one should stay and this one should be ignored\n\
+        if (start2 == start1 && end2 == end1) {\n\
+            return false;\n\
+        }\n\
+\n\
+        return start2 <= start1 && end2 >= end1;\n\
+    }\n\
+\n\
+    /**\n\
+     * determines if the match passed in falls inside of an existing match\n\
+     * this prevents a regex pattern from matching inside of a bigger pattern\n\
+     *\n\
+     * @param {number} start - start position of new match\n\
+     * @param {number} end - end position of new match\n\
+     * @returns {boolean}\n\
+     */\n\
+    function _matchIsInsideOtherMatch(start, end) {\n\
+        for (var key in replacement_positions[CURRENT_LEVEL]) {\n\
+            key = parseInt(key, 10);\n\
+\n\
+            // if this block completely overlaps with another block\n\
+            // then we should remove the other block and return false\n\
+            if (_hasCompleteOverlap(key, replacement_positions[CURRENT_LEVEL][key], start, end)) {\n\
+                delete replacement_positions[CURRENT_LEVEL][key];\n\
+                delete replacements[CURRENT_LEVEL][key];\n\
+            }\n\
+\n\
+            if (_intersects(key, replacement_positions[CURRENT_LEVEL][key], start, end)) {\n\
+                return true;\n\
+            }\n\
+        }\n\
+\n\
+        return false;\n\
+    }\n\
+\n\
+    /**\n\
+     * takes a string of code and wraps it in a span tag based on the name\n\
+     *\n\
+     * @param {string} name     name of the pattern (ie keyword.regex)\n\
+     * @param {string} code     block of code to wrap\n\
+     * @returns {string}\n\
+     */\n\
+    function _wrapCodeInSpan(name, code) {\n\
+        return '<span class=\"' + name.replace(/\\./g, ' ') + (global_class ? ' ' + global_class : '') + '\">' + code + '</span>';\n\
+    }\n\
+\n\
+    /**\n\
+     * finds out the position of group match for a regular expression\n\
+     *\n\
+     * @see http://stackoverflow.com/questions/1985594/how-to-find-index-of-groups-in-match\n\
+     *\n\
+     * @param {Object} match\n\
+     * @param {number} group_number\n\
+     * @returns {number}\n\
+     */\n\
+    function _indexOfGroup(match, group_number) {\n\
+        var index = 0,\n\
+            i;\n\
+\n\
+        for (i = 1; i < group_number; ++i) {\n\
+            if (match[i]) {\n\
+                index += match[i].length;\n\
+            }\n\
+        }\n\
+\n\
+        return index;\n\
+    }\n\
+\n\
+    /**\n\
+     * matches a regex pattern against a block of code\n\
+     * finds all matches that should be processed and stores the positions\n\
+     * of where they should be replaced within the string\n\
+     *\n\
+     * this is where pretty much all the work is done but it should not\n\
+     * be called directly\n\
+     *\n\
+     * @param {RegExp} pattern\n\
+     * @param {string} code\n\
+     * @returns void\n\
+     */\n\
+    function _processPattern(regex, pattern, code, callback)\n\
+    {\n\
+        var match = regex.exec(code);\n\
+\n\
+        if (!match) {\n\
+            return callback();\n\
+        }\n\
+\n\
+        ++match_counter;\n\
+\n\
+        // treat match 0 the same way as name\n\
+        if (!pattern['name'] && typeof pattern['matches'][0] == 'string') {\n\
+            pattern['name'] = pattern['matches'][0];\n\
+            delete pattern['matches'][0];\n\
+        }\n\
+\n\
+        var replacement = match[0],\n\
+            start_pos = match.index,\n\
+            end_pos = match[0].length + start_pos,\n\
+\n\
+            /**\n\
+             * callback to process the next match of this pattern\n\
+             */\n\
+            processNext = function() {\n\
+                var nextCall = function() {\n\
+                    _processPattern(regex, pattern, code, callback);\n\
+                };\n\
+\n\
+                // every 100 items we process let's call set timeout\n\
+                // to let the ui breathe a little\n\
+                return match_counter % 100 > 0 ? nextCall() : setTimeout(nextCall, 0);\n\
+            };\n\
+\n\
+        // if this is not a child match and it falls inside of another\n\
+        // match that already happened we should skip it and continue processing\n\
+        if (_matchIsInsideOtherMatch(start_pos, end_pos)) {\n\
+            return processNext();\n\
+        }\n\
+\n\
+        /**\n\
+         * callback for when a match was successfully processed\n\
+         *\n\
+         * @param {string} replacement\n\
+         * @returns void\n\
+         */\n\
+        var onMatchSuccess = function(replacement) {\n\
+                // if this match has a name then wrap it in a span tag\n\
+                if (pattern['name']) {\n\
+                    replacement = _wrapCodeInSpan(pattern['name'], replacement);\n\
+                }\n\
+\n\
+                // console.log('LEVEL', CURRENT_LEVEL, 'replace', match[0], 'with', replacement, 'at position', start_pos, 'to', end_pos);\n\
+\n\
+                // store what needs to be replaced with what at this position\n\
+                if (!replacements[CURRENT_LEVEL]) {\n\
+                    replacements[CURRENT_LEVEL] = {};\n\
+                    replacement_positions[CURRENT_LEVEL] = {};\n\
+                }\n\
+\n\
+                replacements[CURRENT_LEVEL][start_pos] = {\n\
+                    'replace': match[0],\n\
+                    'with': replacement\n\
+                };\n\
+\n\
+                // store the range of this match so we can use it for comparisons\n\
+                // with other matches later\n\
+                replacement_positions[CURRENT_LEVEL][start_pos] = end_pos;\n\
+\n\
+                // process the next match\n\
+                processNext();\n\
+            },\n\
+\n\
+            // if this pattern has sub matches for different groups in the regex\n\
+            // then we should process them one at a time by rerunning them through\n\
+            // this function to generate the new replacement\n\
+            //\n\
+            // we run through them backwards because the match position of earlier\n\
+            // matches will not change depending on what gets replaced in later\n\
+            // matches\n\
+            group_keys = keys(pattern['matches']),\n\
+\n\
+            /**\n\
+             * callback for processing a sub group\n\
+             *\n\
+             * @param {number} i\n\
+             * @param {Array} group_keys\n\
+             * @param {Function} callback\n\
+             */\n\
+            processGroup = function(i, group_keys, callback) {\n\
+                if (i >= group_keys.length) {\n\
+                    return callback(replacement);\n\
+                }\n\
+\n\
+                var processNextGroup = function() {\n\
+                        processGroup(++i, group_keys, callback);\n\
+                    },\n\
+                    block = match[group_keys[i]];\n\
+\n\
+                // if there is no match here then move on\n\
+                if (!block) {\n\
+                    return processNextGroup();\n\
+                }\n\
+\n\
+                var group = pattern['matches'][group_keys[i]],\n\
+                    language = group['language'],\n\
+\n\
+                    /**\n\
+                     * process group is what group we should use to actually process\n\
+                     * this match group\n\
+                     *\n\
+                     * for example if the subgroup pattern looks like this\n\
+                     * 2: {\n\
+                     *     'name': 'keyword',\n\
+                     *     'pattern': /true/g\n\
+                     * }\n\
+                     *\n\
+                     * then we use that as is, but if it looks like this\n\
+                     *\n\
+                     * 2: {\n\
+                     *     'name': 'keyword',\n\
+                     *     'matches': {\n\
+                     *          'name': 'special',\n\
+                     *          'pattern': /whatever/g\n\
+                     *      }\n\
+                     * }\n\
+                     *\n\
+                     * we treat the 'matches' part as the pattern and keep\n\
+                     * the name around to wrap it with later\n\
+                     */\n\
+                    process_group = group['name'] && group['matches'] ? group['matches'] : group,\n\
+\n\
+                    /**\n\
+                     * takes the code block matched at this group, replaces it\n\
+                     * with the highlighted block, and optionally wraps it with\n\
+                     * a span with a name\n\
+                     *\n\
+                     * @param {string} block\n\
+                     * @param {string} replace_block\n\
+                     * @param {string|null} match_name\n\
+                     */\n\
+                    _replaceAndContinue = function(block, replace_block, match_name) {\n\
+                        replacement = _replaceAtPosition(_indexOfGroup(match, group_keys[i]), block, match_name ? _wrapCodeInSpan(match_name, replace_block) : replace_block, replacement);\n\
+                        processNextGroup();\n\
+                    };\n\
+\n\
+                // if this is a sublanguage go and process the block using that language\n\
+                if (language) {\n\
+                    return _highlightBlockForLanguage(block, language, function(code) {\n\
+                        _replaceAndContinue(block, code);\n\
+                    });\n\
+                }\n\
+\n\
+                // if this is a string then this match is directly mapped to selector\n\
+                // so all we have to do is wrap it in a span and continue\n\
+                if (typeof group === 'string') {\n\
+                    return _replaceAndContinue(block, block, group);\n\
+                }\n\
+\n\
+                // the process group can be a single pattern or an array of patterns\n\
+                // _processCodeWithPatterns always expects an array so we convert it here\n\
+                _processCodeWithPatterns(block, process_group.length ? process_group : [process_group], function(code) {\n\
+                    _replaceAndContinue(block, code, group['matches'] ? group['name'] : 0);\n\
+                });\n\
+            };\n\
+\n\
+        processGroup(0, group_keys, onMatchSuccess);\n\
+    }\n\
+\n\
+    /**\n\
+     * should a language bypass the default patterns?\n\
+     *\n\
+     * if you call Rainbow.extend() and pass true as the third argument\n\
+     * it will bypass the defaults\n\
+     */\n\
+    function _bypassDefaultPatterns(language)\n\
+    {\n\
+        return bypass_defaults[language];\n\
+    }\n\
+\n\
+    /**\n\
+     * returns a list of regex patterns for this language\n\
+     *\n\
+     * @param {string} language\n\
+     * @returns {Array}\n\
+     */\n\
+    function _getPatternsForLanguage(language) {\n\
+        var patterns = language_patterns[language] || [],\n\
+            default_patterns = language_patterns[DEFAULT_LANGUAGE] || [];\n\
+\n\
+        return _bypassDefaultPatterns(language) ? patterns : patterns.concat(default_patterns);\n\
+    }\n\
+\n\
+    /**\n\
+     * substring replace call to replace part of a string at a certain position\n\
+     *\n\
+     * @param {number} position         the position where the replacement should happen\n\
+     * @param {string} replace          the text we want to replace\n\
+     * @param {string} replace_with     the text we want to replace it with\n\
+     * @param {string} code             the code we are doing the replacing in\n\
+     * @returns {string}\n\
+     */\n\
+    function _replaceAtPosition(position, replace, replace_with, code) {\n\
+        var sub_string = code.substr(position);\n\
+        return code.substr(0, position) + sub_string.replace(replace, replace_with);\n\
+    }\n\
+\n\
+   /**\n\
+     * sorts an object by index descending\n\
+     *\n\
+     * @param {Object} object\n\
+     * @return {Array}\n\
+     */\n\
+    function keys(object) {\n\
+        var locations = [],\n\
+            replacement,\n\
+            pos;\n\
+\n\
+        for(var location in object) {\n\
+            if (object.hasOwnProperty(location)) {\n\
+                locations.push(location);\n\
+            }\n\
+        }\n\
+\n\
+        // numeric descending\n\
+        return locations.sort(function(a, b) {\n\
+            return b - a;\n\
+        });\n\
+    }\n\
+\n\
+    /**\n\
+     * processes a block of code using specified patterns\n\
+     *\n\
+     * @param {string} code\n\
+     * @param {Array} patterns\n\
+     * @returns void\n\
+     */\n\
+    function _processCodeWithPatterns(code, patterns, callback)\n\
+    {\n\
+        // we have to increase the level here so that the\n\
+        // replacements will not conflict with each other when\n\
+        // processing sub blocks of code\n\
+        ++CURRENT_LEVEL;\n\
+\n\
+        // patterns are processed one at a time through this function\n\
+        function _workOnPatterns(patterns, i)\n\
+        {\n\
+            // still have patterns to process, keep going\n\
+            if (i < patterns.length) {\n\
+                return _processPattern(patterns[i]['pattern'], patterns[i], code, function() {\n\
+                    _workOnPatterns(patterns, ++i);\n\
+                });\n\
+            }\n\
+\n\
+            // we are done processing the patterns\n\
+            // process the replacements and update the DOM\n\
+            _processReplacements(code, function(code) {\n\
+\n\
+                // when we are done processing replacements\n\
+                // we are done at this level so we can go back down\n\
+                delete replacements[CURRENT_LEVEL];\n\
+                delete replacement_positions[CURRENT_LEVEL];\n\
+                --CURRENT_LEVEL;\n\
+                callback(code);\n\
+            });\n\
+        }\n\
+\n\
+        _workOnPatterns(patterns, 0);\n\
+    }\n\
+\n\
+    /**\n\
+     * process replacements in the string of code to actually update the markup\n\
+     *\n\
+     * @param {string} code         the code to process replacements in\n\
+     * @param {Function} onComplete   what to do when we are done processing\n\
+     * @returns void\n\
+     */\n\
+    function _processReplacements(code, onComplete) {\n\
+\n\
+        /**\n\
+         * processes a single replacement\n\
+         *\n\
+         * @param {string} code\n\
+         * @param {Array} positions\n\
+         * @param {number} i\n\
+         * @param {Function} onComplete\n\
+         * @returns void\n\
+         */\n\
+        function _processReplacement(code, positions, i, onComplete) {\n\
+            if (i < positions.length) {\n\
+                ++replacement_counter;\n\
+                var pos = positions[i],\n\
+                    replacement = replacements[CURRENT_LEVEL][pos];\n\
+                code = _replaceAtPosition(pos, replacement['replace'], replacement['with'], code);\n\
+\n\
+                // process next function\n\
+                var next = function() {\n\
+                    _processReplacement(code, positions, ++i, onComplete);\n\
+                };\n\
+\n\
+                // use a timeout every 250 to not freeze up the UI\n\
+                return replacement_counter % 250 > 0 ? next() : setTimeout(next, 0);\n\
+            }\n\
+\n\
+            onComplete(code);\n\
+        }\n\
+\n\
+        var string_positions = keys(replacements[CURRENT_LEVEL]);\n\
+        _processReplacement(code, string_positions, 0, onComplete);\n\
+    }\n\
+\n\
+    /**\n\
+     * takes a string of code and highlights it according to the language specified\n\
+     *\n\
+     * @param {string} code\n\
+     * @param {string} language\n\
+     * @param {Function} onComplete\n\
+     * @returns void\n\
+     */\n\
+    function _highlightBlockForLanguage(code, language, onComplete) {\n\
+        var patterns = _getPatternsForLanguage(language);\n\
+        _processCodeWithPatterns(_htmlEntities(code), patterns, onComplete);\n\
+    }\n\
+\n\
+    /**\n\
+     * highlight an individual code block\n\
+     *\n\
+     * @param {Array} code_blocks\n\
+     * @param {number} i\n\
+     * @returns void\n\
+     */\n\
+    function _highlightCodeBlock(code_blocks, i, onComplete) {\n\
+        if (i < code_blocks.length) {\n\
+            var block = code_blocks[i],\n\
+                language = _getLanguageForBlock(block);\n\
+\n\
+            if (!_hasClass(block, 'rainbow') && language) {\n\
+                language = language.toLowerCase();\n\
+\n\
+                _addClass(block, 'rainbow');\n\
+\n\
+                return _highlightBlockForLanguage(block.innerHTML, language, function(code) {\n\
+                    block.innerHTML = code;\n\
+\n\
+                    // reset the replacement arrays\n\
+                    replacements = {};\n\
+                    replacement_positions = {};\n\
+\n\
+                    // if you have a listener attached tell it that this block is now highlighted\n\
+                    if (onHighlight) {\n\
+                        onHighlight(block, language);\n\
+                    }\n\
+\n\
+                    // process the next block\n\
+                    setTimeout(function() {\n\
+                        _highlightCodeBlock(code_blocks, ++i, onComplete);\n\
+                    }, 0);\n\
+                });\n\
+            }\n\
+            return _highlightCodeBlock(code_blocks, ++i, onComplete);\n\
+        }\n\
+\n\
+        if (onComplete) {\n\
+            onComplete();\n\
+        }\n\
+    }\n\
+\n\
+    /**\n\
+     * start highlighting all the code blocks\n\
+     *\n\
+     * @returns void\n\
+     */\n\
+    function _highlight(node, onComplete) {\n\
+\n\
+        // the first argument can be an Event or a DOM Element\n\
+        // I was originally checking instanceof Event but that makes it break\n\
+        // when using mootools\n\
+        //\n\
+        // @see https://github.com/ccampbell/rainbow/issues/32\n\
+        //\n\
+        node = node && typeof node.getElementsByTagName == 'function' ? node : document;\n\
+\n\
+        var pre_blocks = node.getElementsByTagName('pre'),\n\
+            code_blocks = node.getElementsByTagName('code'),\n\
+            i,\n\
+            final_pre_blocks = [],\n\
+            final_code_blocks = [];\n\
+\n\
+        // first loop through all pre blocks to find which ones to highlight\n\
+        // also strip whitespace\n\
+        for (i = 0; i < pre_blocks.length; ++i) {\n\
+\n\
+            // strip whitespace around code tags when they are inside of a pre tag\n\
+            // this makes the themes look better because you can't accidentally\n\
+            // add extra linebreaks at the start and end\n\
+            //\n\
+            // when the pre tag contains a code tag then strip any extra whitespace\n\
+            // for example\n\
+            // <pre>\n\
+            //      <code>var foo = true;</code>\n\
+            // </pre>\n\
+            //\n\
+            // will become\n\
+            // <pre><code>var foo = true;</code></pre>\n\
+            //\n\
+            // if you want to preserve whitespace you can use a pre tag on its own\n\
+            // without a code tag inside of it\n\
+            if (pre_blocks[i].getElementsByTagName('code').length) {\n\
+                pre_blocks[i].innerHTML = pre_blocks[i].innerHTML.replace(/^\\s+/, '').replace(/\\s+$/, '');\n\
+                continue;\n\
+            }\n\
+\n\
+            // if the pre block has no code blocks then we are going to want to\n\
+            // process it directly\n\
+            final_pre_blocks.push(pre_blocks[i]);\n\
+        }\n\
+\n\
+        // @see http://stackoverflow.com/questions/2735067/how-to-convert-a-dom-node-list-to-an-array-in-javascript\n\
+        // we are going to process all <code> blocks\n\
+        for (i = 0; i < code_blocks.length; ++i) {\n\
+            final_code_blocks.push(code_blocks[i]);\n\
+        }\n\
+\n\
+        _highlightCodeBlock(final_code_blocks.concat(final_pre_blocks), 0, onComplete);\n\
+    }\n\
+\n\
+    /**\n\
+     * public methods\n\
+     */\n\
+    return {\n\
+\n\
+        /**\n\
+         * extends the language pattern matches\n\
+         *\n\
+         * @param {*} language     name of language\n\
+         * @param {*} patterns      array of patterns to add on\n\
+         * @param {boolean|null} bypass      if true this will bypass the default language patterns\n\
+         */\n\
+        extend: function(language, patterns, bypass) {\n\
+\n\
+            // if there is only one argument then we assume that we want to\n\
+            // extend the default language rules\n\
+            if (arguments.length == 1) {\n\
+                patterns = language;\n\
+                language = DEFAULT_LANGUAGE;\n\
+            }\n\
+\n\
+            bypass_defaults[language] = bypass;\n\
+            language_patterns[language] = patterns.concat(language_patterns[language] || []);\n\
+        },\n\
+\n\
+        /**\n\
+         * call back to let you do stuff in your app after a piece of code has been highlighted\n\
+         *\n\
+         * @param {Function} callback\n\
+         */\n\
+        onHighlight: function(callback) {\n\
+            onHighlight = callback;\n\
+        },\n\
+\n\
+        /**\n\
+         * method to set a global class that will be applied to all spans\n\
+         *\n\
+         * @param {string} class_name\n\
+         */\n\
+        addClass: function(class_name) {\n\
+            global_class = class_name;\n\
+        },\n\
+\n\
+        /**\n\
+         * starts the magic rainbow\n\
+         *\n\
+         * @returns void\n\
+         */\n\
+        color: function() {\n\
+\n\
+            // if you want to straight up highlight a string you can pass the string of code,\n\
+            // the language, and a callback function\n\
+            if (typeof arguments[0] == 'string') {\n\
+                return _highlightBlockForLanguage(arguments[0], arguments[1], arguments[2]);\n\
+            }\n\
+\n\
+            // if you pass a callback function then we rerun the color function\n\
+            // on all the code and call the callback function on complete\n\
+            if (typeof arguments[0] == 'function') {\n\
+                return _highlight(0, arguments[0]);\n\
+            }\n\
+\n\
+            // otherwise we use whatever node you passed in with an optional\n\
+            // callback function as the second parameter\n\
+            _highlight(arguments[0], arguments[1]);\n\
+        }\n\
+    };\n\
+}) ();//@ sourceURL=segmentio-rainbow/js/rainbow.js"
+));
+require.register("segmentio-rainbow/js/language/c.js", Function("exports, require, module",
+"/**\n\
+ * C patterns\n\
+ *\n\
+ * @author Daniel Holden\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.7\n\
+ */\n\
+module.exports = ['c', [\n\
+    {\n\
+        'name': 'meta.preprocessor',\n\
+        'matches': {\n\
+            1: [\n\
+                {\n\
+                    'matches': {\n\
+                        1: 'keyword.define',\n\
+                        2: 'entity.name'\n\
+                    },\n\
+                    'pattern': /(\\w+)\\s(\\w+)\\b/g\n\
+                },\n\
+                {\n\
+                    'name': 'keyword.define',\n\
+                    'pattern': /endif/g\n\
+                },\n\
+                {\n\
+                    'name': 'constant.numeric',\n\
+                    'pattern': /\\d+/g\n\
+                },\n\
+                {\n\
+                    'matches': {\n\
+                        1: 'keyword.include',\n\
+                        2: 'string'\n\
+                    },\n\
+                    'pattern': /(include)\\s(.*?)$/g\n\
+                }\n\
+            ]\n\
+        },\n\
+        'pattern': /\\#([\\S\\s]*?)$/gm\n\
+    },\n\
+    {\n\
+        'name': 'keyword',\n\
+        'pattern': /\\b(do|goto|typedef)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'entity.label',\n\
+        'pattern': /\\w+:/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.type',\n\
+            3: 'storage.type',\n\
+            4: 'entity.name.function'\n\
+        },\n\
+        'pattern': /\\b((un)?signed|const)? ?(void|char|short|int|long|float|double)\\*? +((\\w+)(?= ?\\())?/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            2: 'entity.name.function'\n\
+        },\n\
+        'pattern': /(\\w|\\*) +((\\w+)(?= ?\\())/g\n\
+    },\n\
+    {\n\
+        'name': 'storage.modifier',\n\
+        'pattern': /\\b(static|extern|auto|register|volatile|inline)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'support.type',\n\
+        'pattern': /\\b(struct|union|enum)\\b/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/c.js"
+));
+require.register("segmentio-rainbow/js/language/coffeescript.js", Function("exports, require, module",
+"/**\n\
+ * Coffeescript patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0\n\
+ */\n\
+module.exports = ['coffeescript', [\n\
+    {\n\
+        'name': 'comment.block',\n\
+        'pattern': /(\\#{3})[\\s\\S]*\\1/gm\n\
+    },\n\
+    {\n\
+        'name': 'string.block',\n\
+        'pattern': /('{3}|\"{3})[\\s\\S]*\\1/gm\n\
+    },\n\
+\n\
+    /**\n\
+     * multiline regex with comments\n\
+     */\n\
+    {\n\
+        'name': 'string.regex',\n\
+        'matches': {\n\
+            2: {\n\
+                'name': 'comment',\n\
+                'pattern': /\\#(.*?)\\n\
+/g\n\
+            }\n\
+        },\n\
+        'pattern': /(\\/{3})([\\s\\S]*)\\1/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\b(in|when|is|isnt|of|not|unless|until|super)(?=\\b)/gi\n\
+    },\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /\\?/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /\\b(undefined|yes|on|no|off)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.variable.coffee',\n\
+        'pattern': /@(\\w+)/gi\n\
+    },\n\
+\n\
+    /**\n\
+     * reset global keywards from generic\n\
+     */\n\
+    {\n\
+        'name': 'reset',\n\
+        'pattern': /object|class|print/gi\n\
+    },\n\
+\n\
+    /**\n\
+     * named function\n\
+     */\n\
+    {\n\
+        'matches' : {\n\
+            1: 'entity.name.function',\n\
+            2: 'keyword.operator',\n\
+            3: {\n\
+                    'name': 'function.argument.coffee',\n\
+                    'pattern': /([\\@\\w]+)/g\n\
+            },\n\
+            4: 'keyword.function'\n\
+        },\n\
+        'pattern': /(\\w+)\\s{0,}(=|:)\\s{0,}\\((.*?)((-|=)&gt;)/gi\n\
+    },\n\
+\n\
+    /**\n\
+     * anonymous function\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: {\n\
+                    'name': 'function.argument.coffee',\n\
+                    'pattern': /([\\@\\w]+)/g\n\
+            },\n\
+            2: 'keyword.function'\n\
+        },\n\
+        'pattern': /\\s\\((.*?)\\)\\s{0,}((-|=)&gt;)/gi\n\
+    },\n\
+\n\
+    /**\n\
+     * direct function no arguments\n\
+     */\n\
+    {\n\
+        'matches' : {\n\
+            1: 'entity.name.function',\n\
+            2: 'keyword.operator',\n\
+            3: 'keyword.function'\n\
+        },\n\
+        'pattern': /(\\w+)\\s{0,}(=|:)\\s{0,}((-|=)&gt;)/gi\n\
+    },\n\
+\n\
+    /**\n\
+     * class definitions\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.class',\n\
+            2: 'entity.name.class',\n\
+            3: 'storage.modifier.extends',\n\
+            4: 'entity.other.inherited-class'\n\
+        },\n\
+        'pattern': /\\b(class)\\s(\\w+)(\\sextends\\s)?([\\w\\\\]*)?\\b/g\n\
+    },\n\
+\n\
+    /**\n\
+     * object instantiation\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.new',\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /\\b(new)\\s(.*?)(?=\\s)/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/coffeescript.js"
+));
+require.register("segmentio-rainbow/js/language/csharp.js", Function("exports, require, module",
+"/**\n\
+* C# patterns\n\
+*\n\
+* @author Dan Stewart\n\
+* @version 1.0.1\n\
+*/\n\
+module.exports = ['csharp', [\n\
+\t{\n\
+        // @see http://msdn.microsoft.com/en-us/library/23954zh5.aspx\n\
+\t\t'name': 'constant',\n\
+\t\t'pattern': /\\b(false|null|true)\\b/g\n\
+\t},\n\
+\t{\n\
+\t\t// @see http://msdn.microsoft.com/en-us/library/x53a06bb%28v=vs.100%29.aspx\n\
+\t\t// Does not support putting an @ in front of a keyword which makes it not a keyword anymore.\n\
+\t\t'name': 'keyword',\n\
+\t\t'pattern': /\\b(abstract|add|alias|ascending|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|descending|double|do|dynamic|else|enum|event|explicit|extern|false|finally|fixed|float|foreach|for|from|get|global|goto|group|if|implicit|int|interface|internal|into|in|is|join|let|lock|long|namespace|new|object|operator|orderby|out|override|params|partial|private|protected|public|readonly|ref|remove|return|sbyte|sealed|select|set|short|sizeof|stackalloc|static|string|struct|switch|this|throw|try|typeof|uint|unchecked|ulong|unsafe|ushort|using|value|var|virtual|void|volatile|where|while|yield)\\b/g\n\
+\t},\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword',\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /(typeof)\\s([^\\$].*?)(\\)|;)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.namespace',\n\
+            2: {\n\
+                'name': 'support.namespace',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /\\b(namespace)\\s(.*?);/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.modifier',\n\
+            2: 'storage.class',\n\
+            3: 'entity.name.class',\n\
+            4: 'storage.modifier.extends',\n\
+            5: 'entity.other.inherited-class'\n\
+        },\n\
+        'pattern': /\\b(abstract|sealed)?\\s?(class)\\s(\\w+)(\\sextends\\s)?([\\w\\\\]*)?\\s?\\{?(\\n\
+|\\})/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.static',\n\
+        'pattern': /\\b(static)\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.new',\n\
+\t\t\t2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+\n\
+        },\n\
+        'pattern': /\\b(new)\\s([^\\$].*?)(?=\\)|\\(|;|&)/g\n\
+    },\n\
+\t{\n\
+\t\t'name': 'string',\n\
+\t\t'pattern': /(\")(.*?)\\1/g\n\
+\t},\n\
+\t{\n\
+\t\t'name': 'integer',\n\
+\t\t'pattern': /\\b(0x[\\da-f]+|\\d+)\\b/g\n\
+\t},\n\
+\t{\n\
+        'name': 'comment',\n\
+        'pattern': /\\/\\*[\\s\\S]*?\\*\\/|(\\/\\/)[\\s\\S]*?$/gm\n\
+    },\n\
+\t{\n\
+\t\t'name': 'operator',\n\
+\t\t// @see http://msdn.microsoft.com/en-us/library/6a71f45d%28v=vs.100%29.aspx\n\
+\t\t// ++ += + -- -= - <<= << <= => >>= >> >= != ! ~ ^ || && &= & ?? :: : *= * |= %= |= == =\n\
+\t\t'pattern': /(\\+\\+|\\+=|\\+|--|-=|-|&lt;&lt;=|&lt;&lt;|&lt;=|=&gt;|&gt;&gt;=|&gt;&gt;|&gt;=|!=|!|~|\\^|\\|\\||&amp;&amp;|&amp;=|&amp;|\\?\\?|::|:|\\*=|\\*|\\/=|%=|\\|=|==|=)/g\n\
+\t},\n\
+    {\n\
+\t\t// @see http://msdn.microsoft.com/en-us/library/ed8yd1ha%28v=vs.100%29.aspx\n\
+\t\t'name': 'preprocessor',\n\
+\t\t'pattern': /(\\#if|\\#else|\\#elif|\\#endif|\\#define|\\#undef|\\#warning|\\#error|\\#line|\\#region|\\#endregion|\\#pragma)[\\s\\S]*?$/gm\n\
+\t}\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/csharp.js"
+));
+require.register("segmentio-rainbow/js/language/css.js", Function("exports, require, module",
+"/**\n\
+ * CSS patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.8\n\
+ */\n\
+module.exports = ['css', [\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\\/\\*[\\s\\S]*?\\*\\//gm\n\
+    },\n\
+    {\n\
+        'name': 'constant.hex-color',\n\
+        'pattern': /#([a-f0-9]{3}|[a-f0-9]{6})(?=;|\\s|,|\\))/gi\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'constant.numeric',\n\
+            2: 'keyword.unit'\n\
+        },\n\
+        'pattern': /(\\d+)(px|em|cm|s|%)?/g\n\
+    },\n\
+    {\n\
+        'name': 'string',\n\
+        'pattern': /('|\")(.*?)\\1/g\n\
+    },\n\
+    {\n\
+        'name': 'support.css-property',\n\
+        'matches': {\n\
+            1: 'support.vendor-prefix'\n\
+        },\n\
+        'pattern': /(-o-|-moz-|-webkit-|-ms-)?[\\w-]+(?=\\s?:)(?!.*\\{)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: [\n\
+                {\n\
+                    'name': 'entity.name.sass',\n\
+                    'pattern': /&amp;/g\n\
+                },\n\
+                {\n\
+                    'name': 'direct-descendant',\n\
+                    'pattern': /&gt;/g\n\
+                },\n\
+                {\n\
+                    'name': 'entity.name.class',\n\
+                    'pattern': /\\.[\\w\\-_]+/g\n\
+                },\n\
+                {\n\
+                    'name': 'entity.name.id',\n\
+                    'pattern': /\\#[\\w\\-_]+/g\n\
+                },\n\
+                {\n\
+                    'name': 'entity.name.pseudo',\n\
+                    'pattern': /:[\\w\\-_]+/g\n\
+                },\n\
+                {\n\
+                    'name': 'entity.name.tag',\n\
+                    'pattern': /\\w+/g\n\
+                }\n\
+            ]\n\
+        },\n\
+        'pattern': /([\\w\\ ,:\\.\\#\\&\\;\\-_]+)(?=.*\\{)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            2: 'support.vendor-prefix',\n\
+            3: 'support.css-value'\n\
+        },\n\
+        'pattern': /(:|,)\\s*(-o-|-moz-|-webkit-|-ms-)?([a-zA-Z-]*)(?=\\b)(?!.*\\{)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.tag.style',\n\
+            2: [\n\
+                {\n\
+                    'name': 'string',\n\
+                    'pattern': /('|\")(.*?)(\\1)/g\n\
+                },\n\
+                {\n\
+                    'name': 'entity.tag.style',\n\
+                    'pattern': /(\\w+)/g\n\
+                }\n\
+            ],\n\
+            3: 'support.tag.style'\n\
+        },\n\
+        'pattern': /(&lt;\\/?)(style.*?)(&gt;)/g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/css.js"
+));
+require.register("segmentio-rainbow/js/language/d.js", Function("exports, require, module",
+"/**\n\
+* D patterns\n\
+*\n\
+* @author Matthew Brennan Jones\n\
+* @version 1.0.1\n\
+*/\n\
+module.exports = ['d', [\n\
+    {\n\
+        'name': 'constant',\n\
+        'pattern': /\\b(false|null|true)\\b/gm\n\
+    },\n\
+    {\n\
+        // http://dlang.org/lex.html\n\
+        'name': 'keyword',\n\
+        'pattern': /\\b(abstract|alias|align|asm|assert|auto|body|bool|break|byte|case|cast|catch|cdouble|cent|cfloat|char|class|const|continue|creal|dchar|debug|default|delegate|delete|deprecated|do|double|else|enum|export|extern|final|finally|float|for|foreach|foreach_reverse|function|goto|idouble|if|ifloat|immutable|import|in|inout|int|interface|invariant|ireal|is|lazy|long|macro|mixin|module|new|nothrow|null|out|override|package|pragma|private|protected|public|pure|real|ref|return|scope|shared|short|size_t|static|string|struct|super|switch|synchronized|template|this|throw|try|typedef|typeid|typeof|ubyte|ucent|uint|ulong|union|unittest|ushort|version|void|volatile|wchar|while|with|__FILE__|__LINE__|__gshared|__traits|__vector|__parameters)\\b/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword',\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/gm\n\
+            }\n\
+        },\n\
+        'pattern': /(typeof)\\s([^\\$].*?)(\\)|;)/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.namespace',\n\
+            2: {\n\
+                'name': 'support.namespace',\n\
+                'pattern': /\\w+/gm\n\
+            }\n\
+        },\n\
+        'pattern': /\\b(namespace)\\s(.*?);/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.modifier',\n\
+            2: 'storage.class',\n\
+            3: 'entity.name.class',\n\
+            4: 'storage.modifier.extends',\n\
+            5: 'entity.other.inherited-class'\n\
+        },\n\
+        'pattern': /\\b(abstract|sealed)?\\s?(class)\\s(\\w+)(\\sextends\\s)?([\\w\\\\]*)?\\s?\\{?(\\n\
+|\\})/gm\n\
+    },\n\
+    {\n\
+        'name': 'keyword.static',\n\
+        'pattern': /\\b(static)\\b/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.new',\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/gm\n\
+            }\n\
+\n\
+        },\n\
+        'pattern': /\\b(new)\\s([^\\$].*?)(?=\\)|\\(|;|&)/gm\n\
+    },\n\
+    {\n\
+        'name': 'string',\n\
+        'pattern': /(\"|')(.*?)\\1/gm\n\
+    },\n\
+    {\n\
+        'name': 'integer',\n\
+        'pattern': /\\b(0x[\\da-f]+|\\d+)\\b/gm\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\\/\\*[\\s\\S]*?\\*\\/|\\/\\+[\\s\\S]*?\\+\\/|(\\/\\/)[\\s\\S]*?$/gm\n\
+    },\n\
+    {\n\
+        // http://dlang.org/operatoroverloading.html\n\
+        'name': 'operator',\n\
+        //  / /= &= && & |= || | -= -- - += ++ + <= << < <<= <>= <> > >>>= >>= >= >> >>> != !<>= !<> !<= !< !>= !> ! [ ] $ == = *= * %= % ^^= ^= ^^ ^ ~= ~ @ => :\n\
+        'pattern': /(\\/|\\/=|&amp;=|&amp;&amp;|&amp;|\\|=|\\|\\|\\||\\-=|\\-\\-|\\-|\\+=|\\+\\+|\\+|&lt;=|&lt;&lt;|&lt;|&lt;&lt;=|&lt;&gt;=|&lt;&gt;|&gt;|&gt;&gt;&gt;=|&gt;&gt;=|&gt;=|&gt;&gt;|&gt;&gt;&gt;|!=|!&lt;&gt;=|!&lt;&gt;|!&lt;=|!&lt;|!&gt;=|!&gt;|!|[|]|\\$|==|=|\\*=|\\*|%=|%|\\^\\^=|\\^=|\\^\\^|\\^|~=|~|@|=&gt;|\\:)/gm\n\
+    }\n\
+], true];\n\
+\n\
+//@ sourceURL=segmentio-rainbow/js/language/d.js"
+));
+require.register("segmentio-rainbow/js/language/generic.js", Function("exports, require, module",
+"/**\n\
+ * Generic language patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.10\n\
+ */\n\
+module.exports = [[\n\
+    {\n\
+        'matches': {\n\
+            1: {\n\
+                'name': 'keyword.operator',\n\
+                'pattern': /\\=/g\n\
+            },\n\
+            2: {\n\
+                'name': 'string',\n\
+                'matches': {\n\
+                    'name': 'constant.character.escape',\n\
+                    'pattern': /\\\\('|\"){1}/g\n\
+                }\n\
+            }\n\
+        },\n\
+        'pattern': /(\\(|\\s|\\[|\\=|:)(('|\")([^\\\\\\1]|\\\\.)*?(\\3))/gm\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\\/\\*[\\s\\S]*?\\*\\/|(\\/\\/|\\#)[\\s\\S]*?$/gm\n\
+    },\n\
+    {\n\
+        'name': 'constant.numeric',\n\
+        'pattern': /\\b(\\d+(\\.\\d+)?(e(\\+|\\-)?\\d+)?(f|d)?|0x[\\da-f]+)\\b/gi\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\b(and|array|as|b(ool(ean)?|reak)|c(ase|atch|har|lass|on(st|tinue))|d(ef|elete|o(uble)?)|e(cho|lse(if)?|xit|xtends|xcept)|f(inally|loat|or(each)?|unction)|global|if|import|int(eger)?|long|new|object|or|pr(int|ivate|otected)|public|return|self|st(ring|ruct|atic)|switch|th(en|is|row)|try|(un)?signed|var|void|while)(?=\\(|\\b)/gi\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /true|false|null/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /\\+|\\!|\\-|&(gt|lt|amp);|\\||\\*|\\=/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'function.call'\n\
+        },\n\
+        'pattern': /(\\w+?)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'entity.name.function'\n\
+        },\n\
+        'pattern': /(function)\\s(.*?)(?=\\()/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/generic.js"
+));
+require.register("segmentio-rainbow/js/language/go.js", Function("exports, require, module",
+"/**\n\
+ * GO Language\n\
+ *\n\
+ * @author Javier Aguirre\n\
+ * @version 1.0\n\
+ */\n\
+module.exports = ['go', [\n\
+    {\n\
+        'matches': {\n\
+            1: {\n\
+                'name': 'keyword.operator',\n\
+                'pattern': /\\=/g\n\
+            },\n\
+            2: {\n\
+                'name': 'string',\n\
+                'matches': {\n\
+                    'name': 'constant.character.escape',\n\
+                    'pattern': /\\\\(`|\"){1}/g\n\
+                }\n\
+            }\n\
+        },\n\
+        'pattern': /(\\(|\\s|\\[|\\=|:)((`|\")([^\\\\\\1]|\\\\.)*?(\\3))/gm\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\\/\\*[\\s\\S]*?\\*\\/|(\\/\\/)[\\s\\S]*?$/gm\n\
+    },\n\
+    {\n\
+        'name': 'constant.numeric',\n\
+        'pattern': /\\b(\\d+(\\.\\d+)?(e(\\+|\\-)?\\d+)?(f|d)?|0x[\\da-f]+)\\b/gi\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\b(break|c(ase|onst|ontinue)|d(efault|efer)|else|fallthrough|for|go(to)?|if|import|interface|map|package|range|return|select|struct|switch|type|var)(?=\\(|\\b)/gi\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /true|false|null|string|byte|rune|u?int(8|16|32|64)?|float(32|64)|complex(64|128)/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /\\+|\\!|\\-|&(gt|lt|amp);|\\||\\*|\\:?=/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'function.call'\n\
+        },\n\
+        'pattern': /(\\w+?)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'entity.name.function'\n\
+        },\n\
+        'pattern': /(func)\\s(.*?)(?=\\()/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/go.js"
+));
+require.register("segmentio-rainbow/js/language/haskell.js", Function("exports, require, module",
+"/**\n\
+ * Haskell patterns\n\
+ *\n\
+ * @author Bruno Dias\n\
+ * @version 1.0.1\n\
+ */\n\
+//TODO: {-# ... #-} stuff...\n\
+module.exports = ['haskell', [\n\
+\t///- Comments\n\
+\t{\n\
+\t\t'name': 'comment',\n\
+\t\t'pattern': /\\{\\-\\-[\\s\\S(\\w+)]+[\\-\\-][\\}$]/gm\n\
+\t\t// /\\{\\-{2}[\\s\\S(.*)]+[\\-\\-][\\}$]/gm [multiple lines]\n\
+\t},\n\
+\t{\n\
+\t\t'name': 'comment',\n\
+\t\t'pattern': /\\-\\-(.*)/g\n\
+\t\t// /\\-\\-\\s(.+)$/gm [single]\n\
+\t},\n\
+\t///- End Comments\n\
+\n\
+\t///- Namespace (module)\n\
+\t{\n\
+\t\t'matches': {\n\
+\t\t\t1: 'keyword',\n\
+\t\t\t2: 'support.namespace'\n\
+\t\t},\n\
+\t\t'pattern': /\\b(module)\\s(\\w+)\\s[\\(]?(\\w+)?[\\)?]\\swhere/g\n\
+\t},\n\
+\t///- End Namespace (module)\n\
+\n\
+\t///- Keywords and Operators\n\
+\t{\n\
+\t\t'name': 'keyword.operator',\n\
+\t\t'pattern': /\\+|\\!|\\-|&(gt|lt|amp);|\\/\\=|\\||\\@|\\:|\\.|\\+{2}|\\:|\\*|\\=|#|\\.{2}|(\\\\)[a-zA-Z_]/g\n\
+\t},\n\
+\t{\n\
+\t\t'name': 'keyword',\n\
+\t\t'pattern': /\\b(case|class|foreign|hiding|qualified|data|family|default|deriving|do|else|if|import|in|infix|infixl|infixr|instance|let|in|otherwise|module|newtype|of|then|type|where)\\b/g\n\
+\t},\n\
+\t{\n\
+\t\t'name': 'keyword',\n\
+\t\t'pattern': /[\\`][a-zA-Z_']*?[\\`]/g\n\
+\t},\n\
+\t///- End Keywords and Operators\n\
+\n\
+\n\
+\t///- Infix|Infixr|Infixl\n\
+\t{\n\
+\t\t'matches': {\n\
+\t\t\t1: 'keyword',\n\
+\t\t\t2: 'keyword.operator'\n\
+\t\t},\n\
+\t\t'pattern': /\\b(infix|infixr|infixl)+\\s\\d+\\s(\\w+)*/g\n\
+\t},\n\
+\t///- End Infix|Infixr|Infixl\n\
+\n\
+\t{\n\
+\t\t'name': 'entity.class',\n\
+\t\t'pattern': /\\b([A-Z][A-Za-z0-9_']*)/g\n\
+\t},\n\
+\n\
+\t// From c.js\n\
+\t{\n\
+\t\t'name': 'meta.preprocessor',\n\
+\t\t'matches': {\n\
+\t\t\t1: [\n\
+\t\t\t\t{\n\
+\t\t\t\t\t'matches': {\n\
+\t\t\t\t\t\t1: 'keyword.define',\n\
+\t\t\t\t\t\t2: 'entity.name'\n\
+\t\t\t\t\t},\n\
+\t\t\t\t\t'pattern': /(\\w+)\\s(\\w+)\\b/g\n\
+\t\t\t\t},\n\
+\t\t\t\t{\n\
+\t\t\t\t\t'name': 'keyword.define',\n\
+\t\t\t\t\t'pattern': /endif/g\n\
+\t\t\t\t},\n\
+\t\t\t\t{\n\
+\t\t\t\t\t'name': 'constant.numeric',\n\
+\t\t\t\t\t'pattern': /\\d+/g\n\
+\t\t\t\t},\n\
+\t\t\t\t{\n\
+\t\t\t\t\t'matches': {\n\
+\t\t\t\t\t\t1: 'keyword.include',\n\
+\t\t\t\t\t\t2: 'string'\n\
+\t\t\t\t\t},\n\
+\t\t\t\t 'pattern': /(include)\\s(.*?)$/g\n\
+\t\t\t\t}\n\
+\t\t\t]\n\
+\t\t},\n\
+\t\t'pattern': /^\\#([\\S\\s]*?)$/gm\n\
+\t}\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/haskell.js"
+));
+require.register("segmentio-rainbow/js/language/html.js", Function("exports, require, module",
+"/**\n\
+ * HTML patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.7\n\
+ */\n\
+module.exports = ['html', [\n\
+    {\n\
+        'name': 'source.php.embedded',\n\
+        'matches': {\n\
+            2: {\n\
+                'language': 'php'\n\
+            }\n\
+        },\n\
+        'pattern': /&lt;\\?=?(?!xml)(php)?([\\s\\S]*?)(\\?&gt;)/gm\n\
+    },\n\
+    {\n\
+        'name': 'source.css.embedded',\n\
+        'matches': {\n\
+            0: {\n\
+                'language': 'css'\n\
+            }\n\
+        },\n\
+        'pattern': /&lt;style(.*?)&gt;([\\s\\S]*?)&lt;\\/style&gt;/gm\n\
+    },\n\
+    {\n\
+        'name': 'source.js.embedded',\n\
+        'matches': {\n\
+            0: {\n\
+                'language': 'javascript'\n\
+            }\n\
+        },\n\
+        'pattern': /&lt;script(?! src)(.*?)&gt;([\\s\\S]*?)&lt;\\/script&gt;/gm\n\
+    },\n\
+    {\n\
+        'name': 'comment.html',\n\
+        'pattern': /&lt;\\!--[\\S\\s]*?--&gt;/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.tag.open',\n\
+            2: 'support.tag.close'\n\
+        },\n\
+        'pattern': /(&lt;)|(\\/?\\??&gt;)/g\n\
+    },\n\
+    {\n\
+        'name': 'support.tag',\n\
+        'matches': {\n\
+            1: 'support.tag',\n\
+            2: 'support.tag.special',\n\
+            3: 'support.tag-name'\n\
+        },\n\
+        'pattern': /(&lt;\\??)(\\/|\\!?)(\\w+)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.attribute'\n\
+        },\n\
+        'pattern': /([a-z-]+)(?=\\=)/gi\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.operator',\n\
+            2: 'string.quote',\n\
+            3: 'string.value',\n\
+            4: 'string.quote'\n\
+        },\n\
+        'pattern': /(=)('|\")(.*?)(\\2)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.operator',\n\
+            2: 'support.value'\n\
+        },\n\
+        'pattern': /(=)([a-zA-Z\\-0-9]*)\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.attribute'\n\
+        },\n\
+        'pattern': /\\s(\\w+)(?=\\s|&gt;)(?![\\s\\S]*&lt;)/g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/html.js"
+));
+require.register("segmentio-rainbow/js/language/java.js", Function("exports, require, module",
+"/**\n\
+* Java patterns\n\
+*\n\
+* @author Leo Accend\n\
+* @version 1.0.0\n\
+*/\n\
+module.exports = [ \"java\", [\n\
+  {\n\
+    name: \"constant\",\n\
+    pattern: /\\b(false|null|true|[A-Z_]+)\\b/g\n\
+  },\n\
+  {\n\
+    matches: {\n\
+      1: \"keyword\",\n\
+      2: \"support.namespace\"\n\
+    },\n\
+    pattern: /(import|package)\\s(.+)/g\n\
+  },\n\
+  {\n\
+    // see http://docs.oracle.com/javase/tutorial/java/nutsandbolts/_keywords.html\n\
+    name: \"keyword\",\n\
+    pattern: /\\b(abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while)\\b/g\n\
+  },\n\
+  {\n\
+    name: \"string\",\n\
+    pattern: /(\".*?\")/g\n\
+  },\n\
+  {\n\
+    name: \"char\",\n\
+    pattern: /(')(.|\\\\.|\\\\u[\\dA-Fa-f]{4})\\1/g\n\
+  },\n\
+  {\n\
+    name: \"integer\",\n\
+    pattern: /\\b(0x[\\da-f]+|\\d+)L?\\b/g\n\
+  },\n\
+  {\n\
+    name: \"comment\",\n\
+    pattern: /\\/\\*[\\s\\S]*?\\*\\/|(\\/\\/).*?$/gm\n\
+  },\n\
+  {\n\
+    name: \"support.annotation\",\n\
+    pattern: /@\\w+/g\n\
+  },\n\
+  {\n\
+    matches: {\n\
+      1: \"entity.function\"\n\
+    },\n\
+    pattern: /([^@\\.\\s]+)\\(/g\n\
+  },\n\
+  {\n\
+    name: \"entity.class\",\n\
+    pattern: /\\b([A-Z]\\w*)\\b/g\n\
+  },\n\
+  {\n\
+    // see http://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html\n\
+    name: \"operator\",\n\
+    pattern: /(\\+{1,2}|-{1,2}|~|!|\\*|\\/|%|(?:&lt;){1,2}|(?:&gt;){1,3}|instanceof|(?:&amp;){1,2}|\\^|\\|{1,2}|\\?|:|(?:=|!|\\+|-|\\*|\\/|%|\\^|\\||(?:&lt;){1,2}|(?:&gt;){1,3})?=)/g\n\
+  }\n\
+], true ];\n\
+//@ sourceURL=segmentio-rainbow/js/language/java.js"
+));
+require.register("segmentio-rainbow/js/language/javascript.js", Function("exports, require, module",
+"/**\n\
+ * Javascript patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.8\n\
+ */\n\
+module.exports = ['javascript', [\n\
+\n\
+    /**\n\
+     * matches $. or $(\n\
+     */\n\
+    {\n\
+        'name': 'selector',\n\
+        'pattern': /(\\s|^)\\$(?=\\.|\\()/g\n\
+    },\n\
+    {\n\
+        'name': 'support',\n\
+        'pattern': /\\b(window|document)\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.property'\n\
+        },\n\
+        'pattern': /\\.(length|node(Name|Value))\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.function'\n\
+        },\n\
+        'pattern': /(setTimeout|setInterval)(?=\\()/g\n\
+\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.method'\n\
+        },\n\
+        'pattern': /\\.(getAttribute|push|getElementById|getElementsByClassName|log|setTimeout|setInterval)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.tag.script',\n\
+            2: [\n\
+                {\n\
+                    'name': 'string',\n\
+                    'pattern': /('|\")(.*?)(\\1)/g\n\
+                },\n\
+                {\n\
+                    'name': 'entity.tag.script',\n\
+                    'pattern': /(\\w+)/g\n\
+                }\n\
+            ],\n\
+            3: 'support.tag.script'\n\
+        },\n\
+        'pattern': /(&lt;\\/?)(script.*?)(&gt;)/g\n\
+    },\n\
+\n\
+    /**\n\
+     * matches any escaped characters inside of a js regex pattern\n\
+     *\n\
+     * @see https://github.com/ccampbell/rainbow/issues/22\n\
+     *\n\
+     * this was causing single line comments to fail so it now makes sure\n\
+     * the opening / is not directly followed by a *\n\
+     *\n\
+     * @todo check that there is valid regex in match group 1\n\
+     */\n\
+    {\n\
+        'name': 'string.regexp',\n\
+        'matches': {\n\
+            1: 'string.regexp.open',\n\
+            2: {\n\
+                'name': 'constant.regexp.escape',\n\
+                'pattern': /\\\\(.){1}/g\n\
+            },\n\
+            3: 'string.regexp.close',\n\
+            4: 'string.regexp.modifier'\n\
+        },\n\
+        'pattern': /(\\/)(?!\\*)(.+)(\\/)([igm]{0,3})/g\n\
+    },\n\
+\n\
+    /**\n\
+     * matches runtime function declarations\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage',\n\
+            3: 'entity.function'\n\
+        },\n\
+        'pattern': /(var)?(\\s|^)(\\S*)(?=\\s?=\\s?function\\()/g\n\
+    },\n\
+\n\
+    /**\n\
+     * matches constructor call\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword',\n\
+            2: 'entity.function'\n\
+        },\n\
+        'pattern': /(new)\\s+(.*)(?=\\()/g\n\
+    },\n\
+\n\
+    /**\n\
+     * matches any function call in the style functionName: function()\n\
+     */\n\
+    {\n\
+        'name': 'entity.function',\n\
+        'pattern': /(\\w+)(?=:\\s{0,}function)/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/javascript.js"
+));
+require.register("segmentio-rainbow/js/language/lua.js", Function("exports, require, module",
+"/**\n\
+ * Lua patterns\n\
+ *\n\
+ * @author Javier Aguirre\n\
+ * @version 1.0.1\n\
+ */\n\
+module.exports = ['lua', [\n\
+    {\n\
+        'matches': {\n\
+            1: {\n\
+                'name': 'keyword.operator',\n\
+                'pattern': /\\=/g\n\
+            },\n\
+            2: {\n\
+                'name': 'string',\n\
+                'matches': {\n\
+                    'name': 'constant.character.escape',\n\
+                    'pattern': /\\\\('|\"){1}/g\n\
+                }\n\
+            }\n\
+        },\n\
+        'pattern': /(\\(|\\s|\\[|\\=)(('|\")([^\\\\\\1]|\\\\.)*?(\\3))/gm\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\\-{2}\\[{2}\\-{2}[\\s\\S]*?\\-{2}\\]{2}\\-{2}|(\\-{2})[\\s\\S]*?$/gm\n\
+    },\n\
+    {\n\
+        'name': 'constant.numeric',\n\
+        'pattern': /\\b(\\d+(\\.\\d+)?(e(\\+|\\-)?\\d+)?(f|d)?|0x[\\da-f]+)\\b/gi\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\b((a|e)nd|in|repeat|break|local|return|do|for|then|else(if)?|function|not|if|or|until|while)(?=\\(|\\b)/gi\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /true|false|nil/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /\\+|\\!|\\-|&(gt|lt|amp);|\\||\\*|\\=|#|\\.{2}/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'entity.name.function'\n\
+        },\n\
+        'pattern': /(function)\\s+(\\w+[\\:|\\.]?\\w+?)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.function'\n\
+        },\n\
+        'pattern': /\\b(print|require|module|\\w+\\.\\w+)(?=\\()/g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/lua.js"
+));
+require.register("segmentio-rainbow/js/language/php.js", Function("exports, require, module",
+"/**\n\
+ * PHP patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.8\n\
+ */\n\
+module.exports = ['php', [\n\
+    {\n\
+        'name': 'support',\n\
+        'pattern': /\\becho\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'variable.dollar-sign',\n\
+            2: 'variable'\n\
+        },\n\
+        'pattern': /(\\$)(\\w+)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /true|false|null/ig\n\
+    },\n\
+    {\n\
+        'name': 'constant',\n\
+        'pattern': /\\b[A-Z0-9_]{2,}\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.dot',\n\
+        'pattern': /\\./g\n\
+    },\n\
+    {\n\
+        'name': 'keyword',\n\
+        'pattern': /\\b(die|end(for(each)?|switch|if)|case|require(_once)?|include(_once)?)(?=\\(|\\b)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword',\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /(instanceof)\\s([^\\$].*?)(\\)|;)/g\n\
+    },\n\
+\n\
+    /**\n\
+     * these are the top 50 most used PHP functions\n\
+     * found from running a script and checking the frequency of each function\n\
+     * over a bunch of popular PHP frameworks then combining the results\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'support.function'\n\
+        },\n\
+        'pattern': /\\b(array(_key_exists|_merge|_keys|_shift)?|isset|count|empty|unset|printf|is_(array|string|numeric|object)|sprintf|each|date|time|substr|pos|str(len|pos|tolower|_replace|totime)?|ord|trim|in_array|implode|end|preg_match|explode|fmod|define|link|list|get_class|serialize|file|sort|mail|dir|idate|log|intval|header|chr|function_exists|dirname|preg_replace|file_exists)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'name': 'variable.language.php-tag',\n\
+        'pattern': /(&lt;\\?(php)?|\\?&gt;)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.namespace',\n\
+            2: {\n\
+                'name': 'support.namespace',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /\\b(namespace|use)\\s(.*?);/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.modifier',\n\
+            2: 'storage.class',\n\
+            3: 'entity.name.class',\n\
+            4: 'storage.modifier.extends',\n\
+            5: 'entity.other.inherited-class',\n\
+            6: 'storage.modifier.extends',\n\
+            7: 'entity.other.inherited-class'\n\
+        },\n\
+        'pattern': /\\b(abstract|final)?\\s?(class|interface|trait)\\s(\\w+)(\\sextends\\s)?([\\w\\\\]*)?(\\simplements\\s)?([\\w\\\\]*)?\\s?\\{?(\\n\
+|\\})/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.static',\n\
+        'pattern': /self::|static::/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'support.magic'\n\
+        },\n\
+        'pattern': /(function)\\s(__.*?)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.new',\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /\\b(new)\\s([^\\$].*?)(?=\\)|\\(|;)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            },\n\
+            2: 'keyword.static'\n\
+        },\n\
+        'pattern': /([\\w\\\\]*?)(::)(?=\\b|\\$)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            2: {\n\
+                'name': 'support.class',\n\
+                'pattern': /\\w+/g\n\
+            }\n\
+        },\n\
+        'pattern': /(\\(|,\\s?)([\\w\\\\]*?)(?=\\s\\$)/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/php.js"
+));
+require.register("segmentio-rainbow/js/language/python.js", Function("exports, require, module",
+"/**\n\
+ * Python patterns\n\
+ *\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.9\n\
+ */\n\
+module.exports = ['python', [\n\
+    /**\n\
+     * don't highlight self as a keyword\n\
+     */\n\
+    {\n\
+        'name': 'variable.self',\n\
+        'pattern': /self/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /None|True|False|NotImplemented|\\.\\.\\./g\n\
+    },\n\
+    {\n\
+        'name': 'support.object',\n\
+        'pattern': /object/g\n\
+    },\n\
+\n\
+    /**\n\
+     * built in python functions\n\
+     *\n\
+     * this entire list is 580 bytes minified / 379 bytes gzipped\n\
+     *\n\
+     * @see http://docs.python.org/library/functions.html\n\
+     *\n\
+     * @todo strip some out or consolidate the regexes with matching patterns?\n\
+     */\n\
+    {\n\
+        'name': 'support.function.python',\n\
+        'pattern': /\\b(bs|divmod|input|open|staticmethod|all|enumerate|int|ord|str|any|eval|isinstance|pow|sum|basestring|execfile|issubclass|print|super|bin|file|iter|property|tuple|bool|filter|len|range|type|bytearray|float|list|raw_input|unichr|callable|format|locals|reduce|unicode|chr|frozenset|long|reload|vars|classmethod|getattr|map|repr|xrange|cmp|globals|max|reversed|zip|compile|hasattr|memoryview|round|__import__|complex|hash|min|set|apply|delattr|help|next|setattr|buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\b(pass|lambda|with|is|not|in|from|elif|raise|del)(?=\\(|\\b)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.class',\n\
+            2: 'entity.name.class',\n\
+            3: 'entity.other.inherited-class'\n\
+        },\n\
+        'pattern': /(class)\\s+(\\w+)\\((\\w+?)\\)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'support.magic'\n\
+        },\n\
+        'pattern': /(def)\\s+(__\\w+)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'name': 'support.magic',\n\
+        'pattern': /__(name)__/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.control',\n\
+            2: 'support.exception.type'\n\
+        },\n\
+        'pattern': /(except) (\\w+):/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'entity.name.function'\n\
+        },\n\
+        'pattern': /(def)\\s+(\\w+)(?=\\()/g\n\
+    },\n\
+    {\n\
+        'name': 'entity.name.function.decorator',\n\
+        'pattern': /@([\\w\\.]+)/g\n\
+    },\n\
+    {\n\
+        'name': 'comment.docstring',\n\
+        'pattern': /('{3}|\"{3})[\\s\\S]*?\\1/gm\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/python.js"
+));
+require.register("segmentio-rainbow/js/language/r.js", Function("exports, require, module",
+"/**\n\
+ * R language patterns\n\
+ *\n\
+ * @author Simon Potter\n\
+ * @version 1.0\n\
+ */\n\
+module.exports = ['r', [\n\
+    /**\n\
+     * Note that a valid variable name is of the form:\n\
+     * [.a-zA-Z][0-9a-zA-Z._]*\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: {\n\
+                'name': 'keyword.operator',\n\
+                'pattern': /\\=|<\\-|&lt;-/g\n\
+            },\n\
+            2: {\n\
+                'name': 'string',\n\
+                'matches': {\n\
+                    'name': 'constant.character.escape',\n\
+                    'pattern': /\\\\('|\"){1}/g\n\
+                }\n\
+            }\n\
+        },\n\
+        'pattern': /(\\(|\\s|\\[|\\=|:)(('|\")([^\\\\\\1]|\\\\.)*?(\\3))/gm\n\
+    },\n\
+\n\
+    /**\n\
+     * Most of these are known via the Language Reference.\n\
+     * The built-in constant symbols are known via ?Constants.\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'constant.language'\n\
+        },\n\
+        'pattern': /\\b(NULL|NA|TRUE|FALSE|T|F|NaN|Inf|NA_integer_|NA_real_|NA_complex_|NA_character_)\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'constant.symbol'\n\
+        },\n\
+        'pattern': /[^0-9a-zA-Z\\._](LETTERS|letters|month\\.(abb|name)|pi)/g\n\
+    },\n\
+\n\
+    /**\n\
+     * @todo: The list subsetting operator isn't quite working properly.\n\
+     *        It includes the previous variable when it should only match [[\n\
+     */\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /&lt;-|<-|-|==|&lt;=|<=|&gt;>|>=|<|>|&amp;&amp;|&&|&amp;|&|!=|\\|\\|?|\\*|\\+|\\^|\\/|%%|%\\/%|\\=|%in%|%\\*%|%o%|%x%|\\$|:|~|\\[{1,2}|\\]{1,2}/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage',\n\
+            3: 'entity.function'\n\
+        },\n\
+        'pattern': /(\\s|^)(.*)(?=\\s?=\\s?function\\s\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function'\n\
+        },\n\
+        'pattern': /[^a-zA-Z0-9._](function)(?=\\s*\\()/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'namespace',\n\
+            2: 'keyword.operator',\n\
+            3: 'function.call'\n\
+        },\n\
+        'pattern': /([a-zA-Z][a-zA-Z0-9._]+)([:]{2,3})([.a-zA-Z][a-zA-Z0-9._]*(?=\\s*\\())\\b/g\n\
+    },\n\
+\n\
+    /*\n\
+     * Note that we would perhaps match more builtin functions and\n\
+     * variables, but there are so many that most are ommitted for now.\n\
+     * See ?builtins for more info.\n\
+     *\n\
+     * @todo: Fix the case where we have a function like tmp.logical().\n\
+     *        This should just be a function call, at the moment it's\n\
+     *        only partly a function all.\n\
+     */\n\
+    {\n\
+        'name': 'support.function',\n\
+        'pattern': /(^|[^0-9a-zA-Z\\._])(array|character|complex|data\\.frame|double|integer|list|logical|matrix|numeric|vector)(?=\\s*\\()/g\n\
+    }\n\
+]];\n\
+//@ sourceURL=segmentio-rainbow/js/language/r.js"
+));
+require.register("segmentio-rainbow/js/language/ruby.js", Function("exports, require, module",
+"/**\n\
+ * Ruby patterns\n\
+ *\n\
+ * @author Matthew King\n\
+ * @author Jesse Farmer <jesse@20bits.com>\n\
+ * @author actsasflinn\n\
+ * @version 1.0.5\n\
+ */\n\
+\n\
+module.exports = ['ruby', [\n\
+    /**\n\
+     * Strings\n\
+     *   1. No support for multi-line strings\n\
+     */\n\
+    {\n\
+        'name': 'string',\n\
+        'matches': {\n\
+            1: 'string.open',\n\
+            2: {\n\
+                'name': 'string.keyword',\n\
+                'pattern': /(\\#\\{.*?\\})/g\n\
+            },\n\
+            3: 'string.close'\n\
+        },\n\
+        'pattern': /(\"|`)(.*?[^\\\\\\1])?(\\1)/g\n\
+    },\n\
+    {\n\
+        'name': 'string',\n\
+        'pattern': /('|\"|`)([^\\\\\\1\\n\
+]|\\\\.)*\\1/g\n\
+    },\n\
+    {\n\
+        'name': 'string',\n\
+        'pattern': /%[qQ](?=(\\(|\\[|\\{|&lt;|.)(.*?)(?:'|\\)|\\]|\\}|&gt;|\\1))(?:\\(\\2\\)|\\[\\2\\]|\\{\\2\\}|\\&lt;\\2&gt;|\\1\\2\\1)/g\n\
+    },\n\
+    /**\n\
+     * Heredocs\n\
+     * Heredocs of the form `<<'HTML' ... HTML` are unsupported.\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'string',\n\
+            2: 'string',\n\
+            3: 'string'\n\
+        },\n\
+        'pattern': /(&lt;&lt;)(\\w+).*?$([\\s\\S]*?^\\2)/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'string',\n\
+            2: 'string',\n\
+            3: 'string'\n\
+        },\n\
+        'pattern': /(&lt;&lt;\\-)(\\w+).*?$([\\s\\S]*?\\2)/gm\n\
+    },\n\
+    /**\n\
+     * Regular expressions\n\
+     * Escaped delimiter (`/\\//`) is unsupported.\n\
+     */\n\
+    {\n\
+        'name': 'string.regexp',\n\
+        'matches': {\n\
+            1: 'string.regexp',\n\
+            2: {\n\
+                'name': 'string.regexp',\n\
+                'pattern': /\\\\(.){1}/g\n\
+            },\n\
+            3: 'string.regexp',\n\
+            4: 'string.regexp'\n\
+        },\n\
+        'pattern': /(\\/)(.*?)(\\/)([a-z]*)/g\n\
+    },\n\
+    {\n\
+        'name': 'string.regexp',\n\
+        'matches': {\n\
+            1: 'string.regexp',\n\
+            2: {\n\
+                'name': 'string.regexp',\n\
+                'pattern': /\\\\(.){1}/g\n\
+            },\n\
+            3: 'string.regexp',\n\
+            4: 'string.regexp'\n\
+        },\n\
+        'pattern': /%r(?=(\\(|\\[|\\{|&lt;|.)(.*?)('|\\)|\\]|\\}|&gt;|\\1))(?:\\(\\2\\)|\\[\\2\\]|\\{\\2\\}|\\&lt;\\2&gt;|\\1\\2\\1)([a-z]*)/g\n\
+    },\n\
+    /**\n\
+     * Comments\n\
+     */\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /#.*$/gm\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /^\\=begin[\\s\\S]*?\\=end$/gm\n\
+    },\n\
+    /**\n\
+     * Symbols\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'constant'\n\
+        },\n\
+        'pattern': /(\\w+:)[^:]/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'constant.symbol'\n\
+        },\n\
+        'pattern': /[^:](:(?:\\w+|(?=['\"](.*?)['\"])(?:\"\\2\"|'\\2')))/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.numeric',\n\
+        'pattern': /\\b(0x[\\da-f]+|\\d+)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'support.class',\n\
+        'pattern': /\\b[A-Z]\\w*(?=((\\.|::)[A-Za-z]|\\[))/g\n\
+    },\n\
+    {\n\
+        'name': 'constant',\n\
+        'pattern': /\\b[A-Z]\\w*\\b/g\n\
+    },\n\
+    /**\n\
+     * Keywords, variables, constants, and operators\n\
+     *   In Ruby some keywords are valid method names, e.g., MyClass#yield\n\
+     *   Don't mark those instances as \"keywords\"\n\
+     */\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.class',\n\
+            2: 'entity.name.class',\n\
+            3: 'entity.other.inherited-class'\n\
+        },\n\
+        'pattern': /\\s*(class)\\s+((?:(?:::)?[A-Z]\\w*)+)(?:\\s+&lt;\\s+((?:(?:::)?[A-Z]\\w*)+))?/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.module',\n\
+            2: 'entity.name.class'\n\
+        },\n\
+        'pattern': /\\s*(module)\\s+((?:(?:::)?[A-Z]\\w*)+)/g\n\
+    },\n\
+    {\n\
+        'name': 'variable.global',\n\
+        'pattern': /\\$([a-zA-Z_]\\w*)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'variable.class',\n\
+        'pattern': /@@([a-zA-Z_]\\w*)\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'variable.instance',\n\
+        'pattern': /@([a-zA-Z_]\\w*)\\b/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.control'\n\
+        },\n\
+        'pattern': /[^\\.]\\b(BEGIN|begin|case|class|do|else|elsif|END|end|ensure|for|if|in|module|rescue|then|unless|until|when|while)\\b(?![?!])/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.control.pseudo-method'\n\
+        },\n\
+        'pattern': /[^\\.]\\b(alias|alias_method|break|next|redo|retry|return|super|undef|yield)\\b(?![?!])|\\bdefined\\?|\\bblock_given\\?/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'constant.language'\n\
+        },\n\
+        'pattern': /\\b(nil|true|false)\\b(?![?!])/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'variable.language'\n\
+        },\n\
+        'pattern': /\\b(__(FILE|LINE)__|self)\\b(?![?!])/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.special-method'\n\
+        },\n\
+        'pattern': /\\b(require|gem|initialize|new|loop|include|extend|raise|attr_reader|attr_writer|attr_accessor|attr|catch|throw|private|module_function|public|protected)\\b(?![?!])/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /\\s\\?\\s|=|&lt;&lt;|&lt;&lt;=|%=|&=|\\*=|\\*\\*=|\\+=|\\-=|\\^=|\\|{1,2}=|&lt;&lt;|&lt;=&gt;|&lt;(?!&lt;|=)|&gt;(?!&lt;|=|&gt;)|&lt;=|&gt;=|===|==|=~|!=|!~|%|&amp;|\\*\\*|\\*|\\+|\\-|\\/|\\||~|&gt;&gt;/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword.operator.logical'\n\
+        },\n\
+        'pattern': /[^\\.]\\b(and|not|or)\\b/g\n\
+    },\n\
+\n\
+    /**\n\
+    * Functions\n\
+    *   1. No support for marking function parameters\n\
+    */\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'entity.name.function'\n\
+        },\n\
+        'pattern': /(def)\\s(.*?)(?=(\\s|\\())/g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/ruby.js"
+));
+require.register("segmentio-rainbow/js/language/scheme.js", Function("exports, require, module",
+"/**\n\
+ * Scheme patterns\n\
+ *\n\
+ * @author Alex Queiroz <alex@artisancoder.com>\n\
+ * @version 1.0\n\
+ */\n\
+module.exports = ['scheme', [\n\
+    {\n\
+        /* making peace with HTML */\n\
+        'name': 'plain',\n\
+        'pattern': /&gt;|&lt;/g\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /;.*$/gm\n\
+    },\n\
+    {\n\
+        'name': 'constant.language',\n\
+        'pattern': /#t|#f|'\\(\\)/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.symbol',\n\
+        'pattern': /'[^()\\s#]+/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.number',\n\
+        'pattern': /\\b\\d+(?:\\.\\d*)?\\b/g\n\
+    },\n\
+    {\n\
+        'name': 'string',\n\
+        'pattern': /\".+?\"/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'storage.function',\n\
+            2: 'variable'\n\
+        },\n\
+        'pattern': /\\(\\s*(define)\\s+\\(?(\\S+)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\(\\s*(begin|define\\-syntax|if|lambda|quasiquote|quote|set!|syntax\\-rules|and|and\\-let\\*|case|cond|delay|do|else|or|let|let\\*|let\\-syntax|letrec|letrec\\-syntax)(?=[\\]()\\s#])/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'entity.function'\n\
+        },\n\
+        'pattern': /\\(\\s*(eqv\\?|eq\\?|equal\\?|number\\?|complex\\?|real\\?|rational\\?|integer\\?|exact\\?|inexact\\?|=|<|>|<=|>=|zero\\?|positive\\?|negative\\?|odd\\?|even\\?|max|min|\\+|\\-|\\*|\\/|abs|quotient|remainder|modulo|gcd|lcm|numerator|denominator|floor|ceiling|truncate|round|rationalize|exp|log|sin|cos|tan|asin|acos|atan|sqrt|expt|make\\-rectangular|make\\-polar|real\\-part|imag\\-part|magnitude|angle|exact\\->inexact|inexact\\->exact|number\\->string|string\\->number|not|boolean\\?|pair\\?|cons|car|cdr|set\\-car!|set\\-cdr!|caar|cadr|cdar|cddr|caaar|caadr|cadar|caddr|cdaar|cdadr|cddar|cdddr|caaaar|caaadr|caadar|caaddr|cadaar|cadadr|caddar|cadddr|cdaaar|cdaadr|cdadar|cdaddr|cddaar|cddadr|cdddar|cddddr|null\\?|list\\?|list|length|append|reverse|list\\-tail|list\\-ref|memq|memv|member|assq|assv|assoc|symbol\\?|symbol\\->string|string\\->symbol|char\\?|char=\\?|char<\\?|char>\\?|char<=\\?|char>=\\?|char\\-ci=\\?|char\\-ci<\\?|char\\-ci>\\?|char\\-ci<=\\?|char\\-ci>=\\?|char\\-alphabetic\\?|char\\-numeric\\?|char\\-whitespace\\?|char\\-upper\\-case\\?|char\\-lower\\-case\\?|char\\->integer|integer\\->char|char\\-upcase|char\\-downcase|string\\?|make\\-string|string|string\\-length|string\\-ref|string\\-set!|string=\\?|string\\-ci=\\?|string<\\?|string>\\?|string<=\\?|string>=\\?|string\\-ci<\\?|string\\-ci>\\?|string\\-ci<=\\?|string\\-ci>=\\?|substring|string\\-append|string\\->list|list\\->string|string\\-copy|string\\-fill!|vector\\?|make\\-vector|vector|vector\\-length|vector\\-ref|vector\\-set!|vector\\->list|list\\->vector|vector\\-fill!|procedure\\?|apply|map|for\\-each|force|call\\-with\\-current\\-continuation|call\\/cc|values|call\\-with\\-values|dynamic\\-wind|eval|scheme\\-report\\-environment|null\\-environment|interaction\\-environment|call\\-with\\-input\\-file|call\\-with\\-output\\-file|input\\-port\\?|output\\-port\\?|current\\-input\\-port|current\\-output\\-port|with\\-input\\-from\\-file|with\\-output\\-to\\-file|open\\-input\\-file|open\\-output\\-file|close\\-input\\-port|close\\-output\\-port|read|read\\-char|peek\\-char|eof\\-object\\?|char\\-ready\\?|write|display|newline|write\\-char|load|transcript\\-on|transcript\\-off)(?=[\\]()\\s#])/g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/scheme.js"
+));
+require.register("segmentio-rainbow/js/language/shell.js", Function("exports, require, module",
+"/**\n\
+ * Shell patterns\n\
+ *\n\
+ * @author Matthew King\n\
+ * @author Craig Campbell\n\
+ * @version 1.0.3\n\
+ */\n\
+module.exports = ['shell', [\n\
+    /**\n\
+     * This handles the case where subshells contain quotes.\n\
+     * For example: `\"$(resolve_link \"$name\" || true)\"`.\n\
+     *\n\
+     * Caveat: This really should match balanced parentheses, but cannot.\n\
+     * @see http://stackoverflow.com/questions/133601/can-regular-expressions-be-used-to-match-nested-patterns\n\
+     */\n\
+    {\n\
+        'name': 'shell',\n\
+        'matches': {\n\
+            1: {\n\
+                'language': 'shell'\n\
+            }\n\
+        },\n\
+        'pattern': /\\$\\(([\\s\\S]*?)\\)/gm\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            2: 'string'\n\
+        },\n\
+        'pattern': /(\\(|\\s|\\[|\\=)(('|\")[\\s\\S]*?(\\3))/gm\n\
+    },\n\
+    {\n\
+        'name': 'keyword.operator',\n\
+        'pattern': /&lt;|&gt;|&amp;/g\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\\#[\\s\\S]*?$/gm\n\
+    },\n\
+    {\n\
+        'name': 'storage.function',\n\
+        'pattern': /(.+?)(?=\\(\\)\\s{0,}\\{)/g\n\
+    },\n\
+    /**\n\
+     * Environment variables\n\
+     */\n\
+    {\n\
+        'name': 'support.command',\n\
+        'pattern': /\\b(echo|rm|ls|(mk|rm)dir|cd|find|cp|exit|pwd|exec|trap|source|shift|unset)/g\n\
+    },\n\
+    {\n\
+        'matches': {\n\
+            1: 'keyword'\n\
+        },\n\
+        'pattern': /\\b(break|case|continue|do|done|elif|else|esac|eval|export|fi|for|function|if|in|local|return|set|then|unset|until|while)(?=\\(|\\b)/g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/shell.js"
+));
+require.register("segmentio-rainbow/js/language/smalltalk.js", Function("exports, require, module",
+"/**\n\
+ * Smalltalk patterns\n\
+ *\n\
+ * @author Frank Shearar <frank@angband.za.org>\n\
+ * @version 1.0\n\
+ */\n\
+module.exports = ['smalltalk', [\n\
+    {\n\
+        'name': 'keyword.pseudovariable',\n\
+        'pattern': /self|thisContext/g\n\
+    },\n\
+    {\n\
+        'name': 'keyword.constant',\n\
+        'pattern': /false|nil|true/g\n\
+    },\n\
+    {\n\
+        'name': 'string',\n\
+        'pattern': /'([^']|'')*'/g\n\
+    },\n\
+    {\n\
+        'name': 'string.symbol',\n\
+        'pattern': /#\\w+|#'([^']|'')*'/g\n\
+    },\n\
+    {\n\
+        'name': 'string.character',\n\
+        'pattern': /\\$\\w+/g\n\
+    },\n\
+    {\n\
+        'name': 'comment',\n\
+        'pattern': /\"([^\"]|\"\")*\"/g\n\
+    },\n\
+    {\n\
+        'name': 'constant.numeric',\n\
+        'pattern': /-?\\d+(\\.\\d+)?((r-?|s)[A-Za-z0-9]+|e-?[0-9]+)?/g\n\
+    },\n\
+    {\n\
+        'name': 'entity.name.class',\n\
+        'pattern': /\\b[A-Z]\\w*/g\n\
+    },\n\
+    {\n\
+        'name': 'entity.name.function',\n\
+        'pattern': /\\b[a-z]\\w*:?/g\n\
+    },\n\
+    {\n\
+        'name': 'entity.name.binary',\n\
+        'pattern': /(&lt;|&gt;|&amp;|[=~\\|\\\\\\/!@*\\-_+])+/g\n\
+    },\n\
+    {\n\
+        'name': 'operator.delimiter',\n\
+        'pattern': /;[\\(\\)\\[\\]\\{\\}]|#\\[|#\\(^\\./g\n\
+    }\n\
+], true];\n\
+//@ sourceURL=segmentio-rainbow/js/language/smalltalk.js"
+));
+require.register("solutionio-async/index.js", Function("exports, require, module",
+"/*global setTimeout: false, console: false */\n\
+(function () {\n\
+\n\
+    var async = {};\n\
+\n\
+    // global on the server, window in the browser\n\
+    var root = this,\n\
+        previous_async = root.async;\n\
+\n\
+    if (typeof module !== 'undefined' && module.exports) {\n\
+        module.exports = async;\n\
+    }\n\
+    else {\n\
+        root.async = async;\n\
+    }\n\
+\n\
+    async.noConflict = function () {\n\
+        root.async = previous_async;\n\
+        return async;\n\
+    };\n\
+\n\
+    //// cross-browser compatiblity functions ////\n\
+\n\
+    var _forEach = function (arr, iterator) {\n\
+        if (arr.forEach) {\n\
+            return arr.forEach(iterator);\n\
+        }\n\
+        for (var i = 0; i < arr.length; i += 1) {\n\
+            iterator(arr[i], i, arr);\n\
+        }\n\
+    };\n\
+\n\
+    var _map = function (arr, iterator) {\n\
+        if (arr.map) {\n\
+            return arr.map(iterator);\n\
+        }\n\
+        var results = [];\n\
+        _forEach(arr, function (x, i, a) {\n\
+            results.push(iterator(x, i, a));\n\
+        });\n\
+        return results;\n\
+    };\n\
+\n\
+    var _reduce = function (arr, iterator, memo) {\n\
+        if (arr.reduce) {\n\
+            return arr.reduce(iterator, memo);\n\
+        }\n\
+        _forEach(arr, function (x, i, a) {\n\
+            memo = iterator(memo, x, i, a);\n\
+        });\n\
+        return memo;\n\
+    };\n\
+\n\
+    var _keys = function (obj) {\n\
+        if (Object.keys) {\n\
+            return Object.keys(obj);\n\
+        }\n\
+        var keys = [];\n\
+        for (var k in obj) {\n\
+            if (obj.hasOwnProperty(k)) {\n\
+                keys.push(k);\n\
+            }\n\
+        }\n\
+        return keys;\n\
+    };\n\
+\n\
+    //// exported async module functions ////\n\
+\n\
+    //// nextTick implementation with browser-compatible fallback ////\n\
+    if (typeof process === 'undefined' || !(process.nextTick)) {\n\
+        async.nextTick = function (fn) {\n\
+            setTimeout(fn, 0);\n\
+        };\n\
+    }\n\
+    else {\n\
+        async.nextTick = process.nextTick;\n\
+    }\n\
+\n\
+    async.forEach = function (arr, iterator, callback) {\n\
+        callback = callback || function () {};\n\
+        if (!arr.length) {\n\
+            return callback();\n\
+        }\n\
+        var completed = 0;\n\
+        _forEach(arr, function (x) {\n\
+            iterator(x, function (err) {\n\
+                if (err) {\n\
+                    callback(err);\n\
+                    callback = function () {};\n\
+                }\n\
+                else {\n\
+                    completed += 1;\n\
+                    if (completed === arr.length) {\n\
+                        callback(null);\n\
+                    }\n\
+                }\n\
+            });\n\
+        });\n\
+    };\n\
+\n\
+    async.forEachSeries = function (arr, iterator, callback) {\n\
+        callback = callback || function () {};\n\
+        if (!arr.length) {\n\
+            return callback();\n\
+        }\n\
+        var completed = 0;\n\
+        var iterate = function () {\n\
+            iterator(arr[completed], function (err) {\n\
+                if (err) {\n\
+                    callback(err);\n\
+                    callback = function () {};\n\
+                }\n\
+                else {\n\
+                    completed += 1;\n\
+                    if (completed === arr.length) {\n\
+                        callback(null);\n\
+                    }\n\
+                    else {\n\
+                        iterate();\n\
+                    }\n\
+                }\n\
+            });\n\
+        };\n\
+        iterate();\n\
+    };\n\
+\n\
+    async.forEachLimit = function (arr, limit, iterator, callback) {\n\
+        callback = callback || function () {};\n\
+        if (!arr.length || limit <= 0) {\n\
+            return callback();\n\
+        }\n\
+        var completed = 0;\n\
+        var started = 0;\n\
+        var running = 0;\n\
+\n\
+        (function replenish () {\n\
+            if (completed === arr.length) {\n\
+                return callback();\n\
+            }\n\
+\n\
+            while (running < limit && started < arr.length) {\n\
+                started += 1;\n\
+                running += 1;\n\
+                iterator(arr[started - 1], function (err) {\n\
+                    if (err) {\n\
+                        callback(err);\n\
+                        callback = function () {};\n\
+                    }\n\
+                    else {\n\
+                        completed += 1;\n\
+                        running -= 1;\n\
+                        if (completed === arr.length) {\n\
+                            callback();\n\
+                        }\n\
+                        else {\n\
+                            replenish();\n\
+                        }\n\
+                    }\n\
+                });\n\
+            }\n\
+        })();\n\
+    };\n\
+\n\
+\n\
+    var doParallel = function (fn) {\n\
+        return function () {\n\
+            var args = Array.prototype.slice.call(arguments);\n\
+            return fn.apply(null, [async.forEach].concat(args));\n\
+        };\n\
+    };\n\
+    var doSeries = function (fn) {\n\
+        return function () {\n\
+            var args = Array.prototype.slice.call(arguments);\n\
+            return fn.apply(null, [async.forEachSeries].concat(args));\n\
+        };\n\
+    };\n\
+\n\
+\n\
+    var _asyncMap = function (eachfn, arr, iterator, callback) {\n\
+        var results = [];\n\
+        arr = _map(arr, function (x, i) {\n\
+            return {index: i, value: x};\n\
+        });\n\
+        eachfn(arr, function (x, callback) {\n\
+            iterator(x.value, function (err, v) {\n\
+                results[x.index] = v;\n\
+                callback(err);\n\
+            });\n\
+        }, function (err) {\n\
+            callback(err, results);\n\
+        });\n\
+    };\n\
+    async.map = doParallel(_asyncMap);\n\
+    async.mapSeries = doSeries(_asyncMap);\n\
+\n\
+\n\
+    // reduce only has a series version, as doing reduce in parallel won't\n\
+    // work in many situations.\n\
+    async.reduce = function (arr, memo, iterator, callback) {\n\
+        async.forEachSeries(arr, function (x, callback) {\n\
+            iterator(memo, x, function (err, v) {\n\
+                memo = v;\n\
+                callback(err);\n\
+            });\n\
+        }, function (err) {\n\
+            callback(err, memo);\n\
+        });\n\
+    };\n\
+    // inject alias\n\
+    async.inject = async.reduce;\n\
+    // foldl alias\n\
+    async.foldl = async.reduce;\n\
+\n\
+    async.reduceRight = function (arr, memo, iterator, callback) {\n\
+        var reversed = _map(arr, function (x) {\n\
+            return x;\n\
+        }).reverse();\n\
+        async.reduce(reversed, memo, iterator, callback);\n\
+    };\n\
+    // foldr alias\n\
+    async.foldr = async.reduceRight;\n\
+\n\
+    var _filter = function (eachfn, arr, iterator, callback) {\n\
+        var results = [];\n\
+        arr = _map(arr, function (x, i) {\n\
+            return {index: i, value: x};\n\
+        });\n\
+        eachfn(arr, function (x, callback) {\n\
+            iterator(x.value, function (v) {\n\
+                if (v) {\n\
+                    results.push(x);\n\
+                }\n\
+                callback();\n\
+            });\n\
+        }, function (err) {\n\
+            callback(_map(results.sort(function (a, b) {\n\
+                return a.index - b.index;\n\
+            }), function (x) {\n\
+                return x.value;\n\
+            }));\n\
+        });\n\
+    };\n\
+    async.filter = doParallel(_filter);\n\
+    async.filterSeries = doSeries(_filter);\n\
+    // select alias\n\
+    async.select = async.filter;\n\
+    async.selectSeries = async.filterSeries;\n\
+\n\
+    var _reject = function (eachfn, arr, iterator, callback) {\n\
+        var results = [];\n\
+        arr = _map(arr, function (x, i) {\n\
+            return {index: i, value: x};\n\
+        });\n\
+        eachfn(arr, function (x, callback) {\n\
+            iterator(x.value, function (v) {\n\
+                if (!v) {\n\
+                    results.push(x);\n\
+                }\n\
+                callback();\n\
+            });\n\
+        }, function (err) {\n\
+            callback(_map(results.sort(function (a, b) {\n\
+                return a.index - b.index;\n\
+            }), function (x) {\n\
+                return x.value;\n\
+            }));\n\
+        });\n\
+    };\n\
+    async.reject = doParallel(_reject);\n\
+    async.rejectSeries = doSeries(_reject);\n\
+\n\
+    var _detect = function (eachfn, arr, iterator, main_callback) {\n\
+        eachfn(arr, function (x, callback) {\n\
+            iterator(x, function (result) {\n\
+                if (result) {\n\
+                    main_callback(x);\n\
+                    main_callback = function () {};\n\
+                }\n\
+                else {\n\
+                    callback();\n\
+                }\n\
+            });\n\
+        }, function (err) {\n\
+            main_callback();\n\
+        });\n\
+    };\n\
+    async.detect = doParallel(_detect);\n\
+    async.detectSeries = doSeries(_detect);\n\
+\n\
+    async.some = function (arr, iterator, main_callback) {\n\
+        async.forEach(arr, function (x, callback) {\n\
+            iterator(x, function (v) {\n\
+                if (v) {\n\
+                    main_callback(true);\n\
+                    main_callback = function () {};\n\
+                }\n\
+                callback();\n\
+            });\n\
+        }, function (err) {\n\
+            main_callback(false);\n\
+        });\n\
+    };\n\
+    // any alias\n\
+    async.any = async.some;\n\
+\n\
+    async.every = function (arr, iterator, main_callback) {\n\
+        async.forEach(arr, function (x, callback) {\n\
+            iterator(x, function (v) {\n\
+                if (!v) {\n\
+                    main_callback(false);\n\
+                    main_callback = function () {};\n\
+                }\n\
+                callback();\n\
+            });\n\
+        }, function (err) {\n\
+            main_callback(true);\n\
+        });\n\
+    };\n\
+    // all alias\n\
+    async.all = async.every;\n\
+\n\
+    async.sortBy = function (arr, iterator, callback) {\n\
+        async.map(arr, function (x, callback) {\n\
+            iterator(x, function (err, criteria) {\n\
+                if (err) {\n\
+                    callback(err);\n\
+                }\n\
+                else {\n\
+                    callback(null, {value: x, criteria: criteria});\n\
+                }\n\
+            });\n\
+        }, function (err, results) {\n\
+            if (err) {\n\
+                return callback(err);\n\
+            }\n\
+            else {\n\
+                var fn = function (left, right) {\n\
+                    var a = left.criteria, b = right.criteria;\n\
+                    return a < b ? -1 : a > b ? 1 : 0;\n\
+                };\n\
+                callback(null, _map(results.sort(fn), function (x) {\n\
+                    return x.value;\n\
+                }));\n\
+            }\n\
+        });\n\
+    };\n\
+\n\
+    async.auto = function (tasks, callback) {\n\
+        callback = callback || function () {};\n\
+        var keys = _keys(tasks);\n\
+        if (!keys.length) {\n\
+            return callback(null);\n\
+        }\n\
+\n\
+        var results = {};\n\
+\n\
+        var listeners = [];\n\
+        var addListener = function (fn) {\n\
+            listeners.unshift(fn);\n\
+        };\n\
+        var removeListener = function (fn) {\n\
+            for (var i = 0; i < listeners.length; i += 1) {\n\
+                if (listeners[i] === fn) {\n\
+                    listeners.splice(i, 1);\n\
+                    return;\n\
+                }\n\
+            }\n\
+        };\n\
+        var taskComplete = function () {\n\
+            _forEach(listeners.slice(0), function (fn) {\n\
+                fn();\n\
+            });\n\
+        };\n\
+\n\
+        addListener(function () {\n\
+            if (_keys(results).length === keys.length) {\n\
+                callback(null, results);\n\
+                callback = function () {};\n\
+            }\n\
+        });\n\
+\n\
+        _forEach(keys, function (k) {\n\
+            var task = (tasks[k] instanceof Function) ? [tasks[k]]: tasks[k];\n\
+            var taskCallback = function (err) {\n\
+                if (err) {\n\
+                    callback(err);\n\
+                    // stop subsequent errors hitting callback multiple times\n\
+                    callback = function () {};\n\
+                }\n\
+                else {\n\
+                    var args = Array.prototype.slice.call(arguments, 1);\n\
+                    if (args.length <= 1) {\n\
+                        args = args[0];\n\
+                    }\n\
+                    results[k] = args;\n\
+                    taskComplete();\n\
+                }\n\
+            };\n\
+            var requires = task.slice(0, Math.abs(task.length - 1)) || [];\n\
+            var ready = function () {\n\
+                return _reduce(requires, function (a, x) {\n\
+                    return (a && results.hasOwnProperty(x));\n\
+                }, true) && !results.hasOwnProperty(k);\n\
+            };\n\
+            if (ready()) {\n\
+                task[task.length - 1](taskCallback, results);\n\
+            }\n\
+            else {\n\
+                var listener = function () {\n\
+                    if (ready()) {\n\
+                        removeListener(listener);\n\
+                        task[task.length - 1](taskCallback, results);\n\
+                    }\n\
+                };\n\
+                addListener(listener);\n\
+            }\n\
+        });\n\
+    };\n\
+\n\
+    async.waterfall = function (tasks, callback) {\n\
+        callback = callback || function () {};\n\
+        if (!tasks.length) {\n\
+            return callback();\n\
+        }\n\
+        var wrapIterator = function (iterator) {\n\
+            return function (err) {\n\
+                if (err) {\n\
+                    callback(err);\n\
+                    callback = function () {};\n\
+                }\n\
+                else {\n\
+                    var args = Array.prototype.slice.call(arguments, 1);\n\
+                    var next = iterator.next();\n\
+                    if (next) {\n\
+                        args.push(wrapIterator(next));\n\
+                    }\n\
+                    else {\n\
+                        args.push(callback);\n\
+                    }\n\
+                    async.nextTick(function () {\n\
+                        iterator.apply(null, args);\n\
+                    });\n\
+                }\n\
+            };\n\
+        };\n\
+        wrapIterator(async.iterator(tasks))();\n\
+    };\n\
+\n\
+    async.parallel = function (tasks, callback) {\n\
+        callback = callback || function () {};\n\
+        if (tasks.constructor === Array) {\n\
+            async.map(tasks, function (fn, callback) {\n\
+                if (fn) {\n\
+                    fn(function (err) {\n\
+                        var args = Array.prototype.slice.call(arguments, 1);\n\
+                        if (args.length <= 1) {\n\
+                            args = args[0];\n\
+                        }\n\
+                        callback.call(null, err, args);\n\
+                    });\n\
+                }\n\
+            }, callback);\n\
+        }\n\
+        else {\n\
+            var results = {};\n\
+            async.forEach(_keys(tasks), function (k, callback) {\n\
+                tasks[k](function (err) {\n\
+                    var args = Array.prototype.slice.call(arguments, 1);\n\
+                    if (args.length <= 1) {\n\
+                        args = args[0];\n\
+                    }\n\
+                    results[k] = args;\n\
+                    callback(err);\n\
+                });\n\
+            }, function (err) {\n\
+                callback(err, results);\n\
+            });\n\
+        }\n\
+    };\n\
+\n\
+    async.series = function (tasks, callback) {\n\
+        callback = callback || function () {};\n\
+        if (tasks.constructor === Array) {\n\
+            async.mapSeries(tasks, function (fn, callback) {\n\
+                if (fn) {\n\
+                    fn(function (err) {\n\
+                        var args = Array.prototype.slice.call(arguments, 1);\n\
+                        if (args.length <= 1) {\n\
+                            args = args[0];\n\
+                        }\n\
+                        callback.call(null, err, args);\n\
+                    });\n\
+                }\n\
+            }, callback);\n\
+        }\n\
+        else {\n\
+            var results = {};\n\
+            async.forEachSeries(_keys(tasks), function (k, callback) {\n\
+                tasks[k](function (err) {\n\
+                    var args = Array.prototype.slice.call(arguments, 1);\n\
+                    if (args.length <= 1) {\n\
+                        args = args[0];\n\
+                    }\n\
+                    results[k] = args;\n\
+                    callback(err);\n\
+                });\n\
+            }, function (err) {\n\
+                callback(err, results);\n\
+            });\n\
+        }\n\
+    };\n\
+\n\
+    async.iterator = function (tasks) {\n\
+        var makeCallback = function (index) {\n\
+            var fn = function () {\n\
+                if (tasks.length) {\n\
+                    tasks[index].apply(null, arguments);\n\
+                }\n\
+                return fn.next();\n\
+            };\n\
+            fn.next = function () {\n\
+                return (index < tasks.length - 1) ? makeCallback(index + 1): null;\n\
+            };\n\
+            return fn;\n\
+        };\n\
+        return makeCallback(0);\n\
+    };\n\
+\n\
+    async.apply = function (fn) {\n\
+        var args = Array.prototype.slice.call(arguments, 1);\n\
+        return function () {\n\
+            return fn.apply(\n\
+                null, args.concat(Array.prototype.slice.call(arguments))\n\
+            );\n\
+        };\n\
+    };\n\
+\n\
+    var _concat = function (eachfn, arr, fn, callback) {\n\
+        var r = [];\n\
+        eachfn(arr, function (x, cb) {\n\
+            fn(x, function (err, y) {\n\
+                r = r.concat(y || []);\n\
+                cb(err);\n\
+            });\n\
+        }, function (err) {\n\
+            callback(err, r);\n\
+        });\n\
+    };\n\
+    async.concat = doParallel(_concat);\n\
+    async.concatSeries = doSeries(_concat);\n\
+\n\
+    async.whilst = function (test, iterator, callback) {\n\
+        if (test()) {\n\
+            iterator(function (err) {\n\
+                if (err) {\n\
+                    return callback(err);\n\
+                }\n\
+                async.whilst(test, iterator, callback);\n\
+            });\n\
+        }\n\
+        else {\n\
+            callback();\n\
+        }\n\
+    };\n\
+\n\
+    async.until = function (test, iterator, callback) {\n\
+        if (!test()) {\n\
+            iterator(function (err) {\n\
+                if (err) {\n\
+                    return callback(err);\n\
+                }\n\
+                async.until(test, iterator, callback);\n\
+            });\n\
+        }\n\
+        else {\n\
+            callback();\n\
+        }\n\
+    };\n\
+\n\
+    async.queue = function (worker, concurrency) {\n\
+        var workers = 0;\n\
+        var q = {\n\
+            tasks: [],\n\
+            concurrency: concurrency,\n\
+            saturated: null,\n\
+            empty: null,\n\
+            drain: null,\n\
+            push: function (data, callback) {\n\
+                if(data.constructor !== Array) {\n\
+                    data = [data];\n\
+                }\n\
+                _forEach(data, function(task) {\n\
+                    q.tasks.push({\n\
+                        data: task,\n\
+                        callback: typeof callback === 'function' ? callback : null\n\
+                    });\n\
+                    if (q.saturated && q.tasks.length == concurrency) {\n\
+                        q.saturated();\n\
+                    }\n\
+                    async.nextTick(q.process);\n\
+                });\n\
+            },\n\
+            process: function () {\n\
+                if (workers < q.concurrency && q.tasks.length) {\n\
+                    var task = q.tasks.shift();\n\
+                    if(q.empty && q.tasks.length == 0) q.empty();\n\
+                    workers += 1;\n\
+                    worker(task.data, function () {\n\
+                        workers -= 1;\n\
+                        if (task.callback) {\n\
+                            task.callback.apply(task, arguments);\n\
+                        }\n\
+                        if(q.drain && q.tasks.length + workers == 0) q.drain();\n\
+                        q.process();\n\
+                    });\n\
+                }\n\
+            },\n\
+            length: function () {\n\
+                return q.tasks.length;\n\
+            },\n\
+            running: function () {\n\
+                return workers;\n\
+            }\n\
+        };\n\
+        return q;\n\
+    };\n\
+\n\
+    var _console_fn = function (name) {\n\
+        return function (fn) {\n\
+            var args = Array.prototype.slice.call(arguments, 1);\n\
+            fn.apply(null, args.concat([function (err) {\n\
+                var args = Array.prototype.slice.call(arguments, 1);\n\
+                if (typeof console !== 'undefined') {\n\
+                    if (err) {\n\
+                        if (console.error) {\n\
+                            console.error(err);\n\
+                        }\n\
+                    }\n\
+                    else if (console[name]) {\n\
+                        _forEach(args, function (x) {\n\
+                            console[name](x);\n\
+                        });\n\
+                    }\n\
+                }\n\
+            }]));\n\
+        };\n\
+    };\n\
+    async.log = _console_fn('log');\n\
+    async.dir = _console_fn('dir');\n\
+    /*async.info = _console_fn('info');\n\
+    async.warn = _console_fn('warn');\n\
+    async.error = _console_fn('error');*/\n\
+\n\
+    async.memoize = function (fn, hasher) {\n\
+        var memo = {};\n\
+        var queues = {};\n\
+        hasher = hasher || function (x) {\n\
+            return x;\n\
+        };\n\
+        var memoized = function () {\n\
+            var args = Array.prototype.slice.call(arguments);\n\
+            var callback = args.pop();\n\
+            var key = hasher.apply(null, args);\n\
+            if (key in memo) {\n\
+                callback.apply(null, memo[key]);\n\
+            }\n\
+            else if (key in queues) {\n\
+                queues[key].push(callback);\n\
+            }\n\
+            else {\n\
+                queues[key] = [callback];\n\
+                fn.apply(null, args.concat([function () {\n\
+                    memo[key] = arguments;\n\
+                    var q = queues[key];\n\
+                    delete queues[key];\n\
+                    for (var i = 0, l = q.length; i < l; i++) {\n\
+                      q[i].apply(null, arguments);\n\
+                    }\n\
+                }]));\n\
+            }\n\
+        };\n\
+        memoized.unmemoized = fn;\n\
+        return memoized;\n\
+    };\n\
+\n\
+    async.unmemoize = function (fn) {\n\
+      return function () {\n\
+        return (fn.unmemoized || fn).apply(null, arguments);\n\
+      };\n\
+    };\n\
+\tmodule.exports = async;\n\
+}());\n\
+//@ sourceURL=solutionio-async/index.js"
+));
+require.register("timoxley-next-tick/index.js", Function("exports, require, module",
+"\"use strict\"\n\
+\n\
+if (typeof setImmediate == 'function') {\n\
+  module.exports = function(f){ setImmediate(f) }\n\
+}\n\
+// legacy node.js\n\
+else if (typeof process != 'undefined' && typeof process.nextTick == 'function') {\n\
+  module.exports = process.nextTick\n\
+}\n\
+// fallback for other environments / postMessage behaves badly on IE8\n\
+else if (typeof window == 'undefined' || window.ActiveXObject || !window.postMessage) {\n\
+  module.exports = function(f){ setTimeout(f) };\n\
+} else {\n\
+  var q = [];\n\
+\n\
+  window.addEventListener('message', function(){\n\
+    var i = 0;\n\
+    while (i < q.length) {\n\
+      try { q[i++](); }\n\
+      catch (e) {\n\
+        q = q.slice(i);\n\
+        window.postMessage('tic!', '*');\n\
+        throw e;\n\
+      }\n\
+    }\n\
+    q.length = 0;\n\
+  }, true);\n\
+\n\
+  module.exports = function(fn){\n\
+    if (!q.length) window.postMessage('tic!', '*');\n\
+    q.push(fn);\n\
+  }\n\
+}\n\
+//@ sourceURL=timoxley-next-tick/index.js"
+));
+require.register("timoxley-async-compose/index.js", Function("exports, require, module",
+"var async = require('async.js')\n\
+var nextTick = require('next-tick')\n\
+\n\
+module.exports = function compose(fns) {\n\
+  return function(obj, done) {\n\
+    async.reduce(fns, obj, function(obj, fn, callback){\n\
+      fn = requireCallback(fn)\n\
+      fn(obj, callback)\n\
+    }, function(err, results) {\n\
+      nextTick(function() {\n\
+        done(err, results)\n\
+      })\n\
+    })\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * Require function to return results in callback.\n\
+ *\n\
+ * @param {Function:obj, Function} fn\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function requireCallback(fn) {\n\
+  if (fn.length !== 1) return fn\n\
+  return function(obj, next) {\n\
+    next(null, fn(obj))\n\
+  }\n\
+}\n\
+//@ sourceURL=timoxley-async-compose/index.js"
+));
+require.register("editor/index.js", Function("exports, require, module",
+"\n\
+var bind = require('event').bind\n\
+  , classes = require('classes')\n\
+  , compose = require('async-compose')\n\
+  , dom = require('dom')\n\
+  , domify = require('domify')\n\
+  , debounce = require('debounce')\n\
+  , filters = require('./filters')\n\
+  , history = require('history')\n\
+  , marked = require('marked')\n\
+  , template = require('./index.html')\n\
+  , value = require('value');\n\
+\n\
+\n\
+/**\n\
+ * Set some default markdown options.\n\
+ */\n\
+\n\
+marked.setOptions({\n\
+  breaks: true,\n\
+  gfm: true,\n\
+  smartypants: true,\n\
+  tables: true\n\
+});\n\
+\n\
+\n\
+/**\n\
+ * Expose `Editor`.\n\
+ */\n\
+\n\
+module.exports = Editor;\n\
+\n\
+\n\
+/**\n\
+ * Initialize a new `Editor`.\n\
+ *\n\
+ * @param {Object} doc\n\
+ */\n\
+\n\
+function Editor (doc) {\n\
+  this.model = doc;\n\
+  this.el = domify(template);\n\
+  this.input = this.el.querySelector('.editor-input');\n\
+  this.output = this.el.querySelector('.editor-output');\n\
+  this.bind();\n\
+  this.render();\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Add a plugin.\n\
+ *\n\
+ * @param {Function} plugin\n\
+ */\n\
+\n\
+Editor.use = function (plugin) {\n\
+  plugin(this);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Add a filter, for transforming text, html or DOM elements.\n\
+ *\n\
+ * @param {String} name\n\
+ * @param {Function} callback\n\
+ */\n\
+\n\
+Editor.filter = function (name, callback) {\n\
+  this._filters || (this._filters = {});\n\
+  this._filters[name] || (this._filters[name] = []);\n\
+  this._filters[name].push(callback);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Bind to events.\n\
+ *\n\
+ * @return {Editor}\n\
+ */\n\
+\n\
+Editor.prototype.bind = function () {\n\
+  var self = this;\n\
+\n\
+  // model change\n\
+  this.model.on('change', this.render.bind(this));\n\
+\n\
+  // keyup\n\
+  bind(this.input, 'keyup', this.onkeyup.bind(this));\n\
+\n\
+  // write button\n\
+  var write = this.el.querySelector('.editor-write-button');\n\
+  bind(write, 'click', function (e) {\n\
+    'writing' === self._mode\n\
+      ? self.mode(null)\n\
+      : self.mode('writing');\n\
+  });\n\
+\n\
+  // read button\n\
+  var read = this.el.querySelector('.editor-read-button');\n\
+  bind(read, 'click', function (e) {\n\
+    'reading' === self._mode\n\
+      ? self.mode(null)\n\
+      : self.mode('reading');\n\
+  });\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Render settings into the DOM.\n\
+ *\n\
+ * @param {Function} callback\n\
+ * @return {Editor}\n\
+ */\n\
+\n\
+Editor.prototype.render = function (callback) {\n\
+  var attrs = this.model.toJSON();\n\
+  var text = attrs.body;\n\
+  if (!text) return;\n\
+  value(this.input, text);\n\
+\n\
+  var self = this;\n\
+  self.filter('text', text, function (err, text) {\n\
+    if (err) throw err;\n\
+    var html = marked(text);\n\
+\n\
+    self.filter('html', html, function (err, html) {\n\
+      if (err) throw err;\n\
+      var els = domify('<div>' + html + '</div>');\n\
+\n\
+      self.filter('dom', els, function (err, els) {\n\
+        if (err) throw err;\n\
+        dom(self.output).empty().append(els);\n\
+        if ('function' === typeof callback) callback();\n\
+      });\n\
+    });\n\
+  });\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Runs all the filters for a given `type`, and `callback`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @param {Mixed} input\n\
+ * @param {Function} callback\n\
+ * @return {Editor}\n\
+ */\n\
+\n\
+Editor.prototype.filter = function (type, input, callback) {\n\
+  var filter = compose(Editor._filters[type] || []);\n\
+  filter(input, callback);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Save settings to Firebase.\n\
+ *\n\
+ * @param {Object} attrs\n\
+ * @return {Editor}\n\
+ */\n\
+\n\
+Editor.prototype.save = function (attrs) {\n\
+  this.model.set(attrs).save();\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Set the editor's mode.\n\
+ *\n\
+ * @param {String} mode - 'reading' or 'writing'\n\
+ */\n\
+\n\
+Editor.prototype.mode = function (mode) {\n\
+  this._mode = mode;\n\
+  classes(this.el).remove('writing').remove('reading');\n\
+  if (mode) classes(this.el).add(mode);\n\
+  history.replace('/' + this.model.primary() + '/' + (mode || ''));\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * On keyup, take the textarea contents and save them to firebase.\n\
+ *\n\
+ * Debounced 100ms.\n\
+ */\n\
+\n\
+Editor.prototype.onkeyup = debounce(function (e) {\n\
+  this.model.body(value(this.input));\n\
+  var self = this;\n\
+  this.render(function () {\n\
+    self.save({ title: self.title() }); // grab the newest title\n\
+  });\n\
+}, 100);\n\
+\n\
+\n\
+/**\n\
+ * Generate a title based on the body and date of the document.\n\
+ *\n\
+ * @param  {String} markdown\n\
+ * @param  {Date} created\n\
+ * @return {String}\n\
+ */\n\
+\n\
+Editor.prototype.title = function () {\n\
+  var headings = dom(this.output).find('h1, h2, h3, h4, h5, h6');\n\
+  return headings.length()\n\
+    ? headings.first().text()\n\
+    : '';\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Apply filters.\n\
+ */\n\
+\n\
+for (var key in filters) Editor.use(filters[key]);//@ sourceURL=editor/index.js"
+));
+require.register("editor/filters/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Code highlighting.\n\
+ */\n\
+\n\
+exports.rainbow = require('./rainbow');\n\
+\n\
+\n\
+/**\n\
+ * Latex support.\n\
+ */\n\
+\n\
+// exports.mathjax = require('./mathjax');//@ sourceURL=editor/filters/index.js"
+));
+require.register("editor/filters/mathjax.js", Function("exports, require, module",
+"\n\
+var MathJax = require('mathjax');\n\
+\n\
+\n\
+/**\n\
+ * Configure.\n\
+ *\n\
+ * http://docs.mathjax.org/en/latest/config-files.html#the-tex-ams-mml-htmlormml-configuration-file\n\
+ */\n\
+\n\
+MathJax.Hub.Config({\n\
+  config: [\"MMLorHTML.js\"],\n\
+  jax: [\"input/TeX\",\"input/MathML\",\"output/HTML-CSS\",\"output/NativeMML\"],\n\
+  extensions: [\"tex2jax.js\",\"mml2jax.js\",\"MathMenu.js\",\"MathZoom.js\"],\n\
+  TeX: {\n\
+    extensions: [\"AMSmath.js\",\"AMSsymbols.js\",\"noErrors.js\",\"noUndefined.js\"]\n\
+  },\n\
+  tex2jax : {\n\
+    displayMath : [['$$','$$'], ['\\\\[','\\\\]']],\n\
+    inlineMath  : [['\\\\(','\\\\)']]\n\
+  }\n\
+});\n\
+\n\
+\n\
+/**\n\
+ * Filter dom and turn it into MathJax.\n\
+ */\n\
+\n\
+module.exports = function (Editor) {\n\
+  Editor.filter('dom', function (dom, done) {\n\
+    MathJax.Hub.Queue(['Typeset'], MathJax.Hub, dom);\n\
+    MathJax.Hub.Queue(function () {\n\
+      done(null, dom);\n\
+    });\n\
+  });\n\
+};//@ sourceURL=editor/filters/mathjax.js"
+));
+require.register("editor/filters/rainbow.js", Function("exports, require, module",
+"\n\
+var Rainbow = require('rainbow');\n\
+\n\
+\n\
+/**\n\
+ * Export our plugin.\n\
+ */\n\
+\n\
+module.exports = function (Editor) {\n\
+  Editor.filter('dom', function (dom, done) {\n\
+    Rainbow.color(dom, function () {\n\
+      done(null, dom);\n\
+    });\n\
+  });\n\
+};//@ sourceURL=editor/filters/rainbow.js"
+));
+require.register("component-keyname/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Key name map.\n\
+ */\n\
+\n\
+var map = {\n\
+  8: 'backspace',\n\
+  9: 'tab',\n\
+  13: 'enter',\n\
+  16: 'shift',\n\
+  17: 'ctrl',\n\
+  18: 'alt',\n\
+  20: 'capslock',\n\
+  27: 'esc',\n\
+  32: 'space',\n\
+  33: 'pageup',\n\
+  34: 'pagedown',\n\
+  35: 'end',\n\
+  36: 'home',\n\
+  37: 'left',\n\
+  38: 'up',\n\
+  39: 'right',\n\
+  40: 'down',\n\
+  45: 'ins',\n\
+  46: 'del',\n\
+  91: 'meta',\n\
+  93: 'meta',\n\
+  224: 'meta'\n\
+};\n\
+\n\
+/**\n\
+ * Return key name for `n`.\n\
+ *\n\
+ * @param {Number} n\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(n){\n\
+  return map[n];\n\
+};//@ sourceURL=component-keyname/index.js"
+));
+require.register("component-moment/index.js", Function("exports, require, module",
+"// moment.js\n\
+// version : 2.0.0\n\
+// author : Tim Wood\n\
+// license : MIT\n\
+// momentjs.com\n\
+\n\
+(function (undefined) {\n\
+\n\
+    /************************************\n\
+        Constants\n\
+    ************************************/\n\
+\n\
+    var moment,\n\
+        VERSION = \"2.0.0\",\n\
+        round = Math.round, i,\n\
+        // internal storage for language config files\n\
+        languages = {},\n\
+\n\
+        // check for nodeJS\n\
+        hasModule = (typeof module !== 'undefined' && module.exports),\n\
+\n\
+        // ASP.NET json date format regex\n\
+        aspNetJsonRegex = /^\\/?Date\\((\\-?\\d+)/i,\n\
+\n\
+        // format tokens\n\
+        formattingTokens = /(\\[[^\\[]*\\])|(\\\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|YYYYY|YYYY|YY|a|A|hh?|HH?|mm?|ss?|SS?S?|X|zz?|ZZ?|.)/g,\n\
+        localFormattingTokens = /(\\[[^\\[]*\\])|(\\\\)?(LT|LL?L?L?|l{1,4})/g,\n\
+\n\
+        // parsing tokens\n\
+        parseMultipleFormatChunker = /([0-9a-zA-Z\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]+)/gi,\n\
+\n\
+        // parsing token regexes\n\
+        parseTokenOneOrTwoDigits = /\\d\\d?/, // 0 - 99\n\
+        parseTokenOneToThreeDigits = /\\d{1,3}/, // 0 - 999\n\
+        parseTokenThreeDigits = /\\d{3}/, // 000 - 999\n\
+        parseTokenFourDigits = /\\d{1,4}/, // 0 - 9999\n\
+        parseTokenSixDigits = /[+\\-]?\\d{1,6}/, // -999,999 - 999,999\n\
+        parseTokenWord = /[0-9]*[a-z\\u00A0-\\u05FF\\u0700-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]+|[\\u0600-\\u06FF]+\\s*?[\\u0600-\\u06FF]+/i, // any word (or two) characters or numbers including two word month in arabic.\n\
+        parseTokenTimezone = /Z|[\\+\\-]\\d\\d:?\\d\\d/i, // +00:00 -00:00 +0000 -0000 or Z\n\
+        parseTokenT = /T/i, // T (ISO seperator)\n\
+        parseTokenTimestampMs = /[\\+\\-]?\\d+(\\.\\d{1,3})?/, // 123456789 123456789.123\n\
+\n\
+        // preliminary iso regex\n\
+        // 0000-00-00 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000\n\
+        isoRegex = /^\\s*\\d{4}-\\d\\d-\\d\\d((T| )(\\d\\d(:\\d\\d(:\\d\\d(\\.\\d\\d?\\d?)?)?)?)?([\\+\\-]\\d\\d:?\\d\\d)?)?/,\n\
+        isoFormat = 'YYYY-MM-DDTHH:mm:ssZ',\n\
+\n\
+        // iso time formats and regexes\n\
+        isoTimes = [\n\
+            ['HH:mm:ss.S', /(T| )\\d\\d:\\d\\d:\\d\\d\\.\\d{1,3}/],\n\
+            ['HH:mm:ss', /(T| )\\d\\d:\\d\\d:\\d\\d/],\n\
+            ['HH:mm', /(T| )\\d\\d:\\d\\d/],\n\
+            ['HH', /(T| )\\d\\d/]\n\
+        ],\n\
+\n\
+        // timezone chunker \"+10:00\" > [\"10\", \"00\"] or \"-1530\" > [\"-15\", \"30\"]\n\
+        parseTimezoneChunker = /([\\+\\-]|\\d\\d)/gi,\n\
+\n\
+        // getter and setter names\n\
+        proxyGettersAndSetters = 'Month|Date|Hours|Minutes|Seconds|Milliseconds'.split('|'),\n\
+        unitMillisecondFactors = {\n\
+            'Milliseconds' : 1,\n\
+            'Seconds' : 1e3,\n\
+            'Minutes' : 6e4,\n\
+            'Hours' : 36e5,\n\
+            'Days' : 864e5,\n\
+            'Months' : 2592e6,\n\
+            'Years' : 31536e6\n\
+        },\n\
+\n\
+        // format function strings\n\
+        formatFunctions = {},\n\
+\n\
+        // tokens to ordinalize and pad\n\
+        ordinalizeTokens = 'DDD w W M D d'.split(' '),\n\
+        paddedTokens = 'M D H h m s w W'.split(' '),\n\
+\n\
+        formatTokenFunctions = {\n\
+            M    : function () {\n\
+                return this.month() + 1;\n\
+            },\n\
+            MMM  : function (format) {\n\
+                return this.lang().monthsShort(this, format);\n\
+            },\n\
+            MMMM : function (format) {\n\
+                return this.lang().months(this, format);\n\
+            },\n\
+            D    : function () {\n\
+                return this.date();\n\
+            },\n\
+            DDD  : function () {\n\
+                return this.dayOfYear();\n\
+            },\n\
+            d    : function () {\n\
+                return this.day();\n\
+            },\n\
+            dd   : function (format) {\n\
+                return this.lang().weekdaysMin(this, format);\n\
+            },\n\
+            ddd  : function (format) {\n\
+                return this.lang().weekdaysShort(this, format);\n\
+            },\n\
+            dddd : function (format) {\n\
+                return this.lang().weekdays(this, format);\n\
+            },\n\
+            w    : function () {\n\
+                return this.week();\n\
+            },\n\
+            W    : function () {\n\
+                return this.isoWeek();\n\
+            },\n\
+            YY   : function () {\n\
+                return leftZeroFill(this.year() % 100, 2);\n\
+            },\n\
+            YYYY : function () {\n\
+                return leftZeroFill(this.year(), 4);\n\
+            },\n\
+            YYYYY : function () {\n\
+                return leftZeroFill(this.year(), 5);\n\
+            },\n\
+            a    : function () {\n\
+                return this.lang().meridiem(this.hours(), this.minutes(), true);\n\
+            },\n\
+            A    : function () {\n\
+                return this.lang().meridiem(this.hours(), this.minutes(), false);\n\
+            },\n\
+            H    : function () {\n\
+                return this.hours();\n\
+            },\n\
+            h    : function () {\n\
+                return this.hours() % 12 || 12;\n\
+            },\n\
+            m    : function () {\n\
+                return this.minutes();\n\
+            },\n\
+            s    : function () {\n\
+                return this.seconds();\n\
+            },\n\
+            S    : function () {\n\
+                return ~~(this.milliseconds() / 100);\n\
+            },\n\
+            SS   : function () {\n\
+                return leftZeroFill(~~(this.milliseconds() / 10), 2);\n\
+            },\n\
+            SSS  : function () {\n\
+                return leftZeroFill(this.milliseconds(), 3);\n\
+            },\n\
+            Z    : function () {\n\
+                var a = -this.zone(),\n\
+                    b = \"+\";\n\
+                if (a < 0) {\n\
+                    a = -a;\n\
+                    b = \"-\";\n\
+                }\n\
+                return b + leftZeroFill(~~(a / 60), 2) + \":\" + leftZeroFill(~~a % 60, 2);\n\
+            },\n\
+            ZZ   : function () {\n\
+                var a = -this.zone(),\n\
+                    b = \"+\";\n\
+                if (a < 0) {\n\
+                    a = -a;\n\
+                    b = \"-\";\n\
+                }\n\
+                return b + leftZeroFill(~~(10 * a / 6), 4);\n\
+            },\n\
+            X    : function () {\n\
+                return this.unix();\n\
+            }\n\
+        };\n\
+\n\
+    function padToken(func, count) {\n\
+        return function (a) {\n\
+            return leftZeroFill(func.call(this, a), count);\n\
+        };\n\
+    }\n\
+    function ordinalizeToken(func) {\n\
+        return function (a) {\n\
+            return this.lang().ordinal(func.call(this, a));\n\
+        };\n\
+    }\n\
+\n\
+    while (ordinalizeTokens.length) {\n\
+        i = ordinalizeTokens.pop();\n\
+        formatTokenFunctions[i + 'o'] = ordinalizeToken(formatTokenFunctions[i]);\n\
+    }\n\
+    while (paddedTokens.length) {\n\
+        i = paddedTokens.pop();\n\
+        formatTokenFunctions[i + i] = padToken(formatTokenFunctions[i], 2);\n\
+    }\n\
+    formatTokenFunctions.DDDD = padToken(formatTokenFunctions.DDD, 3);\n\
+\n\
+\n\
+    /************************************\n\
+        Constructors\n\
+    ************************************/\n\
+\n\
+    function Language() {\n\
+\n\
+    }\n\
+\n\
+    // Moment prototype object\n\
+    function Moment(config) {\n\
+        extend(this, config);\n\
+    }\n\
+\n\
+    // Duration Constructor\n\
+    function Duration(duration) {\n\
+        var data = this._data = {},\n\
+            years = duration.years || duration.year || duration.y || 0,\n\
+            months = duration.months || duration.month || duration.M || 0,\n\
+            weeks = duration.weeks || duration.week || duration.w || 0,\n\
+            days = duration.days || duration.day || duration.d || 0,\n\
+            hours = duration.hours || duration.hour || duration.h || 0,\n\
+            minutes = duration.minutes || duration.minute || duration.m || 0,\n\
+            seconds = duration.seconds || duration.second || duration.s || 0,\n\
+            milliseconds = duration.milliseconds || duration.millisecond || duration.ms || 0;\n\
+\n\
+        // representation for dateAddRemove\n\
+        this._milliseconds = milliseconds +\n\
+            seconds * 1e3 + // 1000\n\
+            minutes * 6e4 + // 1000 * 60\n\
+            hours * 36e5; // 1000 * 60 * 60\n\
+        // Because of dateAddRemove treats 24 hours as different from a\n\
+        // day when working around DST, we need to store them separately\n\
+        this._days = days +\n\
+            weeks * 7;\n\
+        // It is impossible translate months into days without knowing\n\
+        // which months you are are talking about, so we have to store\n\
+        // it separately.\n\
+        this._months = months +\n\
+            years * 12;\n\
+\n\
+        // The following code bubbles up values, see the tests for\n\
+        // examples of what that means.\n\
+        data.milliseconds = milliseconds % 1000;\n\
+        seconds += absRound(milliseconds / 1000);\n\
+\n\
+        data.seconds = seconds % 60;\n\
+        minutes += absRound(seconds / 60);\n\
+\n\
+        data.minutes = minutes % 60;\n\
+        hours += absRound(minutes / 60);\n\
+\n\
+        data.hours = hours % 24;\n\
+        days += absRound(hours / 24);\n\
+\n\
+        days += weeks * 7;\n\
+        data.days = days % 30;\n\
+\n\
+        months += absRound(days / 30);\n\
+\n\
+        data.months = months % 12;\n\
+        years += absRound(months / 12);\n\
+\n\
+        data.years = years;\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Helpers\n\
+    ************************************/\n\
+\n\
+\n\
+    function extend(a, b) {\n\
+        for (var i in b) {\n\
+            if (b.hasOwnProperty(i)) {\n\
+                a[i] = b[i];\n\
+            }\n\
+        }\n\
+        return a;\n\
+    }\n\
+\n\
+    function absRound(number) {\n\
+        if (number < 0) {\n\
+            return Math.ceil(number);\n\
+        } else {\n\
+            return Math.floor(number);\n\
+        }\n\
+    }\n\
+\n\
+    // left zero fill a number\n\
+    // see http://jsperf.com/left-zero-filling for performance comparison\n\
+    function leftZeroFill(number, targetLength) {\n\
+        var output = number + '';\n\
+        while (output.length < targetLength) {\n\
+            output = '0' + output;\n\
+        }\n\
+        return output;\n\
+    }\n\
+\n\
+    // helper function for _.addTime and _.subtractTime\n\
+    function addOrSubtractDurationFromMoment(mom, duration, isAdding) {\n\
+        var ms = duration._milliseconds,\n\
+            d = duration._days,\n\
+            M = duration._months,\n\
+            currentDate;\n\
+\n\
+        if (ms) {\n\
+            mom._d.setTime(+mom + ms * isAdding);\n\
+        }\n\
+        if (d) {\n\
+            mom.date(mom.date() + d * isAdding);\n\
+        }\n\
+        if (M) {\n\
+            currentDate = mom.date();\n\
+            mom.date(1)\n\
+                .month(mom.month() + M * isAdding)\n\
+                .date(Math.min(currentDate, mom.daysInMonth()));\n\
+        }\n\
+    }\n\
+\n\
+    // check if is an array\n\
+    function isArray(input) {\n\
+        return Object.prototype.toString.call(input) === '[object Array]';\n\
+    }\n\
+\n\
+    // compare two arrays, return the number of differences\n\
+    function compareArrays(array1, array2) {\n\
+        var len = Math.min(array1.length, array2.length),\n\
+            lengthDiff = Math.abs(array1.length - array2.length),\n\
+            diffs = 0,\n\
+            i;\n\
+        for (i = 0; i < len; i++) {\n\
+            if (~~array1[i] !== ~~array2[i]) {\n\
+                diffs++;\n\
+            }\n\
+        }\n\
+        return diffs + lengthDiff;\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Languages\n\
+    ************************************/\n\
+\n\
+\n\
+    Language.prototype = {\n\
+        set : function (config) {\n\
+            var prop, i;\n\
+            for (i in config) {\n\
+                prop = config[i];\n\
+                if (typeof prop === 'function') {\n\
+                    this[i] = prop;\n\
+                } else {\n\
+                    this['_' + i] = prop;\n\
+                }\n\
+            }\n\
+        },\n\
+\n\
+        _months : \"January_February_March_April_May_June_July_August_September_October_November_December\".split(\"_\"),\n\
+        months : function (m) {\n\
+            return this._months[m.month()];\n\
+        },\n\
+\n\
+        _monthsShort : \"Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec\".split(\"_\"),\n\
+        monthsShort : function (m) {\n\
+            return this._monthsShort[m.month()];\n\
+        },\n\
+\n\
+        monthsParse : function (monthName) {\n\
+            var i, mom, regex, output;\n\
+\n\
+            if (!this._monthsParse) {\n\
+                this._monthsParse = [];\n\
+            }\n\
+\n\
+            for (i = 0; i < 12; i++) {\n\
+                // make the regex if we don't have it already\n\
+                if (!this._monthsParse[i]) {\n\
+                    mom = moment([2000, i]);\n\
+                    regex = '^' + this.months(mom, '') + '|^' + this.monthsShort(mom, '');\n\
+                    this._monthsParse[i] = new RegExp(regex.replace('.', ''), 'i');\n\
+                }\n\
+                // test the regex\n\
+                if (this._monthsParse[i].test(monthName)) {\n\
+                    return i;\n\
+                }\n\
+            }\n\
+        },\n\
+\n\
+        _weekdays : \"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday\".split(\"_\"),\n\
+        weekdays : function (m) {\n\
+            return this._weekdays[m.day()];\n\
+        },\n\
+\n\
+        _weekdaysShort : \"Sun_Mon_Tue_Wed_Thu_Fri_Sat\".split(\"_\"),\n\
+        weekdaysShort : function (m) {\n\
+            return this._weekdaysShort[m.day()];\n\
+        },\n\
+\n\
+        _weekdaysMin : \"Su_Mo_Tu_We_Th_Fr_Sa\".split(\"_\"),\n\
+        weekdaysMin : function (m) {\n\
+            return this._weekdaysMin[m.day()];\n\
+        },\n\
+\n\
+        _longDateFormat : {\n\
+            LT : \"h:mm A\",\n\
+            L : \"MM/DD/YYYY\",\n\
+            LL : \"MMMM D YYYY\",\n\
+            LLL : \"MMMM D YYYY LT\",\n\
+            LLLL : \"dddd, MMMM D YYYY LT\"\n\
+        },\n\
+        longDateFormat : function (key) {\n\
+            var output = this._longDateFormat[key];\n\
+            if (!output && this._longDateFormat[key.toUpperCase()]) {\n\
+                output = this._longDateFormat[key.toUpperCase()].replace(/MMMM|MM|DD|dddd/g, function (val) {\n\
+                    return val.slice(1);\n\
+                });\n\
+                this._longDateFormat[key] = output;\n\
+            }\n\
+            return output;\n\
+        },\n\
+\n\
+        meridiem : function (hours, minutes, isLower) {\n\
+            if (hours > 11) {\n\
+                return isLower ? 'pm' : 'PM';\n\
+            } else {\n\
+                return isLower ? 'am' : 'AM';\n\
+            }\n\
+        },\n\
+\n\
+        _calendar : {\n\
+            sameDay : '[Today at] LT',\n\
+            nextDay : '[Tomorrow at] LT',\n\
+            nextWeek : 'dddd [at] LT',\n\
+            lastDay : '[Yesterday at] LT',\n\
+            lastWeek : '[last] dddd [at] LT',\n\
+            sameElse : 'L'\n\
+        },\n\
+        calendar : function (key, mom) {\n\
+            var output = this._calendar[key];\n\
+            return typeof output === 'function' ? output.apply(mom) : output;\n\
+        },\n\
+\n\
+        _relativeTime : {\n\
+            future : \"in %s\",\n\
+            past : \"%s ago\",\n\
+            s : \"a few seconds\",\n\
+            m : \"a minute\",\n\
+            mm : \"%d minutes\",\n\
+            h : \"an hour\",\n\
+            hh : \"%d hours\",\n\
+            d : \"a day\",\n\
+            dd : \"%d days\",\n\
+            M : \"a month\",\n\
+            MM : \"%d months\",\n\
+            y : \"a year\",\n\
+            yy : \"%d years\"\n\
+        },\n\
+        relativeTime : function (number, withoutSuffix, string, isFuture) {\n\
+            var output = this._relativeTime[string];\n\
+            return (typeof output === 'function') ?\n\
+                output(number, withoutSuffix, string, isFuture) :\n\
+                output.replace(/%d/i, number);\n\
+        },\n\
+        pastFuture : function (diff, output) {\n\
+            var format = this._relativeTime[diff > 0 ? 'future' : 'past'];\n\
+            return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);\n\
+        },\n\
+\n\
+        ordinal : function (number) {\n\
+            return this._ordinal.replace(\"%d\", number);\n\
+        },\n\
+        _ordinal : \"%d\",\n\
+\n\
+        preparse : function (string) {\n\
+            return string;\n\
+        },\n\
+\n\
+        postformat : function (string) {\n\
+            return string;\n\
+        },\n\
+\n\
+        week : function (mom) {\n\
+            return weekOfYear(mom, this._week.dow, this._week.doy);\n\
+        },\n\
+        _week : {\n\
+            dow : 0, // Sunday is the first day of the week.\n\
+            doy : 6  // The week that contains Jan 1st is the first week of the year.\n\
+        }\n\
+    };\n\
+\n\
+    // Loads a language definition into the `languages` cache.  The function\n\
+    // takes a key and optionally values.  If not in the browser and no values\n\
+    // are provided, it will load the language file module.  As a convenience,\n\
+    // this function also returns the language values.\n\
+    function loadLang(key, values) {\n\
+        values.abbr = key;\n\
+        if (!languages[key]) {\n\
+            languages[key] = new Language();\n\
+        }\n\
+        languages[key].set(values);\n\
+        return languages[key];\n\
+    }\n\
+\n\
+    // Determines which language definition to use and returns it.\n\
+    //\n\
+    // With no parameters, it will return the global language.  If you\n\
+    // pass in a language key, such as 'en', it will return the\n\
+    // definition for 'en', so long as 'en' has already been loaded using\n\
+    // moment.lang.\n\
+    function getLangDefinition(key) {\n\
+        if (!key) {\n\
+            return moment.fn._lang;\n\
+        }\n\
+        if (!languages[key] && hasModule) {\n\
+            require('./lang/' + key);\n\
+        }\n\
+        return languages[key];\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Formatting\n\
+    ************************************/\n\
+\n\
+\n\
+    function removeFormattingTokens(input) {\n\
+        if (input.match(/\\[.*\\]/)) {\n\
+            return input.replace(/^\\[|\\]$/g, \"\");\n\
+        }\n\
+        return input.replace(/\\\\/g, \"\");\n\
+    }\n\
+\n\
+    function makeFormatFunction(format) {\n\
+        var array = format.match(formattingTokens), i, length;\n\
+\n\
+        for (i = 0, length = array.length; i < length; i++) {\n\
+            if (formatTokenFunctions[array[i]]) {\n\
+                array[i] = formatTokenFunctions[array[i]];\n\
+            } else {\n\
+                array[i] = removeFormattingTokens(array[i]);\n\
+            }\n\
+        }\n\
+\n\
+        return function (mom) {\n\
+            var output = \"\";\n\
+            for (i = 0; i < length; i++) {\n\
+                output += typeof array[i].call === 'function' ? array[i].call(mom, format) : array[i];\n\
+            }\n\
+            return output;\n\
+        };\n\
+    }\n\
+\n\
+    // format date using native date object\n\
+    function formatMoment(m, format) {\n\
+        var i = 5;\n\
+\n\
+        function replaceLongDateFormatTokens(input) {\n\
+            return m.lang().longDateFormat(input) || input;\n\
+        }\n\
+\n\
+        while (i-- && localFormattingTokens.test(format)) {\n\
+            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);\n\
+        }\n\
+\n\
+        if (!formatFunctions[format]) {\n\
+            formatFunctions[format] = makeFormatFunction(format);\n\
+        }\n\
+\n\
+        return formatFunctions[format](m);\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Parsing\n\
+    ************************************/\n\
+\n\
+\n\
+    // get the regex to find the next token\n\
+    function getParseRegexForToken(token) {\n\
+        switch (token) {\n\
+        case 'DDDD':\n\
+            return parseTokenThreeDigits;\n\
+        case 'YYYY':\n\
+            return parseTokenFourDigits;\n\
+        case 'YYYYY':\n\
+            return parseTokenSixDigits;\n\
+        case 'S':\n\
+        case 'SS':\n\
+        case 'SSS':\n\
+        case 'DDD':\n\
+            return parseTokenOneToThreeDigits;\n\
+        case 'MMM':\n\
+        case 'MMMM':\n\
+        case 'dd':\n\
+        case 'ddd':\n\
+        case 'dddd':\n\
+        case 'a':\n\
+        case 'A':\n\
+            return parseTokenWord;\n\
+        case 'X':\n\
+            return parseTokenTimestampMs;\n\
+        case 'Z':\n\
+        case 'ZZ':\n\
+            return parseTokenTimezone;\n\
+        case 'T':\n\
+            return parseTokenT;\n\
+        case 'MM':\n\
+        case 'DD':\n\
+        case 'YY':\n\
+        case 'HH':\n\
+        case 'hh':\n\
+        case 'mm':\n\
+        case 'ss':\n\
+        case 'M':\n\
+        case 'D':\n\
+        case 'd':\n\
+        case 'H':\n\
+        case 'h':\n\
+        case 'm':\n\
+        case 's':\n\
+            return parseTokenOneOrTwoDigits;\n\
+        default :\n\
+            return new RegExp(token.replace('\\\\', ''));\n\
+        }\n\
+    }\n\
+\n\
+    // function to convert string input to date\n\
+    function addTimeToArrayFromToken(token, input, config) {\n\
+        var a, b,\n\
+            datePartArray = config._a;\n\
+\n\
+        switch (token) {\n\
+        // MONTH\n\
+        case 'M' : // fall through to MM\n\
+        case 'MM' :\n\
+            datePartArray[1] = (input == null) ? 0 : ~~input - 1;\n\
+            break;\n\
+        case 'MMM' : // fall through to MMMM\n\
+        case 'MMMM' :\n\
+            a = getLangDefinition(config._l).monthsParse(input);\n\
+            // if we didn't find a month name, mark the date as invalid.\n\
+            if (a != null) {\n\
+                datePartArray[1] = a;\n\
+            } else {\n\
+                config._isValid = false;\n\
+            }\n\
+            break;\n\
+        // DAY OF MONTH\n\
+        case 'D' : // fall through to DDDD\n\
+        case 'DD' : // fall through to DDDD\n\
+        case 'DDD' : // fall through to DDDD\n\
+        case 'DDDD' :\n\
+            if (input != null) {\n\
+                datePartArray[2] = ~~input;\n\
+            }\n\
+            break;\n\
+        // YEAR\n\
+        case 'YY' :\n\
+            datePartArray[0] = ~~input + (~~input > 68 ? 1900 : 2000);\n\
+            break;\n\
+        case 'YYYY' :\n\
+        case 'YYYYY' :\n\
+            datePartArray[0] = ~~input;\n\
+            break;\n\
+        // AM / PM\n\
+        case 'a' : // fall through to A\n\
+        case 'A' :\n\
+            config._isPm = ((input + '').toLowerCase() === 'pm');\n\
+            break;\n\
+        // 24 HOUR\n\
+        case 'H' : // fall through to hh\n\
+        case 'HH' : // fall through to hh\n\
+        case 'h' : // fall through to hh\n\
+        case 'hh' :\n\
+            datePartArray[3] = ~~input;\n\
+            break;\n\
+        // MINUTE\n\
+        case 'm' : // fall through to mm\n\
+        case 'mm' :\n\
+            datePartArray[4] = ~~input;\n\
+            break;\n\
+        // SECOND\n\
+        case 's' : // fall through to ss\n\
+        case 'ss' :\n\
+            datePartArray[5] = ~~input;\n\
+            break;\n\
+        // MILLISECOND\n\
+        case 'S' :\n\
+        case 'SS' :\n\
+        case 'SSS' :\n\
+            datePartArray[6] = ~~ (('0.' + input) * 1000);\n\
+            break;\n\
+        // UNIX TIMESTAMP WITH MS\n\
+        case 'X':\n\
+            config._d = new Date(parseFloat(input) * 1000);\n\
+            break;\n\
+        // TIMEZONE\n\
+        case 'Z' : // fall through to ZZ\n\
+        case 'ZZ' :\n\
+            config._useUTC = true;\n\
+            a = (input + '').match(parseTimezoneChunker);\n\
+            if (a && a[1]) {\n\
+                config._tzh = ~~a[1];\n\
+            }\n\
+            if (a && a[2]) {\n\
+                config._tzm = ~~a[2];\n\
+            }\n\
+            // reverse offsets\n\
+            if (a && a[0] === '+') {\n\
+                config._tzh = -config._tzh;\n\
+                config._tzm = -config._tzm;\n\
+            }\n\
+            break;\n\
+        }\n\
+\n\
+        // if the input is null, the date is not valid\n\
+        if (input == null) {\n\
+            config._isValid = false;\n\
+        }\n\
+    }\n\
+\n\
+    // convert an array to a date.\n\
+    // the array should mirror the parameters below\n\
+    // note: all values past the year are optional and will default to the lowest possible value.\n\
+    // [year, month, day , hour, minute, second, millisecond]\n\
+    function dateFromArray(config) {\n\
+        var i, date, input = [];\n\
+\n\
+        if (config._d) {\n\
+            return;\n\
+        }\n\
+\n\
+        for (i = 0; i < 7; i++) {\n\
+            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];\n\
+        }\n\
+\n\
+        // add the offsets to the time to be parsed so that we can have a clean array for checking isValid\n\
+        input[3] += config._tzh || 0;\n\
+        input[4] += config._tzm || 0;\n\
+\n\
+        date = new Date(0);\n\
+\n\
+        if (config._useUTC) {\n\
+            date.setUTCFullYear(input[0], input[1], input[2]);\n\
+            date.setUTCHours(input[3], input[4], input[5], input[6]);\n\
+        } else {\n\
+            date.setFullYear(input[0], input[1], input[2]);\n\
+            date.setHours(input[3], input[4], input[5], input[6]);\n\
+        }\n\
+\n\
+        config._d = date;\n\
+    }\n\
+\n\
+    // date from string and format string\n\
+    function makeDateFromStringAndFormat(config) {\n\
+        // This array is used to make a Date, either with `new Date` or `Date.UTC`\n\
+        var tokens = config._f.match(formattingTokens),\n\
+            string = config._i,\n\
+            i, parsedInput;\n\
+\n\
+        config._a = [];\n\
+\n\
+        for (i = 0; i < tokens.length; i++) {\n\
+            parsedInput = (getParseRegexForToken(tokens[i]).exec(string) || [])[0];\n\
+            if (parsedInput) {\n\
+                string = string.slice(string.indexOf(parsedInput) + parsedInput.length);\n\
+            }\n\
+            // don't parse if its not a known token\n\
+            if (formatTokenFunctions[tokens[i]]) {\n\
+                addTimeToArrayFromToken(tokens[i], parsedInput, config);\n\
+            }\n\
+        }\n\
+        // handle am pm\n\
+        if (config._isPm && config._a[3] < 12) {\n\
+            config._a[3] += 12;\n\
+        }\n\
+        // if is 12 am, change hours to 0\n\
+        if (config._isPm === false && config._a[3] === 12) {\n\
+            config._a[3] = 0;\n\
+        }\n\
+        // return\n\
+        dateFromArray(config);\n\
+    }\n\
+\n\
+    // date from string and array of format strings\n\
+    function makeDateFromStringAndArray(config) {\n\
+        var tempConfig,\n\
+            tempMoment,\n\
+            bestMoment,\n\
+\n\
+            scoreToBeat = 99,\n\
+            i,\n\
+            currentScore;\n\
+\n\
+        for (i = config._f.length; i > 0; i--) {\n\
+            tempConfig = extend({}, config);\n\
+            tempConfig._f = config._f[i - 1];\n\
+            makeDateFromStringAndFormat(tempConfig);\n\
+            tempMoment = new Moment(tempConfig);\n\
+\n\
+            if (tempMoment.isValid()) {\n\
+                bestMoment = tempMoment;\n\
+                break;\n\
+            }\n\
+\n\
+            currentScore = compareArrays(tempConfig._a, tempMoment.toArray());\n\
+\n\
+            if (currentScore < scoreToBeat) {\n\
+                scoreToBeat = currentScore;\n\
+                bestMoment = tempMoment;\n\
+            }\n\
+        }\n\
+\n\
+        extend(config, bestMoment);\n\
+    }\n\
+\n\
+    // date from iso format\n\
+    function makeDateFromString(config) {\n\
+        var i,\n\
+            string = config._i;\n\
+        if (isoRegex.exec(string)) {\n\
+            config._f = 'YYYY-MM-DDT';\n\
+            for (i = 0; i < 4; i++) {\n\
+                if (isoTimes[i][1].exec(string)) {\n\
+                    config._f += isoTimes[i][0];\n\
+                    break;\n\
+                }\n\
+            }\n\
+            if (parseTokenTimezone.exec(string)) {\n\
+                config._f += \" Z\";\n\
+            }\n\
+            makeDateFromStringAndFormat(config);\n\
+        } else {\n\
+            config._d = new Date(string);\n\
+        }\n\
+    }\n\
+\n\
+    function makeDateFromInput(config) {\n\
+        var input = config._i,\n\
+            matched = aspNetJsonRegex.exec(input);\n\
+\n\
+        if (input === undefined) {\n\
+            config._d = new Date();\n\
+        } else if (matched) {\n\
+            config._d = new Date(+matched[1]);\n\
+        } else if (typeof input === 'string') {\n\
+            makeDateFromString(config);\n\
+        } else if (isArray(input)) {\n\
+            config._a = input.slice(0);\n\
+            dateFromArray(config);\n\
+        } else {\n\
+            config._d = input instanceof Date ? new Date(+input) : new Date(input);\n\
+        }\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Relative Time\n\
+    ************************************/\n\
+\n\
+\n\
+    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize\n\
+    function substituteTimeAgo(string, number, withoutSuffix, isFuture, lang) {\n\
+        return lang.relativeTime(number || 1, !!withoutSuffix, string, isFuture);\n\
+    }\n\
+\n\
+    function relativeTime(milliseconds, withoutSuffix, lang) {\n\
+        var seconds = round(Math.abs(milliseconds) / 1000),\n\
+            minutes = round(seconds / 60),\n\
+            hours = round(minutes / 60),\n\
+            days = round(hours / 24),\n\
+            years = round(days / 365),\n\
+            args = seconds < 45 && ['s', seconds] ||\n\
+                minutes === 1 && ['m'] ||\n\
+                minutes < 45 && ['mm', minutes] ||\n\
+                hours === 1 && ['h'] ||\n\
+                hours < 22 && ['hh', hours] ||\n\
+                days === 1 && ['d'] ||\n\
+                days <= 25 && ['dd', days] ||\n\
+                days <= 45 && ['M'] ||\n\
+                days < 345 && ['MM', round(days / 30)] ||\n\
+                years === 1 && ['y'] || ['yy', years];\n\
+        args[2] = withoutSuffix;\n\
+        args[3] = milliseconds > 0;\n\
+        args[4] = lang;\n\
+        return substituteTimeAgo.apply({}, args);\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Week of Year\n\
+    ************************************/\n\
+\n\
+\n\
+    // firstDayOfWeek       0 = sun, 6 = sat\n\
+    //                      the day of the week that starts the week\n\
+    //                      (usually sunday or monday)\n\
+    // firstDayOfWeekOfYear 0 = sun, 6 = sat\n\
+    //                      the first week is the week that contains the first\n\
+    //                      of this day of the week\n\
+    //                      (eg. ISO weeks use thursday (4))\n\
+    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {\n\
+        var end = firstDayOfWeekOfYear - firstDayOfWeek,\n\
+            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day();\n\
+\n\
+\n\
+        if (daysToDayOfWeek > end) {\n\
+            daysToDayOfWeek -= 7;\n\
+        }\n\
+\n\
+        if (daysToDayOfWeek < end - 7) {\n\
+            daysToDayOfWeek += 7;\n\
+        }\n\
+\n\
+        return Math.ceil(moment(mom).add('d', daysToDayOfWeek).dayOfYear() / 7);\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Top Level Functions\n\
+    ************************************/\n\
+\n\
+    function makeMoment(config) {\n\
+        var input = config._i,\n\
+            format = config._f;\n\
+\n\
+        if (input === null || input === '') {\n\
+            return null;\n\
+        }\n\
+\n\
+        if (typeof input === 'string') {\n\
+            config._i = input = getLangDefinition().preparse(input);\n\
+        }\n\
+\n\
+        if (moment.isMoment(input)) {\n\
+            config = extend({}, input);\n\
+            config._d = new Date(+input._d);\n\
+        } else if (format) {\n\
+            if (isArray(format)) {\n\
+                makeDateFromStringAndArray(config);\n\
+            } else {\n\
+                makeDateFromStringAndFormat(config);\n\
+            }\n\
+        } else {\n\
+            makeDateFromInput(config);\n\
+        }\n\
+\n\
+        return new Moment(config);\n\
+    }\n\
+\n\
+    moment = function (input, format, lang) {\n\
+        return makeMoment({\n\
+            _i : input,\n\
+            _f : format,\n\
+            _l : lang,\n\
+            _isUTC : false\n\
+        });\n\
+    };\n\
+\n\
+    // creating with utc\n\
+    moment.utc = function (input, format, lang) {\n\
+        return makeMoment({\n\
+            _useUTC : true,\n\
+            _isUTC : true,\n\
+            _l : lang,\n\
+            _i : input,\n\
+            _f : format\n\
+        });\n\
+    };\n\
+\n\
+    // creating with unix timestamp (in seconds)\n\
+    moment.unix = function (input) {\n\
+        return moment(input * 1000);\n\
+    };\n\
+\n\
+    // duration\n\
+    moment.duration = function (input, key) {\n\
+        var isDuration = moment.isDuration(input),\n\
+            isNumber = (typeof input === 'number'),\n\
+            duration = (isDuration ? input._data : (isNumber ? {} : input)),\n\
+            ret;\n\
+\n\
+        if (isNumber) {\n\
+            if (key) {\n\
+                duration[key] = input;\n\
+            } else {\n\
+                duration.milliseconds = input;\n\
+            }\n\
+        }\n\
+\n\
+        ret = new Duration(duration);\n\
+\n\
+        if (isDuration && input.hasOwnProperty('_lang')) {\n\
+            ret._lang = input._lang;\n\
+        }\n\
+\n\
+        return ret;\n\
+    };\n\
+\n\
+    // version number\n\
+    moment.version = VERSION;\n\
+\n\
+    // default format\n\
+    moment.defaultFormat = isoFormat;\n\
+\n\
+    // This function will load languages and then set the global language.  If\n\
+    // no arguments are passed in, it will simply return the current global\n\
+    // language key.\n\
+    moment.lang = function (key, values) {\n\
+        var i;\n\
+\n\
+        if (!key) {\n\
+            return moment.fn._lang._abbr;\n\
+        }\n\
+        if (values) {\n\
+            loadLang(key, values);\n\
+        } else if (!languages[key]) {\n\
+            getLangDefinition(key);\n\
+        }\n\
+        moment.duration.fn._lang = moment.fn._lang = getLangDefinition(key);\n\
+    };\n\
+\n\
+    // returns language data\n\
+    moment.langData = function (key) {\n\
+        if (key && key._lang && key._lang._abbr) {\n\
+            key = key._lang._abbr;\n\
+        }\n\
+        return getLangDefinition(key);\n\
+    };\n\
+\n\
+    // compare moment object\n\
+    moment.isMoment = function (obj) {\n\
+        return obj instanceof Moment;\n\
+    };\n\
+\n\
+    // for typechecking Duration objects\n\
+    moment.isDuration = function (obj) {\n\
+        return obj instanceof Duration;\n\
+    };\n\
+\n\
+\n\
+    /************************************\n\
+        Moment Prototype\n\
+    ************************************/\n\
+\n\
+\n\
+    moment.fn = Moment.prototype = {\n\
+\n\
+        clone : function () {\n\
+            return moment(this);\n\
+        },\n\
+\n\
+        valueOf : function () {\n\
+            return +this._d;\n\
+        },\n\
+\n\
+        unix : function () {\n\
+            return Math.floor(+this._d / 1000);\n\
+        },\n\
+\n\
+        toString : function () {\n\
+            return this.format(\"ddd MMM DD YYYY HH:mm:ss [GMT]ZZ\");\n\
+        },\n\
+\n\
+        toDate : function () {\n\
+            return this._d;\n\
+        },\n\
+\n\
+        toJSON : function () {\n\
+            return moment.utc(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');\n\
+        },\n\
+\n\
+        toArray : function () {\n\
+            var m = this;\n\
+            return [\n\
+                m.year(),\n\
+                m.month(),\n\
+                m.date(),\n\
+                m.hours(),\n\
+                m.minutes(),\n\
+                m.seconds(),\n\
+                m.milliseconds()\n\
+            ];\n\
+        },\n\
+\n\
+        isValid : function () {\n\
+            if (this._isValid == null) {\n\
+                if (this._a) {\n\
+                    this._isValid = !compareArrays(this._a, (this._isUTC ? moment.utc(this._a) : moment(this._a)).toArray());\n\
+                } else {\n\
+                    this._isValid = !isNaN(this._d.getTime());\n\
+                }\n\
+            }\n\
+            return !!this._isValid;\n\
+        },\n\
+\n\
+        utc : function () {\n\
+            this._isUTC = true;\n\
+            return this;\n\
+        },\n\
+\n\
+        local : function () {\n\
+            this._isUTC = false;\n\
+            return this;\n\
+        },\n\
+\n\
+        format : function (inputString) {\n\
+            var output = formatMoment(this, inputString || moment.defaultFormat);\n\
+            return this.lang().postformat(output);\n\
+        },\n\
+\n\
+        add : function (input, val) {\n\
+            var dur;\n\
+            // switch args to support add('s', 1) and add(1, 's')\n\
+            if (typeof input === 'string') {\n\
+                dur = moment.duration(+val, input);\n\
+            } else {\n\
+                dur = moment.duration(input, val);\n\
+            }\n\
+            addOrSubtractDurationFromMoment(this, dur, 1);\n\
+            return this;\n\
+        },\n\
+\n\
+        subtract : function (input, val) {\n\
+            var dur;\n\
+            // switch args to support subtract('s', 1) and subtract(1, 's')\n\
+            if (typeof input === 'string') {\n\
+                dur = moment.duration(+val, input);\n\
+            } else {\n\
+                dur = moment.duration(input, val);\n\
+            }\n\
+            addOrSubtractDurationFromMoment(this, dur, -1);\n\
+            return this;\n\
+        },\n\
+\n\
+        diff : function (input, units, asFloat) {\n\
+            var that = this._isUTC ? moment(input).utc() : moment(input).local(),\n\
+                zoneDiff = (this.zone() - that.zone()) * 6e4,\n\
+                diff, output;\n\
+\n\
+            if (units) {\n\
+                // standardize on singular form\n\
+                units = units.replace(/s$/, '');\n\
+            }\n\
+\n\
+            if (units === 'year' || units === 'month') {\n\
+                diff = (this.daysInMonth() + that.daysInMonth()) * 432e5; // 24 * 60 * 60 * 1000 / 2\n\
+                output = ((this.year() - that.year()) * 12) + (this.month() - that.month());\n\
+                output += ((this - moment(this).startOf('month')) - (that - moment(that).startOf('month'))) / diff;\n\
+                if (units === 'year') {\n\
+                    output = output / 12;\n\
+                }\n\
+            } else {\n\
+                diff = (this - that) - zoneDiff;\n\
+                output = units === 'second' ? diff / 1e3 : // 1000\n\
+                    units === 'minute' ? diff / 6e4 : // 1000 * 60\n\
+                    units === 'hour' ? diff / 36e5 : // 1000 * 60 * 60\n\
+                    units === 'day' ? diff / 864e5 : // 1000 * 60 * 60 * 24\n\
+                    units === 'week' ? diff / 6048e5 : // 1000 * 60 * 60 * 24 * 7\n\
+                    diff;\n\
+            }\n\
+            return asFloat ? output : absRound(output);\n\
+        },\n\
+\n\
+        from : function (time, withoutSuffix) {\n\
+            return moment.duration(this.diff(time)).lang(this.lang()._abbr).humanize(!withoutSuffix);\n\
+        },\n\
+\n\
+        fromNow : function (withoutSuffix) {\n\
+            return this.from(moment(), withoutSuffix);\n\
+        },\n\
+\n\
+        calendar : function () {\n\
+            var diff = this.diff(moment().startOf('day'), 'days', true),\n\
+                format = diff < -6 ? 'sameElse' :\n\
+                diff < -1 ? 'lastWeek' :\n\
+                diff < 0 ? 'lastDay' :\n\
+                diff < 1 ? 'sameDay' :\n\
+                diff < 2 ? 'nextDay' :\n\
+                diff < 7 ? 'nextWeek' : 'sameElse';\n\
+            return this.format(this.lang().calendar(format, this));\n\
+        },\n\
+\n\
+        isLeapYear : function () {\n\
+            var year = this.year();\n\
+            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;\n\
+        },\n\
+\n\
+        isDST : function () {\n\
+            return (this.zone() < moment([this.year()]).zone() ||\n\
+                this.zone() < moment([this.year(), 5]).zone());\n\
+        },\n\
+\n\
+        day : function (input) {\n\
+            var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();\n\
+            return input == null ? day :\n\
+                this.add({ d : input - day });\n\
+        },\n\
+\n\
+        startOf: function (units) {\n\
+            units = units.replace(/s$/, '');\n\
+            // the following switch intentionally omits break keywords\n\
+            // to utilize falling through the cases.\n\
+            switch (units) {\n\
+            case 'year':\n\
+                this.month(0);\n\
+                /* falls through */\n\
+            case 'month':\n\
+                this.date(1);\n\
+                /* falls through */\n\
+            case 'week':\n\
+            case 'day':\n\
+                this.hours(0);\n\
+                /* falls through */\n\
+            case 'hour':\n\
+                this.minutes(0);\n\
+                /* falls through */\n\
+            case 'minute':\n\
+                this.seconds(0);\n\
+                /* falls through */\n\
+            case 'second':\n\
+                this.milliseconds(0);\n\
+                /* falls through */\n\
+            }\n\
+\n\
+            // weeks are a special case\n\
+            if (units === 'week') {\n\
+                this.day(0);\n\
+            }\n\
+\n\
+            return this;\n\
+        },\n\
+\n\
+        endOf: function (units) {\n\
+            return this.startOf(units).add(units.replace(/s?$/, 's'), 1).subtract('ms', 1);\n\
+        },\n\
+\n\
+        isAfter: function (input, units) {\n\
+            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
+            return +this.clone().startOf(units) > +moment(input).startOf(units);\n\
+        },\n\
+\n\
+        isBefore: function (input, units) {\n\
+            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
+            return +this.clone().startOf(units) < +moment(input).startOf(units);\n\
+        },\n\
+\n\
+        isSame: function (input, units) {\n\
+            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
+            return +this.clone().startOf(units) === +moment(input).startOf(units);\n\
+        },\n\
+\n\
+        zone : function () {\n\
+            return this._isUTC ? 0 : this._d.getTimezoneOffset();\n\
+        },\n\
+\n\
+        daysInMonth : function () {\n\
+            return moment.utc([this.year(), this.month() + 1, 0]).date();\n\
+        },\n\
+\n\
+        dayOfYear : function (input) {\n\
+            var dayOfYear = round((moment(this).startOf('day') - moment(this).startOf('year')) / 864e5) + 1;\n\
+            return input == null ? dayOfYear : this.add(\"d\", (input - dayOfYear));\n\
+        },\n\
+\n\
+        isoWeek : function (input) {\n\
+            var week = weekOfYear(this, 1, 4);\n\
+            return input == null ? week : this.add(\"d\", (input - week) * 7);\n\
+        },\n\
+\n\
+        week : function (input) {\n\
+            var week = this.lang().week(this);\n\
+            return input == null ? week : this.add(\"d\", (input - week) * 7);\n\
+        },\n\
+\n\
+        // If passed a language key, it will set the language for this\n\
+        // instance.  Otherwise, it will return the language configuration\n\
+        // variables for this instance.\n\
+        lang : function (key) {\n\
+            if (key === undefined) {\n\
+                return this._lang;\n\
+            } else {\n\
+                this._lang = getLangDefinition(key);\n\
+                return this;\n\
+            }\n\
+        }\n\
+    };\n\
+\n\
+    // helper for adding shortcuts\n\
+    function makeGetterAndSetter(name, key) {\n\
+        moment.fn[name] = moment.fn[name + 's'] = function (input) {\n\
+            var utc = this._isUTC ? 'UTC' : '';\n\
+            if (input != null) {\n\
+                this._d['set' + utc + key](input);\n\
+                return this;\n\
+            } else {\n\
+                return this._d['get' + utc + key]();\n\
+            }\n\
+        };\n\
+    }\n\
+\n\
+    // loop through and add shortcuts (Month, Date, Hours, Minutes, Seconds, Milliseconds)\n\
+    for (i = 0; i < proxyGettersAndSetters.length; i ++) {\n\
+        makeGetterAndSetter(proxyGettersAndSetters[i].toLowerCase().replace(/s$/, ''), proxyGettersAndSetters[i]);\n\
+    }\n\
+\n\
+    // add shortcut for year (uses different syntax than the getter/setter 'year' == 'FullYear')\n\
+    makeGetterAndSetter('year', 'FullYear');\n\
+\n\
+    // add plural methods\n\
+    moment.fn.days = moment.fn.day;\n\
+    moment.fn.weeks = moment.fn.week;\n\
+    moment.fn.isoWeeks = moment.fn.isoWeek;\n\
+\n\
+    /************************************\n\
+        Duration Prototype\n\
+    ************************************/\n\
+\n\
+\n\
+    moment.duration.fn = Duration.prototype = {\n\
+        weeks : function () {\n\
+            return absRound(this.days() / 7);\n\
+        },\n\
+\n\
+        valueOf : function () {\n\
+            return this._milliseconds +\n\
+              this._days * 864e5 +\n\
+              this._months * 2592e6;\n\
+        },\n\
+\n\
+        humanize : function (withSuffix) {\n\
+            var difference = +this,\n\
+                output = relativeTime(difference, !withSuffix, this.lang());\n\
+\n\
+            if (withSuffix) {\n\
+                output = this.lang().pastFuture(difference, output);\n\
+            }\n\
+\n\
+            return this.lang().postformat(output);\n\
+        },\n\
+\n\
+        lang : moment.fn.lang\n\
+    };\n\
+\n\
+    function makeDurationGetter(name) {\n\
+        moment.duration.fn[name] = function () {\n\
+            return this._data[name];\n\
+        };\n\
+    }\n\
+\n\
+    function makeDurationAsGetter(name, factor) {\n\
+        moment.duration.fn['as' + name] = function () {\n\
+            return +this / factor;\n\
+        };\n\
+    }\n\
+\n\
+    for (i in unitMillisecondFactors) {\n\
+        if (unitMillisecondFactors.hasOwnProperty(i)) {\n\
+            makeDurationAsGetter(i, unitMillisecondFactors[i]);\n\
+            makeDurationGetter(i.toLowerCase());\n\
+        }\n\
+    }\n\
+\n\
+    makeDurationAsGetter('Weeks', 6048e5);\n\
+\n\
+\n\
+    /************************************\n\
+        Default Lang\n\
+    ************************************/\n\
+\n\
+\n\
+    // Set default language, other languages will inherit from English.\n\
+    moment.lang('en', {\n\
+        ordinal : function (number) {\n\
+            var b = number % 10,\n\
+                output = (~~ (number % 100 / 10) === 1) ? 'th' :\n\
+                (b === 1) ? 'st' :\n\
+                (b === 2) ? 'nd' :\n\
+                (b === 3) ? 'rd' : 'th';\n\
+            return number + output;\n\
+        }\n\
+    });\n\
+\n\
+\n\
+    /************************************\n\
+        Exposing Moment\n\
+    ************************************/\n\
+\n\
+\n\
+    // CommonJS module is defined\n\
+    if (hasModule) {\n\
+        module.exports = moment;\n\
+    }\n\
+    /*global ender:false */\n\
+    if (typeof ender === 'undefined') {\n\
+        // here, `this` means `window` in the browser, or `global` on the server\n\
+        // add `moment` as a global object via a string identifier,\n\
+        // for Closure Compiler \"advanced\" mode\n\
+        this['moment'] = moment;\n\
+    }\n\
+    /*global define:false */\n\
+    if (typeof define === \"function\" && define.amd) {\n\
+        define(\"moment\", [], function () {\n\
+            return moment;\n\
+        });\n\
+    }\n\
+}).call(this);\n\
+//@ sourceURL=component-moment/index.js"
+));
+require.register("component-events/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var events = require('event');\n\
+var delegate = require('delegate');\n\
+\n\
+/**\n\
+ * Expose `Events`.\n\
+ */\n\
+\n\
+module.exports = Events;\n\
+\n\
+/**\n\
+ * Initialize an `Events` with the given\n\
+ * `el` object which events will be bound to,\n\
+ * and the `obj` which will receive method calls.\n\
+ *\n\
+ * @param {Object} el\n\
+ * @param {Object} obj\n\
+ * @api public\n\
+ */\n\
+\n\
+function Events(el, obj) {\n\
+  if (!(this instanceof Events)) return new Events(el, obj);\n\
+  if (!el) throw new Error('element required');\n\
+  if (!obj) throw new Error('object required');\n\
+  this.el = el;\n\
+  this.obj = obj;\n\
+  this._events = {};\n\
+}\n\
+\n\
+/**\n\
+ * Subscription helper.\n\
+ */\n\
+\n\
+Events.prototype.sub = function(event, method, cb){\n\
+  this._events[event] = this._events[event] || {};\n\
+  this._events[event][method] = cb;\n\
+};\n\
+\n\
+/**\n\
+ * Bind to `event` with optional `method` name.\n\
+ * When `method` is undefined it becomes `event`\n\
+ * with the \"on\" prefix.\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *  Direct event handling:\n\
+ *\n\
+ *    events.bind('click') // implies \"onclick\"\n\
+ *    events.bind('click', 'remove')\n\
+ *    events.bind('click', 'sort', 'asc')\n\
+ *\n\
+ *  Delegated event handling:\n\
+ *\n\
+ *    events.bind('click li > a')\n\
+ *    events.bind('click li > a', 'remove')\n\
+ *    events.bind('click a.sort-ascending', 'sort', 'asc')\n\
+ *    events.bind('click a.sort-descending', 'sort', 'desc')\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {String|function} [method]\n\
+ * @return {Function} callback\n\
+ * @api public\n\
+ */\n\
+\n\
+Events.prototype.bind = function(event, method){\n\
+  var e = parse(event);\n\
+  var el = this.el;\n\
+  var obj = this.obj;\n\
+  var name = e.name;\n\
+  var method = method || 'on' + name;\n\
+  var args = [].slice.call(arguments, 2);\n\
+\n\
+  // callback\n\
+  function cb(){\n\
+    var a = [].slice.call(arguments).concat(args);\n\
+    obj[method].apply(obj, a);\n\
+  }\n\
+\n\
+  // bind\n\
+  if (e.selector) {\n\
+    cb = delegate.bind(el, e.selector, name, cb);\n\
+  } else {\n\
+    events.bind(el, name, cb);\n\
+  }\n\
+\n\
+  // subscription for unbinding\n\
+  this.sub(name, method, cb);\n\
+\n\
+  return cb;\n\
+};\n\
+\n\
+/**\n\
+ * Unbind a single binding, all bindings for `event`,\n\
+ * or all bindings within the manager.\n\
+ *\n\
+ * Examples:\n\
+ *\n\
+ *  Unbind direct handlers:\n\
+ *\n\
+ *     events.unbind('click', 'remove')\n\
+ *     events.unbind('click')\n\
+ *     events.unbind()\n\
+ *\n\
+ * Unbind delegate handlers:\n\
+ *\n\
+ *     events.unbind('click', 'remove')\n\
+ *     events.unbind('click')\n\
+ *     events.unbind()\n\
+ *\n\
+ * @param {String|Function} [event]\n\
+ * @param {String|Function} [method]\n\
+ * @api public\n\
+ */\n\
+\n\
+Events.prototype.unbind = function(event, method){\n\
+  if (0 == arguments.length) return this.unbindAll();\n\
+  if (1 == arguments.length) return this.unbindAllOf(event);\n\
+\n\
+  // no bindings for this event\n\
+  var bindings = this._events[event];\n\
+  if (!bindings) return;\n\
+\n\
+  // no bindings for this method\n\
+  var cb = bindings[method];\n\
+  if (!cb) return;\n\
+\n\
+  events.unbind(this.el, event, cb);\n\
+};\n\
+\n\
+/**\n\
+ * Unbind all events.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Events.prototype.unbindAll = function(){\n\
+  for (var event in this._events) {\n\
+    this.unbindAllOf(event);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Unbind all events for `event`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @api private\n\
+ */\n\
+\n\
+Events.prototype.unbindAllOf = function(event){\n\
+  var bindings = this._events[event];\n\
+  if (!bindings) return;\n\
+\n\
+  for (var method in bindings) {\n\
+    this.unbind(event, method);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Parse `event`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+function parse(event) {\n\
+  var parts = event.split(/ +/);\n\
+  return {\n\
+    name: parts.shift(),\n\
+    selector: parts.join(' ')\n\
+  }\n\
+}\n\
+//@ sourceURL=component-events/index.js"
+));
+require.register("component-inherit/index.js", Function("exports, require, module",
+"\n\
+module.exports = function(a, b){\n\
+  var fn = function(){};\n\
+  fn.prototype = b.prototype;\n\
+  a.prototype = new fn;\n\
+  a.prototype.constructor = a;\n\
+};//@ sourceURL=component-inherit/index.js"
+));
+require.register("component-format-parser/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Parse the given format `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(str){\n\
+\treturn str.split(/ *\\| */).map(function(call){\n\
+\t\tvar parts = call.split(':');\n\
+\t\tvar name = parts.shift();\n\
+\t\tvar args = parseArgs(parts.join(':'));\n\
+\n\
+\t\treturn {\n\
+\t\t\tname: name,\n\
+\t\t\targs: args\n\
+\t\t};\n\
+\t});\n\
+};\n\
+\n\
+/**\n\
+ * Parse args `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function parseArgs(str) {\n\
+\tvar args = [];\n\
+\tvar re = /\"([^\"]*)\"|'([^']*)'|([^ \\t,]+)/g;\n\
+\tvar m;\n\
+\t\n\
+\twhile (m = re.exec(str)) {\n\
+\t\targs.push(m[2] || m[1] || m[0]);\n\
+\t}\n\
+\t\n\
+\treturn args;\n\
+}\n\
+//@ sourceURL=component-format-parser/index.js"
+));
+require.register("component-props/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Return immediate identifiers parsed from `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(str, prefix){\n\
+  var p = unique(props(str));\n\
+  if (prefix) return prefixed(str, p, prefix);\n\
+  return p;\n\
+};\n\
+\n\
+/**\n\
+ * Return immediate identifiers in `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function props(str) {\n\
+  return str\n\
+    .replace(/\\.\\w+|\\w+ *\\(|\"[^\"]*\"|'[^']*'|\\/([^/]+)\\//g, '')\n\
+    .match(/[a-zA-Z_]\\w*/g)\n\
+    || [];\n\
+}\n\
+\n\
+/**\n\
+ * Return `str` with `props` prefixed with `prefix`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @param {Array} props\n\
+ * @param {String} prefix\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function prefixed(str, props, prefix) {\n\
+  var re = /\\.\\w+|\\w+ *\\(|\"[^\"]*\"|'[^']*'|\\/([^/]+)\\/|[a-zA-Z_]\\w*/g;\n\
+  return str.replace(re, function(_){\n\
+    if ('(' == _[_.length - 1]) return prefix + _;\n\
+    if (!~props.indexOf(_)) return _;\n\
+    return prefix + _;\n\
+  });\n\
+}\n\
+\n\
+/**\n\
+ * Return unique array.\n\
+ *\n\
+ * @param {Array} arr\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function unique(arr) {\n\
+  var ret = [];\n\
+\n\
+  for (var i = 0; i < arr.length; i++) {\n\
+    if (~ret.indexOf(arr[i])) continue;\n\
+    ret.push(arr[i]);\n\
+  }\n\
+\n\
+  return ret;\n\
+}\n\
+//@ sourceURL=component-props/index.js"
+));
+require.register("visionmedia-debug/index.js", Function("exports, require, module",
+"if ('undefined' == typeof window) {\n\
+  module.exports = require('./lib/debug');\n\
+} else {\n\
+  module.exports = require('./debug');\n\
+}\n\
+//@ sourceURL=visionmedia-debug/index.js"
+));
+require.register("visionmedia-debug/debug.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Expose `debug()` as the module.\n\
+ */\n\
+\n\
+module.exports = debug;\n\
+\n\
+/**\n\
+ * Create a debugger with the given `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Type}\n\
+ * @api public\n\
+ */\n\
+\n\
+function debug(name) {\n\
+  if (!debug.enabled(name)) return function(){};\n\
+\n\
+  return function(fmt){\n\
+    fmt = coerce(fmt);\n\
+\n\
+    var curr = new Date;\n\
+    var ms = curr - (debug[name] || curr);\n\
+    debug[name] = curr;\n\
+\n\
+    fmt = name\n\
+      + ' '\n\
+      + fmt\n\
+      + ' +' + debug.humanize(ms);\n\
+\n\
+    // This hackery is required for IE8\n\
+    // where `console.log` doesn't have 'apply'\n\
+    window.console\n\
+      && console.log\n\
+      && Function.prototype.apply.call(console.log, console, arguments);\n\
+  }\n\
+}\n\
+\n\
+/**\n\
+ * The currently active debug mode names.\n\
+ */\n\
+\n\
+debug.names = [];\n\
+debug.skips = [];\n\
+\n\
+/**\n\
+ * Enables a debug mode by name. This can include modes\n\
+ * separated by a colon and wildcards.\n\
+ *\n\
+ * @param {String} name\n\
+ * @api public\n\
+ */\n\
+\n\
+debug.enable = function(name) {\n\
+  try {\n\
+    localStorage.debug = name;\n\
+  } catch(e){}\n\
+\n\
+  var split = (name || '').split(/[\\s,]+/)\n\
+    , len = split.length;\n\
+\n\
+  for (var i = 0; i < len; i++) {\n\
+    name = split[i].replace('*', '.*?');\n\
+    if (name[0] === '-') {\n\
+      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));\n\
+    }\n\
+    else {\n\
+      debug.names.push(new RegExp('^' + name + '$'));\n\
+    }\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Disable debug output.\n\
+ *\n\
+ * @api public\n\
+ */\n\
+\n\
+debug.disable = function(){\n\
+  debug.enable('');\n\
+};\n\
+\n\
+/**\n\
+ * Humanize the given `ms`.\n\
+ *\n\
+ * @param {Number} m\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+debug.humanize = function(ms) {\n\
+  var sec = 1000\n\
+    , min = 60 * 1000\n\
+    , hour = 60 * min;\n\
+\n\
+  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';\n\
+  if (ms >= min) return (ms / min).toFixed(1) + 'm';\n\
+  if (ms >= sec) return (ms / sec | 0) + 's';\n\
+  return ms + 'ms';\n\
+};\n\
+\n\
+/**\n\
+ * Returns true if the given mode name is enabled, false otherwise.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+debug.enabled = function(name) {\n\
+  for (var i = 0, len = debug.skips.length; i < len; i++) {\n\
+    if (debug.skips[i].test(name)) {\n\
+      return false;\n\
+    }\n\
+  }\n\
+  for (var i = 0, len = debug.names.length; i < len; i++) {\n\
+    if (debug.names[i].test(name)) {\n\
+      return true;\n\
+    }\n\
+  }\n\
+  return false;\n\
+};\n\
+\n\
+/**\n\
+ * Coerce `val`.\n\
+ */\n\
+\n\
+function coerce(val) {\n\
+  if (val instanceof Error) return val.stack || val.message;\n\
+  return val;\n\
+}\n\
+\n\
+// persist\n\
+\n\
+try {\n\
+  if (window.localStorage) debug.enable(localStorage.debug);\n\
+} catch(e){}\n\
+//@ sourceURL=visionmedia-debug/debug.js"
+));
+require.register("component-reactive/lib/index.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var adapter = require('./adapter');\n\
+var AttrBinding = require('./attr-binding');\n\
+var TextBinding = require('./text-binding');\n\
+var debug = require('debug')('reactive');\n\
+var bindings = require('./bindings');\n\
+var Binding = require('./binding');\n\
+var utils = require('./utils');\n\
+var query = require('query');\n\
+\n\
+/**\n\
+ * Expose `Reactive`.\n\
+ */\n\
+\n\
+exports = module.exports = Reactive;\n\
+\n\
+/**\n\
+ * Bindings.\n\
+ */\n\
+\n\
+exports.bindings = {};\n\
+\n\
+/**\n\
+ * Define subscription function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.subscribe = function(fn){\n\
+  adapter.subscribe = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Define unsubscribe function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.unsubscribe = function(fn){\n\
+  adapter.unsubscribe = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Define a get function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.get = function(fn) {\n\
+  adapter.get = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Define a set function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.set = function(fn) {\n\
+  adapter.set = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Expose adapter\n\
+ */\n\
+\n\
+exports.adapter = adapter;\n\
+\n\
+/**\n\
+ * Define binding `name` with callback `fn(el, val)`.\n\
+ *\n\
+ * @param {String} name or object\n\
+ * @param {String|Object} name\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.bind = function(name, fn){\n\
+  if ('object' == typeof name) {\n\
+    for (var key in name) {\n\
+      exports.bind(key, name[key]);\n\
+    }\n\
+    return;\n\
+  }\n\
+\n\
+  exports.bindings[name] = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Initialize a reactive template for `el` and `obj`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {Element} obj\n\
+ * @param {Object} options\n\
+ * @api public\n\
+ */\n\
+\n\
+function Reactive(el, obj, options) {\n\
+  if (!(this instanceof Reactive)) return new Reactive(el, obj, options);\n\
+  this.el = el;\n\
+  this.obj = obj;\n\
+  this.els = [];\n\
+  this.fns = options || {}; // TODO: rename, this is awful\n\
+  this.bindAll();\n\
+  this.bindInterpolation(this.el, []);\n\
+}\n\
+\n\
+/**\n\
+ * Subscribe to changes on `prop`.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Function} fn\n\
+ * @return {Reactive}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.sub = function(prop, fn){\n\
+  adapter.subscribe(this.obj, prop, fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Unsubscribe to changes from `prop`.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Function} fn\n\
+ * @return {Reactive}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.unsub = function(prop, fn){\n\
+  adapter.unsubscribe(this.obj, prop, fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Get a `prop`\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ * @return {Mixed}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.get = function(prop) {\n\
+  return adapter.get(this.obj, prop);\n\
+};\n\
+\n\
+/**\n\
+ * Set a `prop`\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ * @return {Reactive}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.set = function(prop, val) {\n\
+  adapter.set(this.obj, prop, val);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Traverse and bind all interpolation within attributes and text.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.bindInterpolation = function(el, els){\n\
+\n\
+  // element\n\
+  if (el.nodeType == 1) {\n\
+    for (var i = 0; i < el.attributes.length; i++) {\n\
+      var attr = el.attributes[i];\n\
+      if (utils.hasInterpolation(attr.value)) {\n\
+        new AttrBinding(this, el, attr);\n\
+      }\n\
+    }\n\
+  }\n\
+\n\
+  // text node\n\
+  if (el.nodeType == 3) {\n\
+    if (utils.hasInterpolation(el.data)) {\n\
+      debug('bind text \"%s\"', el.data);\n\
+      new TextBinding(this, el);\n\
+    }\n\
+  }\n\
+\n\
+  // walk nodes\n\
+  for (var i = 0; i < el.childNodes.length; i++) {\n\
+    var node = el.childNodes[i];\n\
+    this.bindInterpolation(node, els);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Apply all bindings.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.bindAll = function() {\n\
+  for (var name in exports.bindings) {\n\
+    this.bind(name, exports.bindings[name]);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Bind `name` to `fn`.\n\
+ *\n\
+ * @param {String|Object} name or object\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+Reactive.prototype.bind = function(name, fn) {\n\
+  if ('object' == typeof name) {\n\
+    for (var key in name) {\n\
+      this.bind(key, name[key]);\n\
+    }\n\
+    return;\n\
+  }\n\
+\n\
+  var els = query.all('[' + name + ']', this.el);\n\
+  if (this.el.hasAttribute && this.el.hasAttribute(name)) {\n\
+    els = [].slice.call(els);\n\
+    els.unshift(this.el);\n\
+  }\n\
+  if (!els.length) return;\n\
+\n\
+  debug('bind [%s] (%d elements)', name, els.length);\n\
+  for (var i = 0; i < els.length; i++) {\n\
+    var binding = new Binding(name, this, els[i], fn);\n\
+    binding.bind();\n\
+  }\n\
+};\n\
+\n\
+// bundled bindings\n\
+\n\
+bindings(exports.bind);\n\
+//@ sourceURL=component-reactive/lib/index.js"
+));
+require.register("component-reactive/lib/utils.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var debug = require('debug')('reactive:utils');\n\
+var props = require('props');\n\
+var adapter = require('./adapter');\n\
+\n\
+/**\n\
+ * Function cache.\n\
+ */\n\
+\n\
+var cache = {};\n\
+\n\
+/**\n\
+ * Return interpolation property names in `str`,\n\
+ * for example \"{foo} and {bar}\" would return\n\
+ * ['foo', 'bar'].\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.interpolationProps = function(str) {\n\
+  var m;\n\
+  var arr = [];\n\
+  var re = /\\{([^}]+)\\}/g;\n\
+\n\
+  while (m = re.exec(str)) {\n\
+    var expr = m[1];\n\
+    arr = arr.concat(props(expr));\n\
+  }\n\
+\n\
+  return unique(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Interpolate `str` with the given `fn`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @param {Function} fn\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.interpolate = function(str, fn){\n\
+  return str.replace(/\\{([^}]+)\\}/g, function(_, expr){\n\
+    var cb = cache[expr];\n\
+    if (!cb) cb = cache[expr] = compile(expr);\n\
+    return fn(expr.trim(), cb);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Check if `str` has interpolation.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Boolean}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.hasInterpolation = function(str) {\n\
+  return ~str.indexOf('{');\n\
+};\n\
+\n\
+/**\n\
+ * Remove computed properties notation from `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.clean = function(str) {\n\
+  return str.split('<')[0].trim();\n\
+};\n\
+\n\
+/**\n\
+ * Call `prop` on `model` or `view`.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @param {Object} view\n\
+ * @param {String} prop\n\
+ * @return {Mixed}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.call = function(model, view, prop){\n\
+  // view method\n\
+  if ('function' == typeof view[prop]) {\n\
+    return view[prop]();\n\
+  }\n\
+\n\
+  // view value\n\
+  if (view.hasOwnProperty(prop)) {\n\
+    return view[prop];\n\
+  }\n\
+\n\
+  // get property from model\n\
+  return adapter.get(model, prop);\n\
+};\n\
+\n\
+/**\n\
+ * Compile `expr` to a `Function`.\n\
+ *\n\
+ * @param {String} expr\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function compile(expr) {\n\
+  // TODO: use props() callback instead\n\
+  var re = /\\.\\w+|\\w+ *\\(|\"[^\"]*\"|'[^']*'|\\/([^/]+)\\/|[a-zA-Z_]\\w*/g;\n\
+  var p = props(expr);\n\
+\n\
+  var body = expr.replace(re, function(_) {\n\
+    if ('(' == _[_.length - 1]) return access(_);\n\
+    if (!~p.indexOf(_)) return _;\n\
+    return call(_);\n\
+  });\n\
+\n\
+  debug('compile `%s`', body);\n\
+  return new Function('model', 'view', 'call', 'return ' + body);\n\
+}\n\
+\n\
+/**\n\
+ * Access a method `prop` with dot notation.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function access(prop) {\n\
+  return 'model.' + prop;\n\
+}\n\
+\n\
+/**\n\
+ * Call `prop` on view, model, or access the model's property.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function call(prop) {\n\
+  return 'call(model, view, \"' + prop + '\")';\n\
+}\n\
+\n\
+/**\n\
+ * Return unique array.\n\
+ *\n\
+ * @param {Array} arr\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function unique(arr) {\n\
+  var ret = [];\n\
+\n\
+  for (var i = 0; i < arr.length; i++) {\n\
+    if (~ret.indexOf(arr[i])) continue;\n\
+    ret.push(arr[i]);\n\
+  }\n\
+\n\
+  return ret;\n\
+}\n\
+//@ sourceURL=component-reactive/lib/utils.js"
+));
+require.register("component-reactive/lib/text-binding.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var debug = require('debug')('reactive:text-binding');\n\
+var utils = require('./utils');\n\
+\n\
+/**\n\
+ * Expose `TextBinding`.\n\
+ */\n\
+\n\
+module.exports = TextBinding;\n\
+\n\
+/**\n\
+ * Initialize a new text binding.\n\
+ *\n\
+ * @param {Reactive} view\n\
+ * @param {Element} node\n\
+ * @param {Attribute} attr\n\
+ * @api private\n\
+ */\n\
+\n\
+function TextBinding(view, node) {\n\
+  var self = this;\n\
+  this.view = view;\n\
+  this.text = node.data;\n\
+  this.node = node;\n\
+  this.props = utils.interpolationProps(this.text);\n\
+  this.subscribe();\n\
+  this.render();\n\
+}\n\
+\n\
+/**\n\
+ * Subscribe to changes.\n\
+ */\n\
+\n\
+TextBinding.prototype.subscribe = function(){\n\
+  var self = this;\n\
+  var view = this.view;\n\
+  this.props.forEach(function(prop){\n\
+    view.sub(prop, function(){\n\
+      self.render();\n\
+    });\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Render text.\n\
+ */\n\
+\n\
+TextBinding.prototype.render = function(){\n\
+  var node = this.node;\n\
+  var text = this.text;\n\
+  var view = this.view;\n\
+  var obj = view.obj;\n\
+\n\
+  // TODO: delegate most of this to `Reactive`\n\
+  debug('render \"%s\"', text);\n\
+  node.data = utils.interpolate(text, function(prop, fn){\n\
+    if (fn) {\n\
+      return fn(obj, view.fns, utils.call);\n\
+    } else {\n\
+      return view.get(obj, prop);\n\
+    }\n\
+  });\n\
+};\n\
+//@ sourceURL=component-reactive/lib/text-binding.js"
+));
+require.register("component-reactive/lib/attr-binding.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var debug = require('debug')('reactive:attr-binding');\n\
+var utils = require('./utils');\n\
+\n\
+/**\n\
+ * Expose `AttrBinding`.\n\
+ */\n\
+\n\
+module.exports = AttrBinding;\n\
+\n\
+/**\n\
+ * Initialize a new attribute binding.\n\
+ *\n\
+ * @param {Reactive} view\n\
+ * @param {Element} node\n\
+ * @param {Attribute} attr\n\
+ * @api private\n\
+ */\n\
+\n\
+function AttrBinding(view, node, attr) {\n\
+  var self = this;\n\
+  this.view = view;\n\
+  this.node = node;\n\
+  this.attr = attr;\n\
+  this.text = attr.value;\n\
+  this.props = utils.interpolationProps(this.text);\n\
+  this.subscribe();\n\
+  this.render();\n\
+}\n\
+\n\
+/**\n\
+ * Subscribe to changes.\n\
+ */\n\
+\n\
+AttrBinding.prototype.subscribe = function(){\n\
+  var self = this;\n\
+  var view = this.view;\n\
+  this.props.forEach(function(prop){\n\
+    view.sub(prop, function(){\n\
+      self.render();\n\
+    });\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Render the value.\n\
+ */\n\
+\n\
+AttrBinding.prototype.render = function(){\n\
+  var attr = this.attr;\n\
+  var text = this.text;\n\
+  var view = this.view;\n\
+  var obj = view.obj;\n\
+\n\
+  // TODO: delegate most of this to `Reactive`\n\
+  debug('render %s \"%s\"', attr.name, text);\n\
+  attr.value = utils.interpolate(text, function(prop, fn){\n\
+    if (fn) {\n\
+      return fn(obj, view.fns, utils.call);\n\
+    } else {\n\
+      return view.get(obj, prop);\n\
+    }\n\
+  });\n\
+};\n\
+//@ sourceURL=component-reactive/lib/attr-binding.js"
+));
+require.register("component-reactive/lib/binding.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var parse = require('format-parser');\n\
+\n\
+/**\n\
+ * Expose `Binding`.\n\
+ */\n\
+\n\
+module.exports = Binding;\n\
+\n\
+/**\n\
+ * Initialize a binding.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+function Binding(name, view, el, fn) {\n\
+  this.name = name;\n\
+  this.view = view;\n\
+  this.obj = view.obj;\n\
+  this.fns = view.fns;\n\
+  this.el = el;\n\
+  this.fn = fn;\n\
+}\n\
+\n\
+/**\n\
+ * Apply the binding.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Binding.prototype.bind = function() {\n\
+  var val = this.el.getAttribute(this.name);\n\
+  this.fn(this.el, val, this.obj);\n\
+};\n\
+\n\
+/**\n\
+ * Perform interpolation on `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.interpolate = function(name) {\n\
+  var self = this;\n\
+  name = clean(name);\n\
+\n\
+  if (~name.indexOf('{')) {\n\
+    return name.replace(/{([^}]+)}/g, function(_, name){\n\
+      return self.value(name);\n\
+    });\n\
+  }\n\
+\n\
+  return this.formatted(name);\n\
+};\n\
+\n\
+/**\n\
+ * Return value for property `name`.\n\
+ *\n\
+ *  - check if the \"view\" has a `name` method\n\
+ *  - check if the \"model\" has a `name` method\n\
+ *  - check if the \"model\" has a `name` property\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.value = function(name) {\n\
+  var self = this;\n\
+  var obj = this.obj;\n\
+  var view = this.view;\n\
+  var fns = view.fns;\n\
+  name = clean(name);\n\
+\n\
+  // view method\n\
+  if ('function' == typeof fns[name]) {\n\
+    return fns[name]();\n\
+  }\n\
+\n\
+  // view value\n\
+  if (fns.hasOwnProperty(name)) {\n\
+    return fns[name];\n\
+  }\n\
+\n\
+  return view.get(name);\n\
+};\n\
+\n\
+/**\n\
+ * Return formatted property.\n\
+ *\n\
+ * @param {String} fmt\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.formatted = function(fmt) {\n\
+  var calls = parse(clean(fmt));\n\
+  var name = calls[0].name;\n\
+  var val = this.value(name);\n\
+\n\
+  for (var i = 1; i < calls.length; ++i) {\n\
+    var call = calls[i];\n\
+    call.args.unshift(val);\n\
+    var fn = this.fns[call.name];\n\
+    val = fn.apply(this.fns, call.args);\n\
+  }\n\
+\n\
+  return val;\n\
+};\n\
+\n\
+/**\n\
+ * Invoke `fn` on changes.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.change = function(fn) {\n\
+  fn.call(this);\n\
+\n\
+  var self = this;\n\
+  var view = this.view;\n\
+  var val = this.el.getAttribute(this.name);\n\
+\n\
+  // computed props\n\
+  var parts = val.split('<');\n\
+  val = parts[0];\n\
+  var computed = parts[1];\n\
+  if (computed) computed = computed.trim().split(/\\s+/);\n\
+\n\
+  // interpolation\n\
+  if (hasInterpolation(val)) {\n\
+    var props = interpolationProps(val);\n\
+    props.forEach(function(prop){\n\
+      view.sub(prop, fn.bind(self));\n\
+    });\n\
+    return;\n\
+  }\n\
+\n\
+  // formatting\n\
+  var calls = parse(val);\n\
+  var prop = calls[0].name;\n\
+\n\
+  // computed props\n\
+  if (computed) {\n\
+    computed.forEach(function(prop){\n\
+      view.sub(prop, fn.bind(self));\n\
+    });\n\
+    return;\n\
+  }\n\
+\n\
+  // bind to prop\n\
+  view.sub(prop, fn.bind(this));\n\
+};\n\
+\n\
+/**\n\
+ * Return interpolation property names in `str`,\n\
+ * for example \"{foo} and {bar}\" would return\n\
+ * ['foo', 'bar'].\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function interpolationProps(str) {\n\
+  var m;\n\
+  var arr = [];\n\
+  var re = /\\{([^}]+)\\}/g;\n\
+  while (m = re.exec(str)) {\n\
+    arr.push(m[1]);\n\
+  }\n\
+  return arr;\n\
+}\n\
+\n\
+/**\n\
+ * Check if `str` has interpolation.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Boolean}\n\
+ * @api private\n\
+ */\n\
+\n\
+function hasInterpolation(str) {\n\
+  return ~str.indexOf('{');\n\
+}\n\
+\n\
+/**\n\
+ * Remove computed properties notation from `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function clean(str) {\n\
+  return str.split('<')[0].trim();\n\
+}\n\
+//@ sourceURL=component-reactive/lib/binding.js"
+));
+require.register("component-reactive/lib/bindings.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var classes = require('classes');\n\
+var event = require('event');\n\
+\n\
+/**\n\
+ * Attributes supported.\n\
+ */\n\
+\n\
+var attrs = [\n\
+  'id',\n\
+  'src',\n\
+  'rel',\n\
+  'cols',\n\
+  'rows',\n\
+  'name',\n\
+  'href',\n\
+  'title',\n\
+  'class',\n\
+  'style',\n\
+  'width',\n\
+  'value',\n\
+  'height',\n\
+  'tabindex',\n\
+  'placeholder'\n\
+];\n\
+\n\
+/**\n\
+ * Events supported.\n\
+ */\n\
+\n\
+var events = [\n\
+  'change',\n\
+  'click',\n\
+  'dblclick',\n\
+  'mousedown',\n\
+  'mouseup',\n\
+  'blur',\n\
+  'focus',\n\
+  'input',\n\
+  'submit',\n\
+  'keydown',\n\
+  'keypress',\n\
+  'keyup'\n\
+];\n\
+\n\
+/**\n\
+ * Apply bindings.\n\
+ */\n\
+\n\
+module.exports = function(bind){\n\
+\n\
+  /**\n\
+   * Generate attribute bindings.\n\
+   */\n\
+\n\
+  attrs.forEach(function(attr){\n\
+    bind('data-' + attr, function(el, name, obj){\n\
+      this.change(function(){\n\
+        el.setAttribute(attr, this.interpolate(name));\n\
+      });\n\
+    });\n\
+  });\n\
+\n\
+/**\n\
+ * Append child element.\n\
+ */\n\
+\n\
+  bind('data-append', function(el, name){\n\
+    var other = this.value(name);\n\
+    el.appendChild(other);\n\
+  });\n\
+\n\
+/**\n\
+ * Replace element.\n\
+ */\n\
+\n\
+  bind('data-replace', function(el, name){\n\
+    var other = this.value(name);\n\
+    el.parentNode.replaceChild(other, el);\n\
+  });\n\
+\n\
+  /**\n\
+   * Show binding.\n\
+   */\n\
+\n\
+  bind('data-show', function(el, name){\n\
+    this.change(function(){\n\
+      if (this.value(name)) {\n\
+        classes(el).add('show').remove('hide');\n\
+      } else {\n\
+        classes(el).remove('show').add('hide');\n\
+      }\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Hide binding.\n\
+   */\n\
+\n\
+  bind('data-hide', function(el, name){\n\
+    this.change(function(){\n\
+      if (this.value(name)) {\n\
+        classes(el).remove('show').add('hide');\n\
+      } else {\n\
+        classes(el).add('show').remove('hide');\n\
+      }\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Checked binding.\n\
+   */\n\
+\n\
+  bind('data-checked', function(el, name){\n\
+    this.change(function(){\n\
+      if (this.value(name)) {\n\
+        el.setAttribute('checked', 'checked');\n\
+      } else {\n\
+        el.removeAttribute('checked');\n\
+      }\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Text binding.\n\
+   */\n\
+\n\
+  bind('data-text', function(el, name){\n\
+    this.change(function(){\n\
+      el.textContent = this.interpolate(name);\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * HTML binding.\n\
+   */\n\
+\n\
+  bind('data-html', function(el, name){\n\
+    this.change(function(){\n\
+      el.innerHTML = this.formatted(name);\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Generate event bindings.\n\
+   */\n\
+\n\
+  events.forEach(function(name){\n\
+    bind('on-' + name, function(el, method){\n\
+      var fns = this.view.fns\n\
+      event.bind(el, name, function(e){\n\
+        var fn = fns[method];\n\
+        if (!fn) throw new Error('method .' + method + '() missing');\n\
+        fns[method](e);\n\
+      });\n\
+    });\n\
+  });\n\
+};\n\
+//@ sourceURL=component-reactive/lib/bindings.js"
+));
+require.register("component-reactive/lib/adapter.js", Function("exports, require, module",
+"/**\n\
+ * Default subscription method.\n\
+ * Subscribe to changes on the model.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ * @param {Function} fn\n\
+ */\n\
+\n\
+exports.subscribe = function(obj, prop, fn) {\n\
+  if (!obj.on) return;\n\
+  obj.on('change ' + prop, fn);\n\
+};\n\
+\n\
+/**\n\
+ * Default unsubscription method.\n\
+ * Unsubscribe from changes on the model.\n\
+ */\n\
+\n\
+exports.unsubscribe = function(obj, prop, fn) {\n\
+  if (!obj.off) return;\n\
+  obj.off('change ' + prop, fn);\n\
+};\n\
+\n\
+/**\n\
+ * Default setter method.\n\
+ * Set a property on the model.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ */\n\
+\n\
+exports.set = function(obj, prop, val) {\n\
+  if ('function' == typeof obj[prop]) {\n\
+    obj[prop](val);\n\
+  } else {\n\
+    obj[prop] = val;\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Default getter method.\n\
+ * Get a property from the model.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+exports.get = function(obj, prop) {\n\
+  if ('function' == typeof obj[prop]) {\n\
+    return obj[prop]();\n\
+  } else {\n\
+    return obj[prop];\n\
+  }\n\
+};\n\
+//@ sourceURL=component-reactive/lib/adapter.js"
+));
+require.register("ianstormtaylor-get/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Get a value from a obj, by direct access, named getter/setter or via `get`.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ */\n\
+\n\
+module.exports = function get (obj, prop) {\n\
+\n\
+  // named getter/setter\n\
+  if ('function' === typeof obj[prop]) {\n\
+    return obj[prop]();\n\
+  }\n\
+\n\
+  // get method\n\
+  if ('function' === typeof obj.get) {\n\
+    return obj.get(prop);\n\
+  }\n\
+\n\
+  // plain object\n\
+  return obj[prop];\n\
+};//@ sourceURL=ianstormtaylor-get/index.js"
+));
+require.register("segmentio-emitter/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var index = require('indexof');\n\
+\n\
+/**\n\
+ * Expose `Emitter`.\n\
+ */\n\
+\n\
+module.exports = Emitter;\n\
+\n\
+/**\n\
+ * Initialize a new `Emitter`.\n\
+ *\n\
+ * @api public\n\
+ */\n\
+\n\
+function Emitter(obj) {\n\
+  if (obj) return mixin(obj);\n\
+};\n\
+\n\
+/**\n\
+ * Mixin the emitter properties.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @return {Object}\n\
+ * @api private\n\
+ */\n\
+\n\
+function mixin(obj) {\n\
+  for (var key in Emitter.prototype) {\n\
+    obj[key] = Emitter.prototype[key];\n\
+  }\n\
+  return obj;\n\
+}\n\
+\n\
+/**\n\
+ * Listen on the given `event` with `fn`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.on = function(event, fn){\n\
+  this._callbacks = this._callbacks || {};\n\
+  (this._callbacks[event] = this._callbacks[event] || [])\n\
+    .push(fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Adds an `event` listener that will be invoked a single\n\
+ * time then automatically removed.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.once = function(event, fn){\n\
+  var self = this;\n\
+  this._callbacks = this._callbacks || {};\n\
+\n\
+  function on() {\n\
+    self.off(event, on);\n\
+    fn.apply(this, arguments);\n\
+  }\n\
+\n\
+  fn._off = on;\n\
+  this.on(event, on);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Remove the given callback for `event` or all\n\
+ * registered callbacks.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Function} fn\n\
+ * @return {Emitter}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.off =\n\
+Emitter.prototype.removeListener =\n\
+Emitter.prototype.removeAllListeners = function(event, fn){\n\
+  this._callbacks = this._callbacks || {};\n\
+\n\
+  // all\n\
+  if (0 == arguments.length) {\n\
+    this._callbacks = {};\n\
+    return this;\n\
+  }\n\
+\n\
+  // specific event\n\
+  var callbacks = this._callbacks[event];\n\
+  if (!callbacks) return this;\n\
+\n\
+  // remove all handlers\n\
+  if (1 == arguments.length) {\n\
+    delete this._callbacks[event];\n\
+    return this;\n\
+  }\n\
+\n\
+  // remove specific handler\n\
+  var i = index(callbacks, fn._off || fn);\n\
+  if (~i) callbacks.splice(i, 1);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Emit `event` with the given args.\n\
+ *\n\
+ * @param {String} event\n\
+ * @param {Mixed} ...\n\
+ * @return {Emitter}\n\
+ */\n\
+\n\
+Emitter.prototype.emit = function(event){\n\
+  this._callbacks = this._callbacks || {};\n\
+  var args = [].slice.call(arguments, 1)\n\
+    , callbacks = this._callbacks[event];\n\
+\n\
+  // \"all\" event\n\
+  if ('*' != event) this.emit.apply(this, ['*', event].concat(args));\n\
+\n\
+  if (callbacks) {\n\
+    callbacks = callbacks.slice(0);\n\
+    for (var i = 0, len = callbacks.length; i < len; ++i) {\n\
+      callbacks[i].apply(this, args);\n\
+    }\n\
+  }\n\
+\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Return array of callbacks for `event`.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.listeners = function(event){\n\
+  this._callbacks = this._callbacks || {};\n\
+  return this._callbacks[event] || [];\n\
+};\n\
+\n\
+/**\n\
+ * Check if this emitter has `event` handlers.\n\
+ *\n\
+ * @param {String} event\n\
+ * @return {Boolean}\n\
+ * @api public\n\
+ */\n\
+\n\
+Emitter.prototype.hasListeners = function(event){\n\
+  return !! this.listeners(event).length;\n\
+};\n\
+//@ sourceURL=segmentio-emitter/index.js"
+));
+require.register("ianstormtaylor-map/index.js", Function("exports, require, module",
+"\n\
+var each = require('each');\n\
+\n\
+\n\
+/**\n\
+ * Map an array or object.\n\
+ *\n\
+ * @param {Array|Object} obj\n\
+ * @param {Function} iterator\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+module.exports = function map (obj, iterator) {\n\
+  var arr = [];\n\
+  each(obj, function (o) {\n\
+    arr.push(iterator.apply(null, arguments));\n\
+  });\n\
+  return arr;\n\
+};//@ sourceURL=ianstormtaylor-map/index.js"
+));
+require.register("segmentio-list/lib/index.js", Function("exports, require, module",
+"\n\
+var dom = require('dom')\n\
+  , Emitter = require('emitter')\n\
+  , protos = require('./protos')\n\
+  , statics = require('./statics');\n\
+\n\
+\n\
+/**\n\
+ * Expose `createList`.\n\
+ */\n\
+\n\
+module.exports = createList;\n\
+\n\
+\n\
+/**\n\
+ * Create a `List` with the given `Item` constructor.\n\
+ *\n\
+ * @param {Function} Item\n\
+ */\n\
+\n\
+function createList (Item) {\n\
+\n\
+  /**\n\
+   * Initialize a new `List`.\n\
+   */\n\
+\n\
+  function List () {\n\
+    this.Item = Item;\n\
+    this.el = document.createElement('ul');\n\
+    this.items = {};\n\
+    this.list = dom([]);\n\
+    this.List.emit('construct', this);\n\
+  }\n\
+\n\
+  // statics & protos\n\
+  List.prototype.List = List;\n\
+  for (var key in statics) List[key] = statics[key];\n\
+  for (var key in protos) List.prototype[key] = protos[key];\n\
+\n\
+  return List;\n\
+}//@ sourceURL=segmentio-list/lib/index.js"
+));
+require.register("segmentio-list/lib/protos.js", Function("exports, require, module",
+"\n\
+var bind = require('bind')\n\
+  , dom = require('dom')\n\
+  , each = require('each')\n\
+  , Emitter = require('emitter')\n\
+  , get = require('get')\n\
+  , map = require('map');\n\
+\n\
+\n\
+/**\n\
+ * Mixin emitter.\n\
+ */\n\
+\n\
+Emitter(exports);\n\
+\n\
+\n\
+/**\n\
+ * Add an item to the list.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.add = function (model) {\n\
+  var self = this;\n\
+\n\
+  var view = new this.Item(model);\n\
+  if (view.on) {\n\
+    view.on('*', function () {\n\
+      var args = Array.prototype.slice.call(arguments);\n\
+      args[0] = 'item ' + args[0];\n\
+      self.emit.apply(self, args);\n\
+    });\n\
+  }\n\
+\n\
+  var el = view.el;\n\
+  var id = get(model, 'primary') || get(model, 'id');\n\
+  this.items[id] = {\n\
+    el    : el,\n\
+    model : model,\n\
+    view  : view\n\
+  };\n\
+\n\
+  this.list.els.push(el);\n\
+  this.el.appendChild(el);\n\
+  this.emit('add', el, model, view);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Remove an item from the list.\n\
+ *\n\
+ * @param {String} id\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.remove = function (id) {\n\
+  var item = this.items[id];\n\
+  var el = item.el;\n\
+  delete this.items[id];\n\
+  if (!el) return;\n\
+\n\
+  this.list = this.list.reject(function (_) { el === _.get(0); });\n\
+  this.el.removeChild(el);\n\
+  this.emit('remove', el, item.model, item.view);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Filter the list's elements by hiding ones that don't match.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.filter = function (fn) {\n\
+  this.list.removeClass('hidden');\n\
+  for (var id in this.items) {\n\
+    var item = this.items[id];\n\
+    if (!fn(item.el, item.model, item.view)) dom(item.el).addClass('hidden');\n\
+  }\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Sort the list's elements by an iterator `fn(el, model, view)`.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.sort = function (fn) {\n\
+  var i = 0;\n\
+  var items = map(this.items, function (id, item) {\n\
+    return {\n\
+      index : i++,\n\
+      value : item,\n\
+      criterion : fn.call(null, item.el, item.model, item.view)\n\
+    };\n\
+  }).sort(function (a, b) {\n\
+    a = a.criterion;\n\
+    b = b.criterion;\n\
+    if (a > b) return 1;\n\
+    if (a < b) return -1;\n\
+    return 0;\n\
+  });\n\
+\n\
+  var fragment = document.createDocumentFragment();\n\
+  each(items, function (item) {\n\
+    fragment.appendChild(item.value.el);\n\
+  });\n\
+\n\
+  this.el.appendChild(fragment);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Empty the list.\n\
+ *\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.empty = function () {\n\
+  var self = this;\n\
+  var items = this.items;\n\
+  this.items = {};\n\
+  this.list = dom([]);\n\
+  each(items, function (id, item) {\n\
+    dom(item.el).remove();\n\
+    item.view.off('*');\n\
+    self.emit('remove', item.el, item.model, item.view);\n\
+  });\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Add a class to the list.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.addClass = function (name) {\n\
+  dom(this.el).addClass(name);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Remove a class from the list.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {List}\n\
+ */\n\
+\n\
+exports.removeClass = function (name) {\n\
+  dom(this.el).removeClass(name);\n\
+  return this;\n\
+};//@ sourceURL=segmentio-list/lib/protos.js"
+));
+require.register("segmentio-list/lib/statics.js", Function("exports, require, module",
+"\n\
+var Emitter = require('emitter');\n\
+\n\
+\n\
+/**\n\
+ * Mixin emitter.\n\
+ */\n\
+\n\
+Emitter(exports);\n\
+\n\
+\n\
+/**\n\
+ * Use a given `plugin`.\n\
+ *\n\
+ * @param {Function} plugin\n\
+ */\n\
+\n\
+exports.use = function (plugin) {\n\
+  plugin(this);\n\
+  return this;\n\
+};//@ sourceURL=segmentio-list/lib/statics.js"
+));
+require.register("yields-slug/index.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Generate a slug from the given `str`.\n\
+ *\n\
+ * example:\n\
+ *\n\
+ *        generate('foo bar');\n\
+ *        // > foo-bar\n\
+ *\n\
+ * options:\n\
+ *\n\
+ *    - `.replace` characters to replace, defaulted to `/[^a-z0-9]/g`\n\
+ *    - `.separator` separator to insert, defaulted to `-`\n\
+ *\n\
+ * @param {String} str\n\
+ * @param {Object} opts\n\
+ * @return {String}\n\
+ */\n\
+\n\
+module.exports = function(str, opts){\n\
+  opts = opts || {};\n\
+  return str.toLowerCase()\n\
+    .replace(opts.replace || /[^a-z0-9]/g, ' ')\n\
+    .replace(/^ +| +$/g, '')\n\
+    .replace(/ +/g, opts.separator || '-')\n\
+};\n\
+//@ sourceURL=yields-slug/index.js"
+));
+require.register("segmentio-menu/lib/index.js", Function("exports, require, module",
+"\n\
+var domify = require('domify')\n\
+  , inherit = require('inherit')\n\
+  , Item = require('./item')\n\
+  , list = require('list')\n\
+  , protos = require('./protos')\n\
+  , statics = require('./statics');\n\
+\n\
+\n\
+/**\n\
+ * Expose the default `Menu` with `Item` view.\n\
+ */\n\
+\n\
+module.exports = createMenu(Item);\n\
+\n\
+\n\
+/**\n\
+ * Create a `Menu` constructor with a given `MenuItem` view.\n\
+ *\n\
+ * @param {Function} MenuItem\n\
+ */\n\
+\n\
+function createMenu (MenuItem) {\n\
+\n\
+  var List = list(MenuItem);\n\
+\n\
+  /**\n\
+   * Initialize a new `Menu`.\n\
+   */\n\
+\n\
+  function Menu () {\n\
+    if (!(this instanceof Menu)) return createMenu.apply(this, arguments);\n\
+    List.apply(this, arguments);\n\
+    this.el = domify('<menu class=\"menu\" tabindex=\"0\">');\n\
+    this.bind();\n\
+    this.Menu.emit('construct', this);\n\
+  }\n\
+\n\
+  // inherit from List\n\
+  inherit(Menu, List);\n\
+\n\
+  // statics + protos\n\
+  Menu.prototype.List = List;\n\
+  Menu.prototype.Menu = Menu;\n\
+  for (var key in statics) Menu[key] = statics[key];\n\
+  for (var key in protos) Menu.prototype[key] = protos[key];\n\
+\n\
+  return Menu;\n\
+}//@ sourceURL=segmentio-menu/lib/index.js"
+));
+require.register("segmentio-menu/lib/item.js", Function("exports, require, module",
+"\n\
+var domify = require('domify')\n\
+  , get = require('get')\n\
+  , reactive = require('reactive')\n\
+  , slug = require('slug')\n\
+  , template = require('./template');\n\
+\n\
+\n\
+/**\n\
+ * Expose `ItemView`.\n\
+ */\n\
+\n\
+module.exports = ItemView;\n\
+\n\
+\n\
+/**\n\
+ * Initialize a new `ItemView`.\n\
+ */\n\
+\n\
+function ItemView (model) {\n\
+  this.model = model;\n\
+  this.el = domify(template);\n\
+  this.reactive = reactive(this.el, model, this);\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Get the id of the model.\n\
+ *\n\
+ * @return {String}\n\
+ */\n\
+\n\
+ItemView.prototype.id = function () {\n\
+  return get(this.model, 'id') || get(this.model, 'primary');\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Make a slug out of the id.\n\
+ *\n\
+ * @return {String}\n\
+ */\n\
+\n\
+ItemView.prototype.slug = function () {\n\
+  return slug(this.id());\n\
+};//@ sourceURL=segmentio-menu/lib/item.js"
+));
+require.register("segmentio-menu/lib/protos.js", Function("exports, require, module",
+"\n\
+var dom = require('dom');\n\
+var events = require('events');\n\
+var get = require('get');\n\
+var keyname = require('keyname');\n\
+var prevent = require('prevent');\n\
+\n\
+\n\
+/**\n\
+ * Bind to DOM events.\n\
+ *\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.bind = function () {\n\
+  this.events = events(this.el, this);\n\
+  this.events.bind('focus');\n\
+  this.events.bind('blur');\n\
+  this.events.bind('mouseover');\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Add an item to the menu.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.add = function (model) {\n\
+  if ('string' === typeof model) model = { id: model };\n\
+  this.List.prototype.add.call(this, model);\n\
+\n\
+  var id = primary(model);\n\
+  var el = this.items[id].el;\n\
+  var view = this.items[id].view;\n\
+  var self = this;\n\
+\n\
+  // no href, bind to click\n\
+  if (!get(model, 'href') && !get(view, 'href')) {\n\
+    dom(el).on('click', function (e) {\n\
+      e.preventDefault();\n\
+      e.stopPropagation();\n\
+      self.emit('select', el, model, view);\n\
+      self.select(id);\n\
+    });\n\
+  }\n\
+\n\
+  this.emit('add', el, model, view);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Select an item by `id`.\n\
+ *\n\
+ * @param {String} id\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.select = function (id) {\n\
+\n\
+  // no id? select the focused item if one exists\n\
+  if (undefined === id && this.focused()) {\n\
+    var el = this.focused().get(0);\n\
+    for (var id in this.items) {\n\
+      if (el === this.items[id].el) return this.select(id);\n\
+    }\n\
+  }\n\
+\n\
+  this.deselect();\n\
+  var item = this.items[id];\n\
+  if (!item) return this;\n\
+\n\
+  var el = item.el;\n\
+  var model = item.model;\n\
+  var view = item.view;\n\
+  dom(el).addClass('selected');\n\
+  this.emit('select', el, model, view);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Deselect all the items.\n\
+ *\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.deselect = function () {\n\
+  this.unfocus();\n\
+  this.list.removeClass('selected');\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Highlight the next menu item.\n\
+ *\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.next = function () {\n\
+  var list = this.list;\n\
+  var previous = this.focused();\n\
+  var next = this.visible().first();\n\
+  if (previous && previous.next(':not(.hidden)').els[0]) next = previous.next(':not(.hidden)');\n\
+\n\
+  if (previous) previous.removeClass('focus');\n\
+  next.addClass('focus');\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Highlight the previous menu item.\n\
+ *\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.previous = function () {\n\
+  var list = this.list;\n\
+  var previous = this.focused();\n\
+  var next = this.visible().last();\n\
+  if (previous && previous.previous(':not(.hidden)').els[0]) next = previous.previous(':not(.hidden)');\n\
+\n\
+  if (previous) previous.removeClass('focus');\n\
+  next.addClass('focus');\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Filter the menu.\n\
+ *\n\
+ * @param {Function} fn(el, model, view)\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.filter = function (fn) {\n\
+  this.List.prototype.filter.apply(this, arguments);\n\
+  var focused = this.focused();\n\
+  if (focused && focused.hasClass('hidden')) this.next();\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Focus the menu.\n\
+ *\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.focus = function () {\n\
+  this.el.focus();\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Unfocus all menu items.\n\
+ *\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.unfocus = function () {\n\
+  this.list.removeClass('focus');\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Hover handler.\n\
+ */\n\
+\n\
+exports.onmouseover = function (e) {\n\
+  this.unfocus();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Keydown handler.\n\
+ */\n\
+\n\
+exports.onkeydown = function (e) {\n\
+  switch (keyname(e.keyCode)) {\n\
+    case 'enter':\n\
+      prevent(e);\n\
+      this.select();\n\
+      break;\n\
+    case 'up':\n\
+      prevent(e);\n\
+      this.previous();\n\
+      break;\n\
+    case 'down':\n\
+      prevent(e);\n\
+      this.next();\n\
+      break;\n\
+  }\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Focus handler, focusing the first menu item if one isn't already.\n\
+ */\n\
+\n\
+exports.onfocus = function (e) {\n\
+  this.events.bind('keydown');\n\
+  var focused = this.focused();\n\
+  if (!focused) this.next();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Blur handler.\n\
+ */\n\
+\n\
+exports.onblur = function (e) {\n\
+  this.events.unbind('keydown');\n\
+  this.unfocus();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Get the visible menu items.\n\
+ *\n\
+ * @return {List|Null}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.visible = function () {\n\
+  var visible = this.list.filter(function (list) {\n\
+    return ! list.hasClass('hidden');\n\
+  });\n\
+  return visible.length() ? visible : null;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Get the focused menu item.\n\
+ *\n\
+ * @return {List|Null}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.focused = function () {\n\
+  var focused = this.list.filter(function (list) {\n\
+    return list.hasClass('focus');\n\
+  });\n\
+  return focused.length() ? focused : null;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Get the primary property value for a model.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @return {String}\n\
+ */\n\
+\n\
+function primary (model) {\n\
+  return get(model, 'primary') || get(model, 'id');\n\
+}//@ sourceURL=segmentio-menu/lib/protos.js"
+));
+require.register("segmentio-menu/lib/statics.js", Function("exports, require, module",
+"\n\
+var Emitter = require('emitter');\n\
+\n\
+\n\
+/**\n\
+ * Mixin emitter.\n\
+ */\n\
+\n\
+Emitter(exports);//@ sourceURL=segmentio-menu/lib/statics.js"
+));
+require.register("segmentio-menu/lib/template.js", Function("exports, require, module",
+"module.exports = '<li class=\"menu-item {slug || id}-menu-item {class || \\'\\'}\"\\n\
+    title=\"{title || \\'\\'}\">\\n\
+  <a class=\"menu-item-link\" data-href=\"href\">{text || id}</a>\\n\
+</li>';//@ sourceURL=segmentio-menu/lib/template.js"
+));
+require.register("ianstormtaylor-reactive/lib/index.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var adapter = require('./adapter');\n\
+var AttrBinding = require('./attr-binding');\n\
+var TextBinding = require('./text-binding');\n\
+var debug = require('debug')('reactive');\n\
+var bindings = require('./bindings');\n\
+var Binding = require('./binding');\n\
+var utils = require('./utils');\n\
+var query = require('query');\n\
+\n\
+/**\n\
+ * Expose `Reactive`.\n\
+ */\n\
+\n\
+exports = module.exports = Reactive;\n\
+\n\
+/**\n\
+ * Bindings.\n\
+ */\n\
+\n\
+exports.bindings = {};\n\
+\n\
+/**\n\
+ * Define subscription function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.subscribe = function(fn){\n\
+  adapter.subscribe = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Define unsubscribe function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.unsubscribe = function(fn){\n\
+  adapter.unsubscribe = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Define a get function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.get = function(fn) {\n\
+  adapter.get = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Define a set function.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.set = function(fn) {\n\
+  adapter.set = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Expose adapter\n\
+ */\n\
+\n\
+exports.adapter = adapter;\n\
+\n\
+/**\n\
+ * Define binding `name` with callback `fn(el, val)`.\n\
+ *\n\
+ * @param {String} name or object\n\
+ * @param {String|Object} name\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+exports.bind = function(name, fn){\n\
+  if ('object' == typeof name) {\n\
+    for (var key in name) {\n\
+      exports.bind(key, name[key]);\n\
+    }\n\
+    return;\n\
+  }\n\
+\n\
+  exports.bindings[name] = fn;\n\
+};\n\
+\n\
+/**\n\
+ * Initialize a reactive template for `el` and `obj`.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @param {Element} obj\n\
+ * @param {Object} options\n\
+ * @api public\n\
+ */\n\
+\n\
+function Reactive(el, obj, options) {\n\
+  if (!(this instanceof Reactive)) return new Reactive(el, obj, options);\n\
+  this.el = el;\n\
+  this.obj = obj;\n\
+  this.els = [];\n\
+  this.fns = options || {}; // TODO: rename, this is awful\n\
+  this.bindAll();\n\
+  this.bindInterpolation(this.el, []);\n\
+}\n\
+\n\
+/**\n\
+ * Subscribe to changes on `prop`.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Function} fn\n\
+ * @return {Reactive}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.sub = function(prop, fn){\n\
+  adapter.subscribe(this.obj, prop, fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Unsubscribe to changes from `prop`.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Function} fn\n\
+ * @return {Reactive}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.unsub = function(prop, fn){\n\
+  adapter.unsubscribe(this.obj, prop, fn);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Get a `prop`\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ * @return {Mixed}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.get = function(prop) {\n\
+  return adapter.get(this.obj, prop);\n\
+};\n\
+\n\
+/**\n\
+ * Set a `prop`\n\
+ *\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ * @return {Reactive}\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.set = function(prop, val) {\n\
+  adapter.set(this.obj, prop, val);\n\
+  return this;\n\
+};\n\
+\n\
+/**\n\
+ * Traverse and bind all interpolation within attributes and text.\n\
+ *\n\
+ * @param {Element} el\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.bindInterpolation = function(el, els){\n\
+\n\
+  // element\n\
+  if (el.nodeType == 1) {\n\
+    for (var i = 0; i < el.attributes.length; i++) {\n\
+      var attr = el.attributes[i];\n\
+      if (utils.hasInterpolation(attr.value)) {\n\
+        new AttrBinding(this, el, attr);\n\
+      }\n\
+    }\n\
+  }\n\
+\n\
+  // text node\n\
+  if (el.nodeType == 3) {\n\
+    if (utils.hasInterpolation(el.data)) {\n\
+      debug('bind text \"%s\"', el.data);\n\
+      new TextBinding(this, el);\n\
+    }\n\
+  }\n\
+\n\
+  // walk nodes\n\
+  for (var i = 0; i < el.childNodes.length; i++) {\n\
+    var node = el.childNodes[i];\n\
+    this.bindInterpolation(node, els);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Apply all bindings.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Reactive.prototype.bindAll = function() {\n\
+  for (var name in exports.bindings) {\n\
+    this.bind(name, exports.bindings[name]);\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Bind `name` to `fn`.\n\
+ *\n\
+ * @param {String|Object} name or object\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+Reactive.prototype.bind = function(name, fn) {\n\
+  if ('object' == typeof name) {\n\
+    for (var key in name) {\n\
+      this.bind(key, name[key]);\n\
+    }\n\
+    return;\n\
+  }\n\
+\n\
+  var els = query.all('[' + name + ']', this.el);\n\
+  if (this.el.hasAttribute && this.el.hasAttribute(name)) {\n\
+    els = [].slice.call(els);\n\
+    els.unshift(this.el);\n\
+  }\n\
+  if (!els.length) return;\n\
+\n\
+  debug('bind [%s] (%d elements)', name, els.length);\n\
+  for (var i = 0; i < els.length; i++) {\n\
+    var binding = new Binding(name, this, els[i], fn);\n\
+    binding.bind();\n\
+  }\n\
+};\n\
+\n\
+// bundled bindings\n\
+\n\
+bindings(exports.bind);\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/index.js"
+));
+require.register("ianstormtaylor-reactive/lib/utils.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var debug = require('debug')('reactive:utils');\n\
+var props = require('props');\n\
+var adapter = require('./adapter');\n\
+\n\
+/**\n\
+ * Function cache.\n\
+ */\n\
+\n\
+var cache = {};\n\
+\n\
+/**\n\
+ * Return interpolation property names in `str`,\n\
+ * for example \"{foo} and {bar}\" would return\n\
+ * ['foo', 'bar'].\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.interpolationProps = function(str) {\n\
+  var m;\n\
+  var arr = [];\n\
+  var re = /\\{([^}]+)\\}/g;\n\
+\n\
+  while (m = re.exec(str)) {\n\
+    var expr = m[1];\n\
+    arr = arr.concat(props(expr));\n\
+  }\n\
+\n\
+  return unique(arr);\n\
+};\n\
+\n\
+/**\n\
+ * Interpolate `str` with the given `fn`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @param {Function} fn\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.interpolate = function(str, fn){\n\
+  return str.replace(/\\{([^}]+)\\}/g, function(_, expr){\n\
+    var cb = cache[expr];\n\
+    if (!cb) cb = cache[expr] = compile(expr);\n\
+    return fn(expr.trim(), cb);\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Check if `str` has interpolation.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Boolean}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.hasInterpolation = function(str) {\n\
+  return ~str.indexOf('{');\n\
+};\n\
+\n\
+/**\n\
+ * Remove computed properties notation from `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.clean = function(str) {\n\
+  return str.split('<')[0].trim();\n\
+};\n\
+\n\
+/**\n\
+ * Call `prop` on `model` or `view`.\n\
+ *\n\
+ * @param {Object} model\n\
+ * @param {Object} view\n\
+ * @param {String} prop\n\
+ * @return {Mixed}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.call = function(model, view, prop){\n\
+  // view method\n\
+  if ('function' == typeof view[prop]) {\n\
+    return view[prop]();\n\
+  }\n\
+\n\
+  // view value\n\
+  if (view.hasOwnProperty(prop)) {\n\
+    return view[prop];\n\
+  }\n\
+\n\
+  // get property from model\n\
+  return adapter.get(model, prop);\n\
+};\n\
+\n\
+/**\n\
+ * Compile `expr` to a `Function`.\n\
+ *\n\
+ * @param {String} expr\n\
+ * @return {Function}\n\
+ * @api private\n\
+ */\n\
+\n\
+function compile(expr) {\n\
+  // TODO: use props() callback instead\n\
+  var re = /\\.\\w+|\\w+ *\\(|\"[^\"]*\"|'[^']*'|\\/([^/]+)\\/|[a-zA-Z_]\\w*/g;\n\
+  var p = props(expr);\n\
+\n\
+  var body = expr.replace(re, function(_) {\n\
+    if ('(' == _[_.length - 1]) return access(_);\n\
+    if (!~p.indexOf(_)) return _;\n\
+    return call(_);\n\
+  });\n\
+\n\
+  debug('compile `%s`', body);\n\
+  return new Function('model', 'view', 'call', 'return ' + body);\n\
+}\n\
+\n\
+/**\n\
+ * Access a method `prop` with dot notation.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function access(prop) {\n\
+  return 'model.' + prop;\n\
+}\n\
+\n\
+/**\n\
+ * Call `prop` on view, model, or access the model's property.\n\
+ *\n\
+ * @param {String} prop\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function call(prop) {\n\
+  return 'call(model, view, \"' + prop + '\")';\n\
+}\n\
+\n\
+/**\n\
+ * Return unique array.\n\
+ *\n\
+ * @param {Array} arr\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function unique(arr) {\n\
+  var ret = [];\n\
+\n\
+  for (var i = 0; i < arr.length; i++) {\n\
+    if (~ret.indexOf(arr[i])) continue;\n\
+    ret.push(arr[i]);\n\
+  }\n\
+\n\
+  return ret;\n\
+}\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/utils.js"
+));
+require.register("ianstormtaylor-reactive/lib/text-binding.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var debug = require('debug')('reactive:text-binding');\n\
+var utils = require('./utils');\n\
+\n\
+/**\n\
+ * Expose `TextBinding`.\n\
+ */\n\
+\n\
+module.exports = TextBinding;\n\
+\n\
+/**\n\
+ * Initialize a new text binding.\n\
+ *\n\
+ * @param {Reactive} view\n\
+ * @param {Element} node\n\
+ * @param {Attribute} attr\n\
+ * @api private\n\
+ */\n\
+\n\
+function TextBinding(view, node) {\n\
+  var self = this;\n\
+  this.view = view;\n\
+  this.text = node.data;\n\
+  this.node = node;\n\
+  this.props = utils.interpolationProps(this.text);\n\
+  this.subscribe();\n\
+  this.render();\n\
+}\n\
+\n\
+/**\n\
+ * Subscribe to changes.\n\
+ */\n\
+\n\
+TextBinding.prototype.subscribe = function(){\n\
+  var self = this;\n\
+  var view = this.view;\n\
+  this.props.forEach(function(prop){\n\
+    view.sub(prop, function(){\n\
+      self.render();\n\
+    });\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Render text.\n\
+ */\n\
+\n\
+TextBinding.prototype.render = function(){\n\
+  var node = this.node;\n\
+  var text = this.text;\n\
+  var view = this.view;\n\
+  var obj = view.obj;\n\
+\n\
+  // TODO: delegate most of this to `Reactive`\n\
+  debug('render \"%s\"', text);\n\
+  node.data = utils.interpolate(text, function(prop, fn){\n\
+    if (fn) {\n\
+      return fn(obj, view.fns, utils.call);\n\
+    } else {\n\
+      return view.get(obj, prop);\n\
+    }\n\
+  });\n\
+};\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/text-binding.js"
+));
+require.register("ianstormtaylor-reactive/lib/attr-binding.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var debug = require('debug')('reactive:attr-binding');\n\
+var utils = require('./utils');\n\
+\n\
+/**\n\
+ * Expose `AttrBinding`.\n\
+ */\n\
+\n\
+module.exports = AttrBinding;\n\
+\n\
+/**\n\
+ * Initialize a new attribute binding.\n\
+ *\n\
+ * @param {Reactive} view\n\
+ * @param {Element} node\n\
+ * @param {Attribute} attr\n\
+ * @api private\n\
+ */\n\
+\n\
+function AttrBinding(view, node, attr) {\n\
+  var self = this;\n\
+  this.view = view;\n\
+  this.node = node;\n\
+  this.attr = attr;\n\
+  this.text = attr.value;\n\
+  this.props = utils.interpolationProps(this.text);\n\
+  this.subscribe();\n\
+  this.render();\n\
+}\n\
+\n\
+/**\n\
+ * Subscribe to changes.\n\
+ */\n\
+\n\
+AttrBinding.prototype.subscribe = function(){\n\
+  var self = this;\n\
+  var view = this.view;\n\
+  this.props.forEach(function(prop){\n\
+    view.sub(prop, function(){\n\
+      self.render();\n\
+    });\n\
+  });\n\
+};\n\
+\n\
+/**\n\
+ * Render the value.\n\
+ */\n\
+\n\
+AttrBinding.prototype.render = function(){\n\
+  var attr = this.attr;\n\
+  var text = this.text;\n\
+  var view = this.view;\n\
+  var obj = view.obj;\n\
+\n\
+  // TODO: delegate most of this to `Reactive`\n\
+  debug('render %s \"%s\"', attr.name, text);\n\
+  attr.value = utils.interpolate(text, function(prop, fn){\n\
+    if (fn) {\n\
+      return fn(obj, view.fns, utils.call);\n\
+    } else {\n\
+      return view.get(obj, prop);\n\
+    }\n\
+  });\n\
+};\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/attr-binding.js"
+));
+require.register("ianstormtaylor-reactive/lib/binding.js", Function("exports, require, module",
+"\n\
+/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var parse = require('format-parser');\n\
+\n\
+/**\n\
+ * Expose `Binding`.\n\
+ */\n\
+\n\
+module.exports = Binding;\n\
+\n\
+/**\n\
+ * Initialize a binding.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+function Binding(name, view, el, fn) {\n\
+  this.name = name;\n\
+  this.view = view;\n\
+  this.obj = view.obj;\n\
+  this.fns = view.fns;\n\
+  this.el = el;\n\
+  this.fn = fn;\n\
+}\n\
+\n\
+/**\n\
+ * Apply the binding.\n\
+ *\n\
+ * @api private\n\
+ */\n\
+\n\
+Binding.prototype.bind = function() {\n\
+  var val = this.el.getAttribute(this.name);\n\
+  this.fn(this.el, val, this.obj);\n\
+};\n\
+\n\
+/**\n\
+ * Perform interpolation on `name`.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {String}\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.interpolate = function(name) {\n\
+  var self = this;\n\
+  name = clean(name);\n\
+\n\
+  if (~name.indexOf('{')) {\n\
+    return name.replace(/{([^}]+)}/g, function(_, name){\n\
+      return self.value(name);\n\
+    });\n\
+  }\n\
+\n\
+  return this.formatted(name);\n\
+};\n\
+\n\
+/**\n\
+ * Return value for property `name`.\n\
+ *\n\
+ *  - check if the \"view\" has a `name` method\n\
+ *  - check if the \"model\" has a `name` method\n\
+ *  - check if the \"model\" has a `name` property\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.value = function(name) {\n\
+  var self = this;\n\
+  var obj = this.obj;\n\
+  var view = this.view;\n\
+  var fns = view.fns;\n\
+  name = clean(name);\n\
+\n\
+  // view method\n\
+  if ('function' == typeof fns[name]) {\n\
+    return fns[name]();\n\
+  }\n\
+\n\
+  // view value\n\
+  if (fns.hasOwnProperty(name)) {\n\
+    return fns[name];\n\
+  }\n\
+\n\
+  return view.get(name);\n\
+};\n\
+\n\
+/**\n\
+ * Return formatted property.\n\
+ *\n\
+ * @param {String} fmt\n\
+ * @return {Mixed}\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.formatted = function(fmt) {\n\
+  var calls = parse(clean(fmt));\n\
+  var name = calls[0].name;\n\
+  var val = this.value(name);\n\
+\n\
+  for (var i = 1; i < calls.length; ++i) {\n\
+    var call = calls[i];\n\
+    call.args.unshift(val);\n\
+    var fn = this.fns[call.name];\n\
+    val = fn.apply(this.fns, call.args);\n\
+  }\n\
+\n\
+  return val;\n\
+};\n\
+\n\
+/**\n\
+ * Invoke `fn` on changes.\n\
+ *\n\
+ * @param {Function} fn\n\
+ * @api public\n\
+ */\n\
+\n\
+Binding.prototype.change = function(fn) {\n\
+  fn.call(this);\n\
+\n\
+  var self = this;\n\
+  var view = this.view;\n\
+  var val = this.el.getAttribute(this.name);\n\
+\n\
+  // computed props\n\
+  var parts = val.split('<');\n\
+  val = parts[0];\n\
+  var computed = parts[1];\n\
+  if (computed) computed = computed.trim().split(/\\s+/);\n\
+\n\
+  // interpolation\n\
+  if (hasInterpolation(val)) {\n\
+    var props = interpolationProps(val);\n\
+    props.forEach(function(prop){\n\
+      view.sub(prop, fn.bind(self));\n\
+    });\n\
+    return;\n\
+  }\n\
+\n\
+  // formatting\n\
+  var calls = parse(val);\n\
+  var prop = calls[0].name;\n\
+\n\
+  // computed props\n\
+  if (computed) {\n\
+    computed.forEach(function(prop){\n\
+      view.sub(prop, fn.bind(self));\n\
+    });\n\
+    return;\n\
+  }\n\
+\n\
+  // bind to prop\n\
+  view.sub(prop, fn.bind(this));\n\
+};\n\
+\n\
+/**\n\
+ * Return interpolation property names in `str`,\n\
+ * for example \"{foo} and {bar}\" would return\n\
+ * ['foo', 'bar'].\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function interpolationProps(str) {\n\
+  var m;\n\
+  var arr = [];\n\
+  var re = /\\{([^}]+)\\}/g;\n\
+  while (m = re.exec(str)) {\n\
+    arr.push(m[1]);\n\
+  }\n\
+  return arr;\n\
+}\n\
+\n\
+/**\n\
+ * Check if `str` has interpolation.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Boolean}\n\
+ * @api private\n\
+ */\n\
+\n\
+function hasInterpolation(str) {\n\
+  return ~str.indexOf('{');\n\
+}\n\
+\n\
+/**\n\
+ * Remove computed properties notation from `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function clean(str) {\n\
+  return str.split('<')[0].trim();\n\
+}\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/binding.js"
+));
+require.register("ianstormtaylor-reactive/lib/bindings.js", Function("exports, require, module",
+"/**\n\
+ * Module dependencies.\n\
+ */\n\
+\n\
+var classes = require('classes');\n\
+var event = require('event');\n\
+\n\
+/**\n\
+ * Attributes supported.\n\
+ */\n\
+\n\
+var attrs = [\n\
+  'id',\n\
+  'src',\n\
+  'rel',\n\
+  'cols',\n\
+  'rows',\n\
+  'name',\n\
+  'href',\n\
+  'title',\n\
+  'class',\n\
+  'style',\n\
+  'width',\n\
+  'value',\n\
+  'height',\n\
+  'tabindex',\n\
+  'placeholder'\n\
+];\n\
+\n\
+/**\n\
+ * Events supported.\n\
+ */\n\
+\n\
+var events = [\n\
+  'change',\n\
+  'click',\n\
+  'dblclick',\n\
+  'mousedown',\n\
+  'mouseup',\n\
+  'blur',\n\
+  'focus',\n\
+  'input',\n\
+  'keydown',\n\
+  'keypress',\n\
+  'keyup'\n\
+];\n\
+\n\
+/**\n\
+ * Apply bindings.\n\
+ */\n\
+\n\
+module.exports = function(bind){\n\
+\n\
+  /**\n\
+   * Generate attribute bindings.\n\
+   */\n\
+\n\
+  attrs.forEach(function(attr){\n\
+    bind('data-' + attr, function(el, name, obj){\n\
+      this.change(function(){\n\
+        el.setAttribute(attr, this.interpolate(name));\n\
+      });\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Show binding.\n\
+   */\n\
+\n\
+  bind('data-show', function(el, name){\n\
+    this.change(function(){\n\
+      if (this.value(name)) {\n\
+        classes(el).add('show').remove('hide');\n\
+      } else {\n\
+        classes(el).remove('show').add('hide');\n\
+      }\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Hide binding.\n\
+   */\n\
+\n\
+  bind('data-hide', function(el, name){\n\
+    this.change(function(){\n\
+      if (this.value(name)) {\n\
+        classes(el).remove('show').add('hide');\n\
+      } else {\n\
+        classes(el).add('show').remove('hide');\n\
+      }\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Checked binding.\n\
+   */\n\
+\n\
+  bind('data-checked', function(el, name){\n\
+    this.change(function(){\n\
+      if (this.value(name)) {\n\
+        el.setAttribute('checked', 'checked');\n\
+      } else {\n\
+        el.removeAttribute('checked');\n\
+      }\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Text binding.\n\
+   */\n\
+\n\
+  bind('data-text', function(el, name){\n\
+    this.change(function(){\n\
+      el.textContent = this.interpolate(name);\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * HTML binding.\n\
+   */\n\
+\n\
+  bind('data-html', function(el, name){\n\
+    this.change(function(){\n\
+      el.innerHTML = this.formatted(name);\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Generate event bindings.\n\
+   */\n\
+\n\
+  events.forEach(function(name){\n\
+    bind('on-' + name, function(el, method){\n\
+      var fns = this.view.fns;\n\
+      event.bind(el, name, function(e){\n\
+        var fn = fns[method];\n\
+        if (!fn) throw new Error('method .' + method + '() missing');\n\
+        fns[method](e);\n\
+      });\n\
+    });\n\
+  });\n\
+\n\
+  /**\n\
+   * Conditional binding.\n\
+   */\n\
+\n\
+  bind('data-if', function(el, name){\n\
+    var value = this.value(name);\n\
+    if (!value) el.parentNode.removeChild(el);\n\
+  });\n\
+\n\
+  /**\n\
+   * Append child element.\n\
+   */\n\
+\n\
+  bind('data-append', function(el, name){\n\
+    var other = this.value(name);\n\
+    el.appendChild(other);\n\
+  });\n\
+\n\
+  /**\n\
+   * Replace element, carrying over its attributes.\n\
+   */\n\
+\n\
+  bind('data-replace', function(el, name){\n\
+    var other = this.value(name);\n\
+\n\
+    // carryover attributes\n\
+    for (var key in el.attributes) {\n\
+      var attr = el.attributes[key];\n\
+      if (!attr.specified || 'class' == attr.name) continue;\n\
+      if (!other.hasAttribute(attr.name)) other.setAttribute(attr.name, attr.value);\n\
+    }\n\
+\n\
+    // carryover classes\n\
+    var arr = classes(el).array();\n\
+    for (var i = 0; i < arr.length; i++) {\n\
+      classes(other).add(arr[i]);\n\
+    }\n\
+\n\
+    el.parentNode.replaceChild(other, el);\n\
+  });\n\
+\n\
+};\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/bindings.js"
+));
+require.register("ianstormtaylor-reactive/lib/adapter.js", Function("exports, require, module",
+"/**\n\
+ * Default subscription method.\n\
+ * Subscribe to changes on the model.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ * @param {Function} fn\n\
+ */\n\
+\n\
+exports.subscribe = function(obj, prop, fn) {\n\
+  if (!obj.on) return;\n\
+  obj.on('change ' + prop, fn);\n\
+};\n\
+\n\
+/**\n\
+ * Default unsubscription method.\n\
+ * Unsubscribe from changes on the model.\n\
+ */\n\
+\n\
+exports.unsubscribe = function(obj, prop, fn) {\n\
+  if (!obj.off) return;\n\
+  obj.off('change ' + prop, fn);\n\
+};\n\
+\n\
+/**\n\
+ * Default setter method.\n\
+ * Set a property on the model.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ * @param {Mixed} val\n\
+ */\n\
+\n\
+exports.set = function(obj, prop, val) {\n\
+  if ('function' == typeof obj[prop]) {\n\
+    obj[prop](val);\n\
+  } else {\n\
+    obj[prop] = val;\n\
+  }\n\
+};\n\
+\n\
+/**\n\
+ * Default getter method.\n\
+ * Get a property from the model.\n\
+ *\n\
+ * @param {Object} obj\n\
+ * @param {String} prop\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+exports.get = function(obj, prop) {\n\
+  if ('function' == typeof obj[prop]) {\n\
+    return obj[prop]();\n\
+  } else {\n\
+    return obj[prop];\n\
+  }\n\
+};\n\
+//@ sourceURL=ianstormtaylor-reactive/lib/adapter.js"
+));
+require.register("ianstormtaylor-classes/index.js", Function("exports, require, module",
+"\n\
+var classes = require('classes');\n\
+\n\
+\n\
+/**\n\
+ * Expose `mixin`.\n\
+ */\n\
+\n\
+module.exports = exports = mixin;\n\
+\n\
+\n\
+/**\n\
+ * Mixin the classes methods.\n\
+ *\n\
+ * @param {Object} object\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+function mixin (obj) {\n\
+  for (var method in exports) obj[method] = exports[method];\n\
+  return obj;\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Add a class.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.addClass = function (name) {\n\
+  classes(this.el).add(name);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Remove a class.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.removeClass = function (name) {\n\
+  classes(this.el).remove(name);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Has a class?\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Boolean}\n\
+ */\n\
+\n\
+exports.hasClass = function (name) {\n\
+  return classes(this.el).has(name);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Toggle a class.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.toggleClass = function (name) {\n\
+  classes(this.el).toggle(name);\n\
+  return this;\n\
+};\n\
+//@ sourceURL=ianstormtaylor-classes/index.js"
+));
+require.register("segmentio-view/index.js", Function("exports, require, module",
+"\n\
+var Classes = require('classes')\n\
+  , domify = require('domify')\n\
+  , Emitter = require('emitter')\n\
+  , reactive = require('reactive')\n\
+  , type = require('type');\n\
+\n\
+\n\
+/**\n\
+ * Expose `createView`.\n\
+ */\n\
+\n\
+module.exports = createView;\n\
+\n\
+\n\
+/**\n\
+ * Create a new view constructor with the given `template`.\n\
+ * Optional `fn` will be assigned to `construct` events.\n\
+ *\n\
+ * @param {String} template\n\
+ * @param {Function} fn (optional)\n\
+ * @return {Function}\n\
+ */\n\
+\n\
+function createView (template, fn) {\n\
+  if (!template) throw new Error('template required');\n\
+\n\
+  /**\n\
+   * Initialize a new `View` with an optional `model`, `el` and `options`.\n\
+   *\n\
+   * @param {Object} model (optional)\n\
+   * @param {Element} el (optional)\n\
+   * @param {Object} options (optional)\n\
+   */\n\
+\n\
+  function View (model, el, options) {\n\
+    options || (options = {});\n\
+\n\
+    if ('element' === type(model)) {\n\
+      options = el;\n\
+      el = model;\n\
+      model = null;\n\
+    }\n\
+\n\
+    if ('object' === type(el)) {\n\
+      options = el;\n\
+      el = null;\n\
+    }\n\
+\n\
+    this.model = model || {};\n\
+    this.el = el || domify(template);\n\
+    this.options = options;\n\
+    this.reactive = reactive(this.el, this.model, this);\n\
+    this.View.emit('construct', this, this.model, this.el, this.options);\n\
+  }\n\
+\n\
+  // statics\n\
+  Emitter(View);\n\
+\n\
+  // prototypes\n\
+  View.prototype.template = template;\n\
+  View.prototype.View = View;\n\
+  Emitter(View.prototype);\n\
+  Classes(View.prototype);\n\
+\n\
+  // assign optional `construct` listener\n\
+  if (fn) View.on('construct', fn);\n\
+\n\
+  return View;\n\
+}//@ sourceURL=segmentio-view/index.js"
+));
+require.register("nav/index.js", Function("exports, require, module",
+"\n\
+var bind = require('event').bind\n\
+  , keyname = require('keyname')\n\
+  , menu = require('menu')\n\
+  , MenuItem = require('./item')\n\
+  , prevent = require('prevent')\n\
+  , template = require('./index.html')\n\
+  , value = require('value')\n\
+  , view = require('view');\n\
+\n\
+\n\
+/**\n\
+ * Expose the `Nav` constructor.\n\
+ */\n\
+\n\
+var Nav = module.exports = view(template, function (self) {\n\
+  self.search = self.el.querySelector('.nav-search');\n\
+  self.form = self.el.querySelector('.nav-form');\n\
+  bind(self.form, 'submit', prevent);\n\
+  bind(self.search, 'focus', function () {\n\
+    self.menu.next();\n\
+  });\n\
+});\n\
+\n\
+\n\
+/**\n\
+ * Create a `Menu` constructor.\n\
+ */\n\
+\n\
+var Menu = menu(MenuItem);\n\
+\n\
+\n\
+/**\n\
+ * Add a document to the menu.\n\
+ *\n\
+ * @param {Object} doc\n\
+ * @return {Nav}\n\
+ */\n\
+\n\
+Nav.prototype.add = function (doc) {\n\
+  this.menu.add(doc);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Remove a document from the menu.\n\
+ *\n\
+ * @param {String} id\n\
+ * @return {Nav}\n\
+ */\n\
+\n\
+Nav.prototype.remove = function (id) {\n\
+  this.menu.remove(id);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Focus the nav's search input.\n\
+ *\n\
+ * @return {Nav}\n\
+ */\n\
+\n\
+Nav.prototype.focus = function () {\n\
+  this.search.focus();\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Reactive menu replacement.\n\
+ *\n\
+ * @return {Element}\n\
+ */\n\
+\n\
+Nav.prototype.replaceMenu = function () {\n\
+  var self = this;\n\
+  this.menu = new Menu()\n\
+    .on('select', function (doc) {\n\
+      self.emit('select', doc);\n\
+    });\n\
+  return this.menu.el;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * On search, filter the menu.\n\
+ */\n\
+\n\
+Nav.prototype.onSearch = function (e) {\n\
+  switch (keyname(e.keyCode)) {\n\
+    case 'enter':\n\
+      return this.menu.select();\n\
+    case 'up':\n\
+      return this.menu.previous();\n\
+    case 'down':\n\
+      return this.menu.next();\n\
+  }\n\
+  var string = value(e.target);\n\
+  this.menu.filter(function (el, model, view) {\n\
+    return model.title().toLowerCase().indexOf(string) !== -1;\n\
+  });\n\
+};//@ sourceURL=nav/index.js"
+));
+require.register("nav/item.js", Function("exports, require, module",
+"\n\
+var documents = require('documents')\n\
+  , moment = require('moment')\n\
+  , template = require('./item.html')\n\
+  , view = require('view');\n\
+\n\
+\n\
+/**\n\
+ * Expose `MenuItemView` constructor.\n\
+ */\n\
+\n\
+var MenuItemView = module.exports = view(template);\n\
+\n\
+\n\
+/**\n\
+ * On clicking the delete button, remove the document from the list.\n\
+ */\n\
+\n\
+MenuItemView.prototype.onClickDelete = function (e) {\n\
+  e.preventDefault();\n\
+  e.stopPropagation();\n\
+\n\
+  var doc = documents.find('.primary() ===' + this.model.primary());\n\
+  if (doc) documents.remove(doc);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Return an href for the document.\n\
+ *\n\
+ * @return {String}\n\
+ */\n\
+\n\
+MenuItemView.prototype.href = function () {\n\
+  return '/' + this.model.primary();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Return a title for the document.\n\
+ *\n\
+ * @return {String}\n\
+ */\n\
+\n\
+MenuItemView.prototype.title = function () {\n\
+  var title = this.model.title();\n\
+  if (title) return title;\n\
+  var created = moment(this.model.created());\n\
+  return created.format('[Untitled] - MMM Do, YYYY');\n\
+};//@ sourceURL=nav/item.js"
+));
+require.register("boot/browser.js", Function("exports, require, module",
+"\n\
+var bind = require('event').bind\n\
+  , body = document.body\n\
+  , classes = require('classes')\n\
+  , documents = require('documents')\n\
+  , Editor = require('editor')\n\
+  , Nav = require('nav')\n\
+  , Router = require('router')\n\
+  , uid = require('uid');\n\
+\n\
+\n\
+/**\n\
+ * Editor reference.\n\
+ */\n\
+\n\
+var editor;\n\
+\n\
+\n\
+/**\n\
+ * Router.\n\
+ */\n\
+\n\
+var router = new Router();\n\
+\n\
+\n\
+/**\n\
+ * Home route.\n\
+ */\n\
+\n\
+router.on('/', function (next) {\n\
+  router.go('/' + uid());\n\
+});\n\
+\n\
+\n\
+/**\n\
+ * Document route.\n\
+ */\n\
+\n\
+router.on('/:id/:state?', function (context, next) {\n\
+  body.className = 'loading ss-loading';\n\
+  documents.fetch(context.params.id, function (err, doc) {\n\
+    if (err) throw err;\n\
+    if (editor) body.removeChild(editor.el);\n\
+    editor = new Editor(doc);\n\
+    body.appendChild(editor.el);\n\
+    body.className = context.params.state;\n\
+    window.analytics.track('Viewed Document', { id: doc.primary() });\n\
+  });\n\
+});\n\
+\n\
+\n\
+/**\n\
+ * Nav.\n\
+ */\n\
+\n\
+var nav = new Nav();\n\
+\n\
+nav.on('select', function (doc) {\n\
+  router.go('/' + doc.primary());\n\
+});\n\
+\n\
+body.appendChild(nav.el);\n\
+\n\
+documents\n\
+  .on('add', nav.add.bind(nav))\n\
+  .on('remove', nav.remove.bind(nav));\n\
+\n\
+bind(document.querySelector('.main-menu-nav-button'), 'click', function (e) {\n\
+  var el = classes(body);\n\
+  if (el.has('navigating')) {\n\
+    el.remove('navigating');\n\
+  } else {\n\
+    el.add('navigating');\n\
+    nav.focus();\n\
+  }\n\
+});\n\
+\n\
+\n\
+/**\n\
+ * Listen.\n\
+ */\n\
+\n\
+router.listen();\n\
+\n\
+\n\
+/**\n\
+ * Load documents from Firebase.\n\
+ */\n\
+\n\
+documents.load();//@ sourceURL=boot/browser.js"
+));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+require.register("editor/index.html", Function("exports, require, module",
+"module.exports = '<div class=\"editor\">\\n\
+  <div class=\"editor-write\">\\n\
+    <form class=\"editor-form\">\\n\
+      <textarea class=\"editor-input\" placeholder=\"Start writing here&hellip;\"></textarea>\\n\
+    </form>\\n\
+  </div>\\n\
+\\n\
+  <div class=\"editor-read\">\\n\
+    <article class=\"editor-output\"></article>\\n\
+  </div>\\n\
+\\n\
+  <menu class=\"editor-menu menu\">\\n\
+    <li class=\"editor-menu-item menu-item\">\\n\
+      <a class=\"editor-write-button editor-menu-item-link menu-item-link ss-write\"\\n\
+         title=\"Write Mode (Ctrl + Alt + ⇽)\"></a>\\n\
+    </li>\\n\
+    <li class=\"editor-menu-item menu-item\">\\n\
+      <a class=\"editor-read-button editor-menu-item-link menu-item-link ss-view\"\\n\
+         title=\"Read Mode (Ctrl + Alt + ⇾)\"></a>\\n\
+    </li>\\n\
+  </menu>\\n\
+</div>';//@ sourceURL=editor/index.html"
+));
+
+
+
+
+
+
+
+
+
+
+
+
+
+require.register("nav/index.html", Function("exports, require, module",
+"module.exports = '<nav class=\"nav\">\\n\
+  <form class=\"nav-form\">\\n\
+    <input class=\"nav-search\"\\n\
+           type=\"search\"\\n\
+           placeholder=\"Filter the list&hellip;\"\\n\
+           on-keyup=\"onSearch\">\\n\
+    <i class=\"nav-search-icon ss-search\"></i>\\n\
+  </form>\\n\
+  <menu class=\"nav-menu\" data-replace=\"replaceMenu\"></menu>\\n\
+</nav>';//@ sourceURL=nav/index.html"
+));
+require.register("nav/item.html", Function("exports, require, module",
+"module.exports = '<li class=\"menu-item\">\\n\
+  <a class=\"menu-item-link menu-item-title\"\\n\
+     href=\"/{id}\">{title || \\'Untitled\\'}</a>\\n\
+  <a class=\"menu-item-link menu-item-delete-button ss-trash\"\\n\
+     title=\"Remove Document from Bookmarks\"\\n\
+     on-click=\"onClickDelete\"></a>\\n\
+</li>';//@ sourceURL=nav/item.html"
+));
 
 
 

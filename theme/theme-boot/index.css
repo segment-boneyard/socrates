@@ -81,7 +81,7 @@ body::before {
   left: 50%;
   margin-top: -0.5em;
   margin-left: -0.5em;
-  font-size: 3em;
+  font-size: 2em;
   color: #c1b08e;
   opacity: 0;
   -webkit-animation: spin 2s linear infinite;
@@ -95,7 +95,7 @@ body.loading::before {
   line-height: 1.26; /* HACK: crappy magic number to keep indicator aligned */
 }
 
-body.loading .editor {
+body.loading * {
   opacity: 0;
 }
 
