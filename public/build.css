@@ -1,4 +1,17 @@
 /**
+ * Menu.
+ *
+ * menu.menu
+ *   li.menu-item
+ *     a.menu-item-link
+ */
+
+.menu:focus {
+  outline: none; /* people won't assume they need to style the focused state */
+}
+
+
+/**
  * -----
  * Fixes
  * -----
@@ -865,6 +878,11 @@ body.loading .editor {
 .nav-menu .menu-item.focus,
 .nav-menu .menu-item.selected {
   background-color: #3c3a35;
+}
+
+.nav-menu .menu-item:hover .menu-item-link,
+.nav-menu .menu-item.focus .menu-item-link,
+.nav-menu .menu-item.selected .menu-item-link {
   color: #ede5d5;
 }
 

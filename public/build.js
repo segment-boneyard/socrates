@@ -196,8 +196,11 @@ require.relative = function(parent) {
   return localRequire;
 };
 require.register("component-indexof/index.js", Function("exports, require, module",
-"module.exports = function(arr, obj){\n\
-  if (arr.indexOf) return arr.indexOf(obj);\n\
+"\n\
+var indexOf = [].indexOf;\n\
+\n\
+module.exports = function(arr, obj){\n\
+  if (indexOf) return arr.indexOf(obj);\n\
   for (var i = 0; i < arr.length; ++i) {\n\
     if (arr[i] === obj) return i;\n\
   }\n\
@@ -205,8 +208,7 @@ require.register("component-indexof/index.js", Function("exports, require, modul
 };//@ sourceURL=component-indexof/index.js"
 ));
 require.register("component-classes/index.js", Function("exports, require, module",
-"\n\
-/**\n\
+"/**\n\
  * Module dependencies.\n\
  */\n\
 \n\
@@ -244,6 +246,7 @@ module.exports = function(el){\n\
  */\n\
 \n\
 function ClassList(el) {\n\
+  if (!el) throw new Error('A DOM element reference is required');\n\
   this.el = el;\n\
   this.list = el.classList;\n\
 }\n\
@@ -387,7 +390,7 @@ require.register("component-event/index.js", Function("exports, require, module"
 \n\
 exports.bind = function(el, type, fn, capture){\n\
   if (el.addEventListener) {\n\
-    el.addEventListener(type, fn, capture);\n\
+    el.addEventListener(type, fn, capture || false);\n\
   } else {\n\
     el.attachEvent('on' + type, fn);\n\
   }\n\
@@ -407,7 +410,7 @@ exports.bind = function(el, type, fn, capture){\n\
 \n\
 exports.unbind = function(el, type, fn, capture){\n\
   if (el.removeEventListener) {\n\
-    el.removeEventListener(type, fn, capture);\n\
+    el.removeEventListener(type, fn, capture || false);\n\
   } else {\n\
     el.detachEvent('on' + type, fn);\n\
   }\n\
@@ -488,8 +491,7 @@ function match(el, selector) {\n\
 //@ sourceURL=component-matches-selector/index.js"
 ));
 require.register("component-delegate/index.js", Function("exports, require, module",
-"\n\
-/**\n\
+"/**\n\
  * Module dependencies.\n\
  */\n\
 \n\
@@ -512,9 +514,8 @@ var matches = require('matches-selector')\n\
 \n\
 exports.bind = function(el, selector, type, fn, capture){\n\
   return event.bind(el, type, function(e){\n\
-    if (matches(e.target, selector)) fn(e);\n\
+    if (matches(e.target || e.srcElement, selector)) fn.call(el, e);\n\
   }, capture);\n\
-  return callback;\n\
 };\n\
 \n\
 /**\n\
@@ -4742,6 +4743,41 @@ exports.load = function () {\n\
   });\n\
 };//@ sourceURL=documents/index.js"
 ));
+require.register("component-debounce/index.js", Function("exports, require, module",
+"/**\n\
+ * Debounces a function by the given threshold.\n\
+ *\n\
+ * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/\n\
+ * @param {Function} function to wrap\n\
+ * @param {Number} timeout in ms (`100`)\n\
+ * @param {Boolean} whether to execute at the beginning (`false`)\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function debounce(func, threshold, execAsap){\n\
+  var timeout;\n\
+\n\
+  return function debounced(){\n\
+    var obj = this, args = arguments;\n\
+\n\
+    function delayed () {\n\
+      if (!execAsap) {\n\
+        func.apply(obj, args);\n\
+      }\n\
+      timeout = null;\n\
+    }\n\
+\n\
+    if (timeout) {\n\
+      clearTimeout(timeout);\n\
+    } else if (execAsap) {\n\
+      func.apply(obj, args);\n\
+    }\n\
+\n\
+    timeout = setTimeout(delayed, threshold || 100);\n\
+  };\n\
+};\n\
+//@ sourceURL=component-debounce/index.js"
+));
 require.register("component-css/index.js", Function("exports, require, module",
 "\n\
 /**\n\
@@ -5163,7 +5199,7 @@ List.prototype.appendTo = function(val){\n\
 List.prototype.insertAfter = function(val){\n\
   val = dom(val).els[0];\n\
   if (!val || !val.parentNode) return this;\n\
-  this.els.forEach(function(el){\n\
+  this.forEach(function(el){\n\
     val.parentNode.insertBefore(el, val.nextSibling);\n\
   });\n\
   return this;\n\
@@ -5750,1408 +5786,6 @@ function parse(html) {\n\
 }\n\
 //@ sourceURL=component-domify/index.js"
 ));
-require.register("component-moment/index.js", Function("exports, require, module",
-"// moment.js\n\
-// version : 2.0.0\n\
-// author : Tim Wood\n\
-// license : MIT\n\
-// momentjs.com\n\
-\n\
-(function (undefined) {\n\
-\n\
-    /************************************\n\
-        Constants\n\
-    ************************************/\n\
-\n\
-    var moment,\n\
-        VERSION = \"2.0.0\",\n\
-        round = Math.round, i,\n\
-        // internal storage for language config files\n\
-        languages = {},\n\
-\n\
-        // check for nodeJS\n\
-        hasModule = (typeof module !== 'undefined' && module.exports),\n\
-\n\
-        // ASP.NET json date format regex\n\
-        aspNetJsonRegex = /^\\/?Date\\((\\-?\\d+)/i,\n\
-\n\
-        // format tokens\n\
-        formattingTokens = /(\\[[^\\[]*\\])|(\\\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|YYYYY|YYYY|YY|a|A|hh?|HH?|mm?|ss?|SS?S?|X|zz?|ZZ?|.)/g,\n\
-        localFormattingTokens = /(\\[[^\\[]*\\])|(\\\\)?(LT|LL?L?L?|l{1,4})/g,\n\
-\n\
-        // parsing tokens\n\
-        parseMultipleFormatChunker = /([0-9a-zA-Z\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]+)/gi,\n\
-\n\
-        // parsing token regexes\n\
-        parseTokenOneOrTwoDigits = /\\d\\d?/, // 0 - 99\n\
-        parseTokenOneToThreeDigits = /\\d{1,3}/, // 0 - 999\n\
-        parseTokenThreeDigits = /\\d{3}/, // 000 - 999\n\
-        parseTokenFourDigits = /\\d{1,4}/, // 0 - 9999\n\
-        parseTokenSixDigits = /[+\\-]?\\d{1,6}/, // -999,999 - 999,999\n\
-        parseTokenWord = /[0-9]*[a-z\\u00A0-\\u05FF\\u0700-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]+|[\\u0600-\\u06FF]+\\s*?[\\u0600-\\u06FF]+/i, // any word (or two) characters or numbers including two word month in arabic.\n\
-        parseTokenTimezone = /Z|[\\+\\-]\\d\\d:?\\d\\d/i, // +00:00 -00:00 +0000 -0000 or Z\n\
-        parseTokenT = /T/i, // T (ISO seperator)\n\
-        parseTokenTimestampMs = /[\\+\\-]?\\d+(\\.\\d{1,3})?/, // 123456789 123456789.123\n\
-\n\
-        // preliminary iso regex\n\
-        // 0000-00-00 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000\n\
-        isoRegex = /^\\s*\\d{4}-\\d\\d-\\d\\d((T| )(\\d\\d(:\\d\\d(:\\d\\d(\\.\\d\\d?\\d?)?)?)?)?([\\+\\-]\\d\\d:?\\d\\d)?)?/,\n\
-        isoFormat = 'YYYY-MM-DDTHH:mm:ssZ',\n\
-\n\
-        // iso time formats and regexes\n\
-        isoTimes = [\n\
-            ['HH:mm:ss.S', /(T| )\\d\\d:\\d\\d:\\d\\d\\.\\d{1,3}/],\n\
-            ['HH:mm:ss', /(T| )\\d\\d:\\d\\d:\\d\\d/],\n\
-            ['HH:mm', /(T| )\\d\\d:\\d\\d/],\n\
-            ['HH', /(T| )\\d\\d/]\n\
-        ],\n\
-\n\
-        // timezone chunker \"+10:00\" > [\"10\", \"00\"] or \"-1530\" > [\"-15\", \"30\"]\n\
-        parseTimezoneChunker = /([\\+\\-]|\\d\\d)/gi,\n\
-\n\
-        // getter and setter names\n\
-        proxyGettersAndSetters = 'Month|Date|Hours|Minutes|Seconds|Milliseconds'.split('|'),\n\
-        unitMillisecondFactors = {\n\
-            'Milliseconds' : 1,\n\
-            'Seconds' : 1e3,\n\
-            'Minutes' : 6e4,\n\
-            'Hours' : 36e5,\n\
-            'Days' : 864e5,\n\
-            'Months' : 2592e6,\n\
-            'Years' : 31536e6\n\
-        },\n\
-\n\
-        // format function strings\n\
-        formatFunctions = {},\n\
-\n\
-        // tokens to ordinalize and pad\n\
-        ordinalizeTokens = 'DDD w W M D d'.split(' '),\n\
-        paddedTokens = 'M D H h m s w W'.split(' '),\n\
-\n\
-        formatTokenFunctions = {\n\
-            M    : function () {\n\
-                return this.month() + 1;\n\
-            },\n\
-            MMM  : function (format) {\n\
-                return this.lang().monthsShort(this, format);\n\
-            },\n\
-            MMMM : function (format) {\n\
-                return this.lang().months(this, format);\n\
-            },\n\
-            D    : function () {\n\
-                return this.date();\n\
-            },\n\
-            DDD  : function () {\n\
-                return this.dayOfYear();\n\
-            },\n\
-            d    : function () {\n\
-                return this.day();\n\
-            },\n\
-            dd   : function (format) {\n\
-                return this.lang().weekdaysMin(this, format);\n\
-            },\n\
-            ddd  : function (format) {\n\
-                return this.lang().weekdaysShort(this, format);\n\
-            },\n\
-            dddd : function (format) {\n\
-                return this.lang().weekdays(this, format);\n\
-            },\n\
-            w    : function () {\n\
-                return this.week();\n\
-            },\n\
-            W    : function () {\n\
-                return this.isoWeek();\n\
-            },\n\
-            YY   : function () {\n\
-                return leftZeroFill(this.year() % 100, 2);\n\
-            },\n\
-            YYYY : function () {\n\
-                return leftZeroFill(this.year(), 4);\n\
-            },\n\
-            YYYYY : function () {\n\
-                return leftZeroFill(this.year(), 5);\n\
-            },\n\
-            a    : function () {\n\
-                return this.lang().meridiem(this.hours(), this.minutes(), true);\n\
-            },\n\
-            A    : function () {\n\
-                return this.lang().meridiem(this.hours(), this.minutes(), false);\n\
-            },\n\
-            H    : function () {\n\
-                return this.hours();\n\
-            },\n\
-            h    : function () {\n\
-                return this.hours() % 12 || 12;\n\
-            },\n\
-            m    : function () {\n\
-                return this.minutes();\n\
-            },\n\
-            s    : function () {\n\
-                return this.seconds();\n\
-            },\n\
-            S    : function () {\n\
-                return ~~(this.milliseconds() / 100);\n\
-            },\n\
-            SS   : function () {\n\
-                return leftZeroFill(~~(this.milliseconds() / 10), 2);\n\
-            },\n\
-            SSS  : function () {\n\
-                return leftZeroFill(this.milliseconds(), 3);\n\
-            },\n\
-            Z    : function () {\n\
-                var a = -this.zone(),\n\
-                    b = \"+\";\n\
-                if (a < 0) {\n\
-                    a = -a;\n\
-                    b = \"-\";\n\
-                }\n\
-                return b + leftZeroFill(~~(a / 60), 2) + \":\" + leftZeroFill(~~a % 60, 2);\n\
-            },\n\
-            ZZ   : function () {\n\
-                var a = -this.zone(),\n\
-                    b = \"+\";\n\
-                if (a < 0) {\n\
-                    a = -a;\n\
-                    b = \"-\";\n\
-                }\n\
-                return b + leftZeroFill(~~(10 * a / 6), 4);\n\
-            },\n\
-            X    : function () {\n\
-                return this.unix();\n\
-            }\n\
-        };\n\
-\n\
-    function padToken(func, count) {\n\
-        return function (a) {\n\
-            return leftZeroFill(func.call(this, a), count);\n\
-        };\n\
-    }\n\
-    function ordinalizeToken(func) {\n\
-        return function (a) {\n\
-            return this.lang().ordinal(func.call(this, a));\n\
-        };\n\
-    }\n\
-\n\
-    while (ordinalizeTokens.length) {\n\
-        i = ordinalizeTokens.pop();\n\
-        formatTokenFunctions[i + 'o'] = ordinalizeToken(formatTokenFunctions[i]);\n\
-    }\n\
-    while (paddedTokens.length) {\n\
-        i = paddedTokens.pop();\n\
-        formatTokenFunctions[i + i] = padToken(formatTokenFunctions[i], 2);\n\
-    }\n\
-    formatTokenFunctions.DDDD = padToken(formatTokenFunctions.DDD, 3);\n\
-\n\
-\n\
-    /************************************\n\
-        Constructors\n\
-    ************************************/\n\
-\n\
-    function Language() {\n\
-\n\
-    }\n\
-\n\
-    // Moment prototype object\n\
-    function Moment(config) {\n\
-        extend(this, config);\n\
-    }\n\
-\n\
-    // Duration Constructor\n\
-    function Duration(duration) {\n\
-        var data = this._data = {},\n\
-            years = duration.years || duration.year || duration.y || 0,\n\
-            months = duration.months || duration.month || duration.M || 0,\n\
-            weeks = duration.weeks || duration.week || duration.w || 0,\n\
-            days = duration.days || duration.day || duration.d || 0,\n\
-            hours = duration.hours || duration.hour || duration.h || 0,\n\
-            minutes = duration.minutes || duration.minute || duration.m || 0,\n\
-            seconds = duration.seconds || duration.second || duration.s || 0,\n\
-            milliseconds = duration.milliseconds || duration.millisecond || duration.ms || 0;\n\
-\n\
-        // representation for dateAddRemove\n\
-        this._milliseconds = milliseconds +\n\
-            seconds * 1e3 + // 1000\n\
-            minutes * 6e4 + // 1000 * 60\n\
-            hours * 36e5; // 1000 * 60 * 60\n\
-        // Because of dateAddRemove treats 24 hours as different from a\n\
-        // day when working around DST, we need to store them separately\n\
-        this._days = days +\n\
-            weeks * 7;\n\
-        // It is impossible translate months into days without knowing\n\
-        // which months you are are talking about, so we have to store\n\
-        // it separately.\n\
-        this._months = months +\n\
-            years * 12;\n\
-\n\
-        // The following code bubbles up values, see the tests for\n\
-        // examples of what that means.\n\
-        data.milliseconds = milliseconds % 1000;\n\
-        seconds += absRound(milliseconds / 1000);\n\
-\n\
-        data.seconds = seconds % 60;\n\
-        minutes += absRound(seconds / 60);\n\
-\n\
-        data.minutes = minutes % 60;\n\
-        hours += absRound(minutes / 60);\n\
-\n\
-        data.hours = hours % 24;\n\
-        days += absRound(hours / 24);\n\
-\n\
-        days += weeks * 7;\n\
-        data.days = days % 30;\n\
-\n\
-        months += absRound(days / 30);\n\
-\n\
-        data.months = months % 12;\n\
-        years += absRound(months / 12);\n\
-\n\
-        data.years = years;\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Helpers\n\
-    ************************************/\n\
-\n\
-\n\
-    function extend(a, b) {\n\
-        for (var i in b) {\n\
-            if (b.hasOwnProperty(i)) {\n\
-                a[i] = b[i];\n\
-            }\n\
-        }\n\
-        return a;\n\
-    }\n\
-\n\
-    function absRound(number) {\n\
-        if (number < 0) {\n\
-            return Math.ceil(number);\n\
-        } else {\n\
-            return Math.floor(number);\n\
-        }\n\
-    }\n\
-\n\
-    // left zero fill a number\n\
-    // see http://jsperf.com/left-zero-filling for performance comparison\n\
-    function leftZeroFill(number, targetLength) {\n\
-        var output = number + '';\n\
-        while (output.length < targetLength) {\n\
-            output = '0' + output;\n\
-        }\n\
-        return output;\n\
-    }\n\
-\n\
-    // helper function for _.addTime and _.subtractTime\n\
-    function addOrSubtractDurationFromMoment(mom, duration, isAdding) {\n\
-        var ms = duration._milliseconds,\n\
-            d = duration._days,\n\
-            M = duration._months,\n\
-            currentDate;\n\
-\n\
-        if (ms) {\n\
-            mom._d.setTime(+mom + ms * isAdding);\n\
-        }\n\
-        if (d) {\n\
-            mom.date(mom.date() + d * isAdding);\n\
-        }\n\
-        if (M) {\n\
-            currentDate = mom.date();\n\
-            mom.date(1)\n\
-                .month(mom.month() + M * isAdding)\n\
-                .date(Math.min(currentDate, mom.daysInMonth()));\n\
-        }\n\
-    }\n\
-\n\
-    // check if is an array\n\
-    function isArray(input) {\n\
-        return Object.prototype.toString.call(input) === '[object Array]';\n\
-    }\n\
-\n\
-    // compare two arrays, return the number of differences\n\
-    function compareArrays(array1, array2) {\n\
-        var len = Math.min(array1.length, array2.length),\n\
-            lengthDiff = Math.abs(array1.length - array2.length),\n\
-            diffs = 0,\n\
-            i;\n\
-        for (i = 0; i < len; i++) {\n\
-            if (~~array1[i] !== ~~array2[i]) {\n\
-                diffs++;\n\
-            }\n\
-        }\n\
-        return diffs + lengthDiff;\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Languages\n\
-    ************************************/\n\
-\n\
-\n\
-    Language.prototype = {\n\
-        set : function (config) {\n\
-            var prop, i;\n\
-            for (i in config) {\n\
-                prop = config[i];\n\
-                if (typeof prop === 'function') {\n\
-                    this[i] = prop;\n\
-                } else {\n\
-                    this['_' + i] = prop;\n\
-                }\n\
-            }\n\
-        },\n\
-\n\
-        _months : \"January_February_March_April_May_June_July_August_September_October_November_December\".split(\"_\"),\n\
-        months : function (m) {\n\
-            return this._months[m.month()];\n\
-        },\n\
-\n\
-        _monthsShort : \"Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec\".split(\"_\"),\n\
-        monthsShort : function (m) {\n\
-            return this._monthsShort[m.month()];\n\
-        },\n\
-\n\
-        monthsParse : function (monthName) {\n\
-            var i, mom, regex, output;\n\
-\n\
-            if (!this._monthsParse) {\n\
-                this._monthsParse = [];\n\
-            }\n\
-\n\
-            for (i = 0; i < 12; i++) {\n\
-                // make the regex if we don't have it already\n\
-                if (!this._monthsParse[i]) {\n\
-                    mom = moment([2000, i]);\n\
-                    regex = '^' + this.months(mom, '') + '|^' + this.monthsShort(mom, '');\n\
-                    this._monthsParse[i] = new RegExp(regex.replace('.', ''), 'i');\n\
-                }\n\
-                // test the regex\n\
-                if (this._monthsParse[i].test(monthName)) {\n\
-                    return i;\n\
-                }\n\
-            }\n\
-        },\n\
-\n\
-        _weekdays : \"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday\".split(\"_\"),\n\
-        weekdays : function (m) {\n\
-            return this._weekdays[m.day()];\n\
-        },\n\
-\n\
-        _weekdaysShort : \"Sun_Mon_Tue_Wed_Thu_Fri_Sat\".split(\"_\"),\n\
-        weekdaysShort : function (m) {\n\
-            return this._weekdaysShort[m.day()];\n\
-        },\n\
-\n\
-        _weekdaysMin : \"Su_Mo_Tu_We_Th_Fr_Sa\".split(\"_\"),\n\
-        weekdaysMin : function (m) {\n\
-            return this._weekdaysMin[m.day()];\n\
-        },\n\
-\n\
-        _longDateFormat : {\n\
-            LT : \"h:mm A\",\n\
-            L : \"MM/DD/YYYY\",\n\
-            LL : \"MMMM D YYYY\",\n\
-            LLL : \"MMMM D YYYY LT\",\n\
-            LLLL : \"dddd, MMMM D YYYY LT\"\n\
-        },\n\
-        longDateFormat : function (key) {\n\
-            var output = this._longDateFormat[key];\n\
-            if (!output && this._longDateFormat[key.toUpperCase()]) {\n\
-                output = this._longDateFormat[key.toUpperCase()].replace(/MMMM|MM|DD|dddd/g, function (val) {\n\
-                    return val.slice(1);\n\
-                });\n\
-                this._longDateFormat[key] = output;\n\
-            }\n\
-            return output;\n\
-        },\n\
-\n\
-        meridiem : function (hours, minutes, isLower) {\n\
-            if (hours > 11) {\n\
-                return isLower ? 'pm' : 'PM';\n\
-            } else {\n\
-                return isLower ? 'am' : 'AM';\n\
-            }\n\
-        },\n\
-\n\
-        _calendar : {\n\
-            sameDay : '[Today at] LT',\n\
-            nextDay : '[Tomorrow at] LT',\n\
-            nextWeek : 'dddd [at] LT',\n\
-            lastDay : '[Yesterday at] LT',\n\
-            lastWeek : '[last] dddd [at] LT',\n\
-            sameElse : 'L'\n\
-        },\n\
-        calendar : function (key, mom) {\n\
-            var output = this._calendar[key];\n\
-            return typeof output === 'function' ? output.apply(mom) : output;\n\
-        },\n\
-\n\
-        _relativeTime : {\n\
-            future : \"in %s\",\n\
-            past : \"%s ago\",\n\
-            s : \"a few seconds\",\n\
-            m : \"a minute\",\n\
-            mm : \"%d minutes\",\n\
-            h : \"an hour\",\n\
-            hh : \"%d hours\",\n\
-            d : \"a day\",\n\
-            dd : \"%d days\",\n\
-            M : \"a month\",\n\
-            MM : \"%d months\",\n\
-            y : \"a year\",\n\
-            yy : \"%d years\"\n\
-        },\n\
-        relativeTime : function (number, withoutSuffix, string, isFuture) {\n\
-            var output = this._relativeTime[string];\n\
-            return (typeof output === 'function') ?\n\
-                output(number, withoutSuffix, string, isFuture) :\n\
-                output.replace(/%d/i, number);\n\
-        },\n\
-        pastFuture : function (diff, output) {\n\
-            var format = this._relativeTime[diff > 0 ? 'future' : 'past'];\n\
-            return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);\n\
-        },\n\
-\n\
-        ordinal : function (number) {\n\
-            return this._ordinal.replace(\"%d\", number);\n\
-        },\n\
-        _ordinal : \"%d\",\n\
-\n\
-        preparse : function (string) {\n\
-            return string;\n\
-        },\n\
-\n\
-        postformat : function (string) {\n\
-            return string;\n\
-        },\n\
-\n\
-        week : function (mom) {\n\
-            return weekOfYear(mom, this._week.dow, this._week.doy);\n\
-        },\n\
-        _week : {\n\
-            dow : 0, // Sunday is the first day of the week.\n\
-            doy : 6  // The week that contains Jan 1st is the first week of the year.\n\
-        }\n\
-    };\n\
-\n\
-    // Loads a language definition into the `languages` cache.  The function\n\
-    // takes a key and optionally values.  If not in the browser and no values\n\
-    // are provided, it will load the language file module.  As a convenience,\n\
-    // this function also returns the language values.\n\
-    function loadLang(key, values) {\n\
-        values.abbr = key;\n\
-        if (!languages[key]) {\n\
-            languages[key] = new Language();\n\
-        }\n\
-        languages[key].set(values);\n\
-        return languages[key];\n\
-    }\n\
-\n\
-    // Determines which language definition to use and returns it.\n\
-    //\n\
-    // With no parameters, it will return the global language.  If you\n\
-    // pass in a language key, such as 'en', it will return the\n\
-    // definition for 'en', so long as 'en' has already been loaded using\n\
-    // moment.lang.\n\
-    function getLangDefinition(key) {\n\
-        if (!key) {\n\
-            return moment.fn._lang;\n\
-        }\n\
-        if (!languages[key] && hasModule) {\n\
-            require('./lang/' + key);\n\
-        }\n\
-        return languages[key];\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Formatting\n\
-    ************************************/\n\
-\n\
-\n\
-    function removeFormattingTokens(input) {\n\
-        if (input.match(/\\[.*\\]/)) {\n\
-            return input.replace(/^\\[|\\]$/g, \"\");\n\
-        }\n\
-        return input.replace(/\\\\/g, \"\");\n\
-    }\n\
-\n\
-    function makeFormatFunction(format) {\n\
-        var array = format.match(formattingTokens), i, length;\n\
-\n\
-        for (i = 0, length = array.length; i < length; i++) {\n\
-            if (formatTokenFunctions[array[i]]) {\n\
-                array[i] = formatTokenFunctions[array[i]];\n\
-            } else {\n\
-                array[i] = removeFormattingTokens(array[i]);\n\
-            }\n\
-        }\n\
-\n\
-        return function (mom) {\n\
-            var output = \"\";\n\
-            for (i = 0; i < length; i++) {\n\
-                output += typeof array[i].call === 'function' ? array[i].call(mom, format) : array[i];\n\
-            }\n\
-            return output;\n\
-        };\n\
-    }\n\
-\n\
-    // format date using native date object\n\
-    function formatMoment(m, format) {\n\
-        var i = 5;\n\
-\n\
-        function replaceLongDateFormatTokens(input) {\n\
-            return m.lang().longDateFormat(input) || input;\n\
-        }\n\
-\n\
-        while (i-- && localFormattingTokens.test(format)) {\n\
-            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);\n\
-        }\n\
-\n\
-        if (!formatFunctions[format]) {\n\
-            formatFunctions[format] = makeFormatFunction(format);\n\
-        }\n\
-\n\
-        return formatFunctions[format](m);\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Parsing\n\
-    ************************************/\n\
-\n\
-\n\
-    // get the regex to find the next token\n\
-    function getParseRegexForToken(token) {\n\
-        switch (token) {\n\
-        case 'DDDD':\n\
-            return parseTokenThreeDigits;\n\
-        case 'YYYY':\n\
-            return parseTokenFourDigits;\n\
-        case 'YYYYY':\n\
-            return parseTokenSixDigits;\n\
-        case 'S':\n\
-        case 'SS':\n\
-        case 'SSS':\n\
-        case 'DDD':\n\
-            return parseTokenOneToThreeDigits;\n\
-        case 'MMM':\n\
-        case 'MMMM':\n\
-        case 'dd':\n\
-        case 'ddd':\n\
-        case 'dddd':\n\
-        case 'a':\n\
-        case 'A':\n\
-            return parseTokenWord;\n\
-        case 'X':\n\
-            return parseTokenTimestampMs;\n\
-        case 'Z':\n\
-        case 'ZZ':\n\
-            return parseTokenTimezone;\n\
-        case 'T':\n\
-            return parseTokenT;\n\
-        case 'MM':\n\
-        case 'DD':\n\
-        case 'YY':\n\
-        case 'HH':\n\
-        case 'hh':\n\
-        case 'mm':\n\
-        case 'ss':\n\
-        case 'M':\n\
-        case 'D':\n\
-        case 'd':\n\
-        case 'H':\n\
-        case 'h':\n\
-        case 'm':\n\
-        case 's':\n\
-            return parseTokenOneOrTwoDigits;\n\
-        default :\n\
-            return new RegExp(token.replace('\\\\', ''));\n\
-        }\n\
-    }\n\
-\n\
-    // function to convert string input to date\n\
-    function addTimeToArrayFromToken(token, input, config) {\n\
-        var a, b,\n\
-            datePartArray = config._a;\n\
-\n\
-        switch (token) {\n\
-        // MONTH\n\
-        case 'M' : // fall through to MM\n\
-        case 'MM' :\n\
-            datePartArray[1] = (input == null) ? 0 : ~~input - 1;\n\
-            break;\n\
-        case 'MMM' : // fall through to MMMM\n\
-        case 'MMMM' :\n\
-            a = getLangDefinition(config._l).monthsParse(input);\n\
-            // if we didn't find a month name, mark the date as invalid.\n\
-            if (a != null) {\n\
-                datePartArray[1] = a;\n\
-            } else {\n\
-                config._isValid = false;\n\
-            }\n\
-            break;\n\
-        // DAY OF MONTH\n\
-        case 'D' : // fall through to DDDD\n\
-        case 'DD' : // fall through to DDDD\n\
-        case 'DDD' : // fall through to DDDD\n\
-        case 'DDDD' :\n\
-            if (input != null) {\n\
-                datePartArray[2] = ~~input;\n\
-            }\n\
-            break;\n\
-        // YEAR\n\
-        case 'YY' :\n\
-            datePartArray[0] = ~~input + (~~input > 68 ? 1900 : 2000);\n\
-            break;\n\
-        case 'YYYY' :\n\
-        case 'YYYYY' :\n\
-            datePartArray[0] = ~~input;\n\
-            break;\n\
-        // AM / PM\n\
-        case 'a' : // fall through to A\n\
-        case 'A' :\n\
-            config._isPm = ((input + '').toLowerCase() === 'pm');\n\
-            break;\n\
-        // 24 HOUR\n\
-        case 'H' : // fall through to hh\n\
-        case 'HH' : // fall through to hh\n\
-        case 'h' : // fall through to hh\n\
-        case 'hh' :\n\
-            datePartArray[3] = ~~input;\n\
-            break;\n\
-        // MINUTE\n\
-        case 'm' : // fall through to mm\n\
-        case 'mm' :\n\
-            datePartArray[4] = ~~input;\n\
-            break;\n\
-        // SECOND\n\
-        case 's' : // fall through to ss\n\
-        case 'ss' :\n\
-            datePartArray[5] = ~~input;\n\
-            break;\n\
-        // MILLISECOND\n\
-        case 'S' :\n\
-        case 'SS' :\n\
-        case 'SSS' :\n\
-            datePartArray[6] = ~~ (('0.' + input) * 1000);\n\
-            break;\n\
-        // UNIX TIMESTAMP WITH MS\n\
-        case 'X':\n\
-            config._d = new Date(parseFloat(input) * 1000);\n\
-            break;\n\
-        // TIMEZONE\n\
-        case 'Z' : // fall through to ZZ\n\
-        case 'ZZ' :\n\
-            config._useUTC = true;\n\
-            a = (input + '').match(parseTimezoneChunker);\n\
-            if (a && a[1]) {\n\
-                config._tzh = ~~a[1];\n\
-            }\n\
-            if (a && a[2]) {\n\
-                config._tzm = ~~a[2];\n\
-            }\n\
-            // reverse offsets\n\
-            if (a && a[0] === '+') {\n\
-                config._tzh = -config._tzh;\n\
-                config._tzm = -config._tzm;\n\
-            }\n\
-            break;\n\
-        }\n\
-\n\
-        // if the input is null, the date is not valid\n\
-        if (input == null) {\n\
-            config._isValid = false;\n\
-        }\n\
-    }\n\
-\n\
-    // convert an array to a date.\n\
-    // the array should mirror the parameters below\n\
-    // note: all values past the year are optional and will default to the lowest possible value.\n\
-    // [year, month, day , hour, minute, second, millisecond]\n\
-    function dateFromArray(config) {\n\
-        var i, date, input = [];\n\
-\n\
-        if (config._d) {\n\
-            return;\n\
-        }\n\
-\n\
-        for (i = 0; i < 7; i++) {\n\
-            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];\n\
-        }\n\
-\n\
-        // add the offsets to the time to be parsed so that we can have a clean array for checking isValid\n\
-        input[3] += config._tzh || 0;\n\
-        input[4] += config._tzm || 0;\n\
-\n\
-        date = new Date(0);\n\
-\n\
-        if (config._useUTC) {\n\
-            date.setUTCFullYear(input[0], input[1], input[2]);\n\
-            date.setUTCHours(input[3], input[4], input[5], input[6]);\n\
-        } else {\n\
-            date.setFullYear(input[0], input[1], input[2]);\n\
-            date.setHours(input[3], input[4], input[5], input[6]);\n\
-        }\n\
-\n\
-        config._d = date;\n\
-    }\n\
-\n\
-    // date from string and format string\n\
-    function makeDateFromStringAndFormat(config) {\n\
-        // This array is used to make a Date, either with `new Date` or `Date.UTC`\n\
-        var tokens = config._f.match(formattingTokens),\n\
-            string = config._i,\n\
-            i, parsedInput;\n\
-\n\
-        config._a = [];\n\
-\n\
-        for (i = 0; i < tokens.length; i++) {\n\
-            parsedInput = (getParseRegexForToken(tokens[i]).exec(string) || [])[0];\n\
-            if (parsedInput) {\n\
-                string = string.slice(string.indexOf(parsedInput) + parsedInput.length);\n\
-            }\n\
-            // don't parse if its not a known token\n\
-            if (formatTokenFunctions[tokens[i]]) {\n\
-                addTimeToArrayFromToken(tokens[i], parsedInput, config);\n\
-            }\n\
-        }\n\
-        // handle am pm\n\
-        if (config._isPm && config._a[3] < 12) {\n\
-            config._a[3] += 12;\n\
-        }\n\
-        // if is 12 am, change hours to 0\n\
-        if (config._isPm === false && config._a[3] === 12) {\n\
-            config._a[3] = 0;\n\
-        }\n\
-        // return\n\
-        dateFromArray(config);\n\
-    }\n\
-\n\
-    // date from string and array of format strings\n\
-    function makeDateFromStringAndArray(config) {\n\
-        var tempConfig,\n\
-            tempMoment,\n\
-            bestMoment,\n\
-\n\
-            scoreToBeat = 99,\n\
-            i,\n\
-            currentScore;\n\
-\n\
-        for (i = config._f.length; i > 0; i--) {\n\
-            tempConfig = extend({}, config);\n\
-            tempConfig._f = config._f[i - 1];\n\
-            makeDateFromStringAndFormat(tempConfig);\n\
-            tempMoment = new Moment(tempConfig);\n\
-\n\
-            if (tempMoment.isValid()) {\n\
-                bestMoment = tempMoment;\n\
-                break;\n\
-            }\n\
-\n\
-            currentScore = compareArrays(tempConfig._a, tempMoment.toArray());\n\
-\n\
-            if (currentScore < scoreToBeat) {\n\
-                scoreToBeat = currentScore;\n\
-                bestMoment = tempMoment;\n\
-            }\n\
-        }\n\
-\n\
-        extend(config, bestMoment);\n\
-    }\n\
-\n\
-    // date from iso format\n\
-    function makeDateFromString(config) {\n\
-        var i,\n\
-            string = config._i;\n\
-        if (isoRegex.exec(string)) {\n\
-            config._f = 'YYYY-MM-DDT';\n\
-            for (i = 0; i < 4; i++) {\n\
-                if (isoTimes[i][1].exec(string)) {\n\
-                    config._f += isoTimes[i][0];\n\
-                    break;\n\
-                }\n\
-            }\n\
-            if (parseTokenTimezone.exec(string)) {\n\
-                config._f += \" Z\";\n\
-            }\n\
-            makeDateFromStringAndFormat(config);\n\
-        } else {\n\
-            config._d = new Date(string);\n\
-        }\n\
-    }\n\
-\n\
-    function makeDateFromInput(config) {\n\
-        var input = config._i,\n\
-            matched = aspNetJsonRegex.exec(input);\n\
-\n\
-        if (input === undefined) {\n\
-            config._d = new Date();\n\
-        } else if (matched) {\n\
-            config._d = new Date(+matched[1]);\n\
-        } else if (typeof input === 'string') {\n\
-            makeDateFromString(config);\n\
-        } else if (isArray(input)) {\n\
-            config._a = input.slice(0);\n\
-            dateFromArray(config);\n\
-        } else {\n\
-            config._d = input instanceof Date ? new Date(+input) : new Date(input);\n\
-        }\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Relative Time\n\
-    ************************************/\n\
-\n\
-\n\
-    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize\n\
-    function substituteTimeAgo(string, number, withoutSuffix, isFuture, lang) {\n\
-        return lang.relativeTime(number || 1, !!withoutSuffix, string, isFuture);\n\
-    }\n\
-\n\
-    function relativeTime(milliseconds, withoutSuffix, lang) {\n\
-        var seconds = round(Math.abs(milliseconds) / 1000),\n\
-            minutes = round(seconds / 60),\n\
-            hours = round(minutes / 60),\n\
-            days = round(hours / 24),\n\
-            years = round(days / 365),\n\
-            args = seconds < 45 && ['s', seconds] ||\n\
-                minutes === 1 && ['m'] ||\n\
-                minutes < 45 && ['mm', minutes] ||\n\
-                hours === 1 && ['h'] ||\n\
-                hours < 22 && ['hh', hours] ||\n\
-                days === 1 && ['d'] ||\n\
-                days <= 25 && ['dd', days] ||\n\
-                days <= 45 && ['M'] ||\n\
-                days < 345 && ['MM', round(days / 30)] ||\n\
-                years === 1 && ['y'] || ['yy', years];\n\
-        args[2] = withoutSuffix;\n\
-        args[3] = milliseconds > 0;\n\
-        args[4] = lang;\n\
-        return substituteTimeAgo.apply({}, args);\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Week of Year\n\
-    ************************************/\n\
-\n\
-\n\
-    // firstDayOfWeek       0 = sun, 6 = sat\n\
-    //                      the day of the week that starts the week\n\
-    //                      (usually sunday or monday)\n\
-    // firstDayOfWeekOfYear 0 = sun, 6 = sat\n\
-    //                      the first week is the week that contains the first\n\
-    //                      of this day of the week\n\
-    //                      (eg. ISO weeks use thursday (4))\n\
-    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {\n\
-        var end = firstDayOfWeekOfYear - firstDayOfWeek,\n\
-            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day();\n\
-\n\
-\n\
-        if (daysToDayOfWeek > end) {\n\
-            daysToDayOfWeek -= 7;\n\
-        }\n\
-\n\
-        if (daysToDayOfWeek < end - 7) {\n\
-            daysToDayOfWeek += 7;\n\
-        }\n\
-\n\
-        return Math.ceil(moment(mom).add('d', daysToDayOfWeek).dayOfYear() / 7);\n\
-    }\n\
-\n\
-\n\
-    /************************************\n\
-        Top Level Functions\n\
-    ************************************/\n\
-\n\
-    function makeMoment(config) {\n\
-        var input = config._i,\n\
-            format = config._f;\n\
-\n\
-        if (input === null || input === '') {\n\
-            return null;\n\
-        }\n\
-\n\
-        if (typeof input === 'string') {\n\
-            config._i = input = getLangDefinition().preparse(input);\n\
-        }\n\
-\n\
-        if (moment.isMoment(input)) {\n\
-            config = extend({}, input);\n\
-            config._d = new Date(+input._d);\n\
-        } else if (format) {\n\
-            if (isArray(format)) {\n\
-                makeDateFromStringAndArray(config);\n\
-            } else {\n\
-                makeDateFromStringAndFormat(config);\n\
-            }\n\
-        } else {\n\
-            makeDateFromInput(config);\n\
-        }\n\
-\n\
-        return new Moment(config);\n\
-    }\n\
-\n\
-    moment = function (input, format, lang) {\n\
-        return makeMoment({\n\
-            _i : input,\n\
-            _f : format,\n\
-            _l : lang,\n\
-            _isUTC : false\n\
-        });\n\
-    };\n\
-\n\
-    // creating with utc\n\
-    moment.utc = function (input, format, lang) {\n\
-        return makeMoment({\n\
-            _useUTC : true,\n\
-            _isUTC : true,\n\
-            _l : lang,\n\
-            _i : input,\n\
-            _f : format\n\
-        });\n\
-    };\n\
-\n\
-    // creating with unix timestamp (in seconds)\n\
-    moment.unix = function (input) {\n\
-        return moment(input * 1000);\n\
-    };\n\
-\n\
-    // duration\n\
-    moment.duration = function (input, key) {\n\
-        var isDuration = moment.isDuration(input),\n\
-            isNumber = (typeof input === 'number'),\n\
-            duration = (isDuration ? input._data : (isNumber ? {} : input)),\n\
-            ret;\n\
-\n\
-        if (isNumber) {\n\
-            if (key) {\n\
-                duration[key] = input;\n\
-            } else {\n\
-                duration.milliseconds = input;\n\
-            }\n\
-        }\n\
-\n\
-        ret = new Duration(duration);\n\
-\n\
-        if (isDuration && input.hasOwnProperty('_lang')) {\n\
-            ret._lang = input._lang;\n\
-        }\n\
-\n\
-        return ret;\n\
-    };\n\
-\n\
-    // version number\n\
-    moment.version = VERSION;\n\
-\n\
-    // default format\n\
-    moment.defaultFormat = isoFormat;\n\
-\n\
-    // This function will load languages and then set the global language.  If\n\
-    // no arguments are passed in, it will simply return the current global\n\
-    // language key.\n\
-    moment.lang = function (key, values) {\n\
-        var i;\n\
-\n\
-        if (!key) {\n\
-            return moment.fn._lang._abbr;\n\
-        }\n\
-        if (values) {\n\
-            loadLang(key, values);\n\
-        } else if (!languages[key]) {\n\
-            getLangDefinition(key);\n\
-        }\n\
-        moment.duration.fn._lang = moment.fn._lang = getLangDefinition(key);\n\
-    };\n\
-\n\
-    // returns language data\n\
-    moment.langData = function (key) {\n\
-        if (key && key._lang && key._lang._abbr) {\n\
-            key = key._lang._abbr;\n\
-        }\n\
-        return getLangDefinition(key);\n\
-    };\n\
-\n\
-    // compare moment object\n\
-    moment.isMoment = function (obj) {\n\
-        return obj instanceof Moment;\n\
-    };\n\
-\n\
-    // for typechecking Duration objects\n\
-    moment.isDuration = function (obj) {\n\
-        return obj instanceof Duration;\n\
-    };\n\
-\n\
-\n\
-    /************************************\n\
-        Moment Prototype\n\
-    ************************************/\n\
-\n\
-\n\
-    moment.fn = Moment.prototype = {\n\
-\n\
-        clone : function () {\n\
-            return moment(this);\n\
-        },\n\
-\n\
-        valueOf : function () {\n\
-            return +this._d;\n\
-        },\n\
-\n\
-        unix : function () {\n\
-            return Math.floor(+this._d / 1000);\n\
-        },\n\
-\n\
-        toString : function () {\n\
-            return this.format(\"ddd MMM DD YYYY HH:mm:ss [GMT]ZZ\");\n\
-        },\n\
-\n\
-        toDate : function () {\n\
-            return this._d;\n\
-        },\n\
-\n\
-        toJSON : function () {\n\
-            return moment.utc(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');\n\
-        },\n\
-\n\
-        toArray : function () {\n\
-            var m = this;\n\
-            return [\n\
-                m.year(),\n\
-                m.month(),\n\
-                m.date(),\n\
-                m.hours(),\n\
-                m.minutes(),\n\
-                m.seconds(),\n\
-                m.milliseconds()\n\
-            ];\n\
-        },\n\
-\n\
-        isValid : function () {\n\
-            if (this._isValid == null) {\n\
-                if (this._a) {\n\
-                    this._isValid = !compareArrays(this._a, (this._isUTC ? moment.utc(this._a) : moment(this._a)).toArray());\n\
-                } else {\n\
-                    this._isValid = !isNaN(this._d.getTime());\n\
-                }\n\
-            }\n\
-            return !!this._isValid;\n\
-        },\n\
-\n\
-        utc : function () {\n\
-            this._isUTC = true;\n\
-            return this;\n\
-        },\n\
-\n\
-        local : function () {\n\
-            this._isUTC = false;\n\
-            return this;\n\
-        },\n\
-\n\
-        format : function (inputString) {\n\
-            var output = formatMoment(this, inputString || moment.defaultFormat);\n\
-            return this.lang().postformat(output);\n\
-        },\n\
-\n\
-        add : function (input, val) {\n\
-            var dur;\n\
-            // switch args to support add('s', 1) and add(1, 's')\n\
-            if (typeof input === 'string') {\n\
-                dur = moment.duration(+val, input);\n\
-            } else {\n\
-                dur = moment.duration(input, val);\n\
-            }\n\
-            addOrSubtractDurationFromMoment(this, dur, 1);\n\
-            return this;\n\
-        },\n\
-\n\
-        subtract : function (input, val) {\n\
-            var dur;\n\
-            // switch args to support subtract('s', 1) and subtract(1, 's')\n\
-            if (typeof input === 'string') {\n\
-                dur = moment.duration(+val, input);\n\
-            } else {\n\
-                dur = moment.duration(input, val);\n\
-            }\n\
-            addOrSubtractDurationFromMoment(this, dur, -1);\n\
-            return this;\n\
-        },\n\
-\n\
-        diff : function (input, units, asFloat) {\n\
-            var that = this._isUTC ? moment(input).utc() : moment(input).local(),\n\
-                zoneDiff = (this.zone() - that.zone()) * 6e4,\n\
-                diff, output;\n\
-\n\
-            if (units) {\n\
-                // standardize on singular form\n\
-                units = units.replace(/s$/, '');\n\
-            }\n\
-\n\
-            if (units === 'year' || units === 'month') {\n\
-                diff = (this.daysInMonth() + that.daysInMonth()) * 432e5; // 24 * 60 * 60 * 1000 / 2\n\
-                output = ((this.year() - that.year()) * 12) + (this.month() - that.month());\n\
-                output += ((this - moment(this).startOf('month')) - (that - moment(that).startOf('month'))) / diff;\n\
-                if (units === 'year') {\n\
-                    output = output / 12;\n\
-                }\n\
-            } else {\n\
-                diff = (this - that) - zoneDiff;\n\
-                output = units === 'second' ? diff / 1e3 : // 1000\n\
-                    units === 'minute' ? diff / 6e4 : // 1000 * 60\n\
-                    units === 'hour' ? diff / 36e5 : // 1000 * 60 * 60\n\
-                    units === 'day' ? diff / 864e5 : // 1000 * 60 * 60 * 24\n\
-                    units === 'week' ? diff / 6048e5 : // 1000 * 60 * 60 * 24 * 7\n\
-                    diff;\n\
-            }\n\
-            return asFloat ? output : absRound(output);\n\
-        },\n\
-\n\
-        from : function (time, withoutSuffix) {\n\
-            return moment.duration(this.diff(time)).lang(this.lang()._abbr).humanize(!withoutSuffix);\n\
-        },\n\
-\n\
-        fromNow : function (withoutSuffix) {\n\
-            return this.from(moment(), withoutSuffix);\n\
-        },\n\
-\n\
-        calendar : function () {\n\
-            var diff = this.diff(moment().startOf('day'), 'days', true),\n\
-                format = diff < -6 ? 'sameElse' :\n\
-                diff < -1 ? 'lastWeek' :\n\
-                diff < 0 ? 'lastDay' :\n\
-                diff < 1 ? 'sameDay' :\n\
-                diff < 2 ? 'nextDay' :\n\
-                diff < 7 ? 'nextWeek' : 'sameElse';\n\
-            return this.format(this.lang().calendar(format, this));\n\
-        },\n\
-\n\
-        isLeapYear : function () {\n\
-            var year = this.year();\n\
-            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;\n\
-        },\n\
-\n\
-        isDST : function () {\n\
-            return (this.zone() < moment([this.year()]).zone() ||\n\
-                this.zone() < moment([this.year(), 5]).zone());\n\
-        },\n\
-\n\
-        day : function (input) {\n\
-            var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();\n\
-            return input == null ? day :\n\
-                this.add({ d : input - day });\n\
-        },\n\
-\n\
-        startOf: function (units) {\n\
-            units = units.replace(/s$/, '');\n\
-            // the following switch intentionally omits break keywords\n\
-            // to utilize falling through the cases.\n\
-            switch (units) {\n\
-            case 'year':\n\
-                this.month(0);\n\
-                /* falls through */\n\
-            case 'month':\n\
-                this.date(1);\n\
-                /* falls through */\n\
-            case 'week':\n\
-            case 'day':\n\
-                this.hours(0);\n\
-                /* falls through */\n\
-            case 'hour':\n\
-                this.minutes(0);\n\
-                /* falls through */\n\
-            case 'minute':\n\
-                this.seconds(0);\n\
-                /* falls through */\n\
-            case 'second':\n\
-                this.milliseconds(0);\n\
-                /* falls through */\n\
-            }\n\
-\n\
-            // weeks are a special case\n\
-            if (units === 'week') {\n\
-                this.day(0);\n\
-            }\n\
-\n\
-            return this;\n\
-        },\n\
-\n\
-        endOf: function (units) {\n\
-            return this.startOf(units).add(units.replace(/s?$/, 's'), 1).subtract('ms', 1);\n\
-        },\n\
-\n\
-        isAfter: function (input, units) {\n\
-            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
-            return +this.clone().startOf(units) > +moment(input).startOf(units);\n\
-        },\n\
-\n\
-        isBefore: function (input, units) {\n\
-            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
-            return +this.clone().startOf(units) < +moment(input).startOf(units);\n\
-        },\n\
-\n\
-        isSame: function (input, units) {\n\
-            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
-            return +this.clone().startOf(units) === +moment(input).startOf(units);\n\
-        },\n\
-\n\
-        zone : function () {\n\
-            return this._isUTC ? 0 : this._d.getTimezoneOffset();\n\
-        },\n\
-\n\
-        daysInMonth : function () {\n\
-            return moment.utc([this.year(), this.month() + 1, 0]).date();\n\
-        },\n\
-\n\
-        dayOfYear : function (input) {\n\
-            var dayOfYear = round((moment(this).startOf('day') - moment(this).startOf('year')) / 864e5) + 1;\n\
-            return input == null ? dayOfYear : this.add(\"d\", (input - dayOfYear));\n\
-        },\n\
-\n\
-        isoWeek : function (input) {\n\
-            var week = weekOfYear(this, 1, 4);\n\
-            return input == null ? week : this.add(\"d\", (input - week) * 7);\n\
-        },\n\
-\n\
-        week : function (input) {\n\
-            var week = this.lang().week(this);\n\
-            return input == null ? week : this.add(\"d\", (input - week) * 7);\n\
-        },\n\
-\n\
-        // If passed a language key, it will set the language for this\n\
-        // instance.  Otherwise, it will return the language configuration\n\
-        // variables for this instance.\n\
-        lang : function (key) {\n\
-            if (key === undefined) {\n\
-                return this._lang;\n\
-            } else {\n\
-                this._lang = getLangDefinition(key);\n\
-                return this;\n\
-            }\n\
-        }\n\
-    };\n\
-\n\
-    // helper for adding shortcuts\n\
-    function makeGetterAndSetter(name, key) {\n\
-        moment.fn[name] = moment.fn[name + 's'] = function (input) {\n\
-            var utc = this._isUTC ? 'UTC' : '';\n\
-            if (input != null) {\n\
-                this._d['set' + utc + key](input);\n\
-                return this;\n\
-            } else {\n\
-                return this._d['get' + utc + key]();\n\
-            }\n\
-        };\n\
-    }\n\
-\n\
-    // loop through and add shortcuts (Month, Date, Hours, Minutes, Seconds, Milliseconds)\n\
-    for (i = 0; i < proxyGettersAndSetters.length; i ++) {\n\
-        makeGetterAndSetter(proxyGettersAndSetters[i].toLowerCase().replace(/s$/, ''), proxyGettersAndSetters[i]);\n\
-    }\n\
-\n\
-    // add shortcut for year (uses different syntax than the getter/setter 'year' == 'FullYear')\n\
-    makeGetterAndSetter('year', 'FullYear');\n\
-\n\
-    // add plural methods\n\
-    moment.fn.days = moment.fn.day;\n\
-    moment.fn.weeks = moment.fn.week;\n\
-    moment.fn.isoWeeks = moment.fn.isoWeek;\n\
-\n\
-    /************************************\n\
-        Duration Prototype\n\
-    ************************************/\n\
-\n\
-\n\
-    moment.duration.fn = Duration.prototype = {\n\
-        weeks : function () {\n\
-            return absRound(this.days() / 7);\n\
-        },\n\
-\n\
-        valueOf : function () {\n\
-            return this._milliseconds +\n\
-              this._days * 864e5 +\n\
-              this._months * 2592e6;\n\
-        },\n\
-\n\
-        humanize : function (withSuffix) {\n\
-            var difference = +this,\n\
-                output = relativeTime(difference, !withSuffix, this.lang());\n\
-\n\
-            if (withSuffix) {\n\
-                output = this.lang().pastFuture(difference, output);\n\
-            }\n\
-\n\
-            return this.lang().postformat(output);\n\
-        },\n\
-\n\
-        lang : moment.fn.lang\n\
-    };\n\
-\n\
-    function makeDurationGetter(name) {\n\
-        moment.duration.fn[name] = function () {\n\
-            return this._data[name];\n\
-        };\n\
-    }\n\
-\n\
-    function makeDurationAsGetter(name, factor) {\n\
-        moment.duration.fn['as' + name] = function () {\n\
-            return +this / factor;\n\
-        };\n\
-    }\n\
-\n\
-    for (i in unitMillisecondFactors) {\n\
-        if (unitMillisecondFactors.hasOwnProperty(i)) {\n\
-            makeDurationAsGetter(i, unitMillisecondFactors[i]);\n\
-            makeDurationGetter(i.toLowerCase());\n\
-        }\n\
-    }\n\
-\n\
-    makeDurationAsGetter('Weeks', 6048e5);\n\
-\n\
-\n\
-    /************************************\n\
-        Default Lang\n\
-    ************************************/\n\
-\n\
-\n\
-    // Set default language, other languages will inherit from English.\n\
-    moment.lang('en', {\n\
-        ordinal : function (number) {\n\
-            var b = number % 10,\n\
-                output = (~~ (number % 100 / 10) === 1) ? 'th' :\n\
-                (b === 1) ? 'st' :\n\
-                (b === 2) ? 'nd' :\n\
-                (b === 3) ? 'rd' : 'th';\n\
-            return number + output;\n\
-        }\n\
-    });\n\
-\n\
-\n\
-    /************************************\n\
-        Exposing Moment\n\
-    ************************************/\n\
-\n\
-\n\
-    // CommonJS module is defined\n\
-    if (hasModule) {\n\
-        module.exports = moment;\n\
-    }\n\
-    /*global ender:false */\n\
-    if (typeof ender === 'undefined') {\n\
-        // here, `this` means `window` in the browser, or `global` on the server\n\
-        // add `moment` as a global object via a string identifier,\n\
-        // for Closure Compiler \"advanced\" mode\n\
-        this['moment'] = moment;\n\
-    }\n\
-    /*global define:false */\n\
-    if (typeof define === \"function\" && define.amd) {\n\
-        define(\"moment\", [], function () {\n\
-            return moment;\n\
-        });\n\
-    }\n\
-}).call(this);\n\
-//@ sourceURL=component-moment/index.js"
-));
 require.register("component-value/index.js", Function("exports, require, module",
 "\n\
 /**\n\
@@ -7249,42 +5883,6 @@ function type(el) {\n\
   return name;\n\
 }\n\
 //@ sourceURL=component-value/index.js"
-));
-require.register("matthewmueller-debounce/index.js", Function("exports, require, module",
-"/**\n\
- * Debounces a function by the given threshold.\n\
- *\n\
- * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/\n\
- * @param {Function} function to wrap\n\
- * @param {Number} timeout in ms (`100`)\n\
- * @param {Boolean} whether to execute at the beginning (`true`)\n\
- * @api public\n\
- */\n\
-\n\
-module.exports = function debounce(func, threshold, execAsap){\n\
-  var timeout;\n\
-  if (false !== execAsap) execAsap = true;\n\
-\n\
-  return function debounced(){\n\
-    var obj = this, args = arguments;\n\
-\n\
-    function delayed () {\n\
-      if (!execAsap) {\n\
-        func.apply(obj, args);\n\
-      }\n\
-      timeout = null;\n\
-    }\n\
-\n\
-    if (timeout) {\n\
-      clearTimeout(timeout);\n\
-    } else if (execAsap) {\n\
-      func.apply(obj, args);\n\
-    }\n\
-\n\
-    timeout = setTimeout(delayed, threshold || 100);\n\
-  };\n\
-};\n\
-//@ sourceURL=matthewmueller-debounce/index.js"
 ));
 require.register("segmentio-marked/lib/marked.js", Function("exports, require, module",
 "/**\n\
@@ -11871,7 +10469,6 @@ var bind = require('event').bind\n\
   , debounce = require('debounce')\n\
   , filters = require('./filters')\n\
   , marked = require('marked')\n\
-  , moment = require('moment')\n\
   , template = require('./index.html')\n\
   , value = require('value');\n\
 \n\
@@ -11906,9 +10503,8 @@ function Editor (doc) {\n\
   this.el = domify(template);\n\
   this.input = this.el.querySelector('.editor-input');\n\
   this.output = this.el.querySelector('.editor-output');\n\
-  this.render(doc.toJSON());\n\
   this.bind();\n\
-  // TODO: tabbing inside input\n\
+  this.render();\n\
 }\n\
 \n\
 \n\
@@ -11948,7 +10544,7 @@ Editor.prototype.bind = function () {\n\
   var self = this;\n\
 \n\
   // model change\n\
-  this.model.on('change', this.onchange.bind(this));\n\
+  this.model.on('change', this.render.bind(this));\n\
 \n\
   // keyup\n\
   bind(this.input, 'keyup', this.onkeyup.bind(this));\n\
@@ -11976,12 +10572,12 @@ Editor.prototype.bind = function () {\n\
 /**\n\
  * Render settings into the DOM.\n\
  *\n\
- * @param {Object} attrs\n\
  * @param {Function} callback\n\
  * @return {Editor}\n\
  */\n\
 \n\
-Editor.prototype.render = function (attrs, callback) {\n\
+Editor.prototype.render = function (callback) {\n\
+  var attrs = this.model.toJSON();\n\
   var text = attrs.body;\n\
   if (!text) return;\n\
   value(this.input, text);\n\
@@ -11998,7 +10594,7 @@ Editor.prototype.render = function (attrs, callback) {\n\
       self.filter('dom', els, function (err, els) {\n\
         if (err) throw err;\n\
         dom(self.output).empty().append(els);\n\
-        callback && callback();\n\
+        if ('function' === typeof callback) callback();\n\
       });\n\
     });\n\
   });\n\
@@ -12032,10 +10628,10 @@ Editor.prototype.filter = function (type, input, callback) {\n\
  * @return {Editor}\n\
  */\n\
 \n\
-Editor.prototype.save = debounce(function (attrs) {\n\
+Editor.prototype.save = function (attrs) {\n\
   this.model.set(attrs).save();\n\
   return this;\n\
-}, 500);\n\
+};\n\
 \n\
 \n\
 /**\n\
@@ -12053,29 +10649,18 @@ Editor.prototype.mode = function (mode) {\n\
 \n\
 \n\
 /**\n\
- * Update our DOM elements when our values change.\n\
- */\n\
-\n\
-Editor.prototype.onchange = function () {\n\
-  var attrs = this.model.toJSON();\n\
-  this.render(attrs);\n\
-};\n\
-\n\
-\n\
-/**\n\
  * On keyup, take the textarea contents and save them to firebase.\n\
  *\n\
- * Debounced 200ms.\n\
+ * Debounced 100ms.\n\
  */\n\
 \n\
 Editor.prototype.onkeyup = debounce(function (e) {\n\
   this.model.body(value(this.input));\n\
-  var attrs = this.model.toJSON();\n\
   var self = this;\n\
-  this.render(attrs, function () {\n\
+  this.render(function () {\n\
     self.save({ title: self.title() }); // grab the newest title\n\
   });\n\
-}, 200);\n\
+}, 100);\n\
 \n\
 \n\
 /**\n\
@@ -12088,11 +10673,9 @@ Editor.prototype.onkeyup = debounce(function (e) {\n\
 \n\
 Editor.prototype.title = function () {\n\
   var headings = dom(this.output).find('h1, h2, h3, h4, h5, h6');\n\
-  if (headings.length()) {\n\
-    return headings.at(0).text();\n\
-  } else {\n\
-    return moment(this.model.created()).format('[Untitled] - MMMM Do, YYYY');\n\
-  }\n\
+  return headings.length()\n\
+    ? headings.first().text()\n\
+    : '';\n\
 };\n\
 \n\
 \n\
@@ -12214,6 +10797,1408 @@ var map = {\n\
 module.exports = function(n){\n\
   return map[n];\n\
 };//@ sourceURL=component-keyname/index.js"
+));
+require.register("component-moment/index.js", Function("exports, require, module",
+"// moment.js\n\
+// version : 2.0.0\n\
+// author : Tim Wood\n\
+// license : MIT\n\
+// momentjs.com\n\
+\n\
+(function (undefined) {\n\
+\n\
+    /************************************\n\
+        Constants\n\
+    ************************************/\n\
+\n\
+    var moment,\n\
+        VERSION = \"2.0.0\",\n\
+        round = Math.round, i,\n\
+        // internal storage for language config files\n\
+        languages = {},\n\
+\n\
+        // check for nodeJS\n\
+        hasModule = (typeof module !== 'undefined' && module.exports),\n\
+\n\
+        // ASP.NET json date format regex\n\
+        aspNetJsonRegex = /^\\/?Date\\((\\-?\\d+)/i,\n\
+\n\
+        // format tokens\n\
+        formattingTokens = /(\\[[^\\[]*\\])|(\\\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|YYYYY|YYYY|YY|a|A|hh?|HH?|mm?|ss?|SS?S?|X|zz?|ZZ?|.)/g,\n\
+        localFormattingTokens = /(\\[[^\\[]*\\])|(\\\\)?(LT|LL?L?L?|l{1,4})/g,\n\
+\n\
+        // parsing tokens\n\
+        parseMultipleFormatChunker = /([0-9a-zA-Z\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]+)/gi,\n\
+\n\
+        // parsing token regexes\n\
+        parseTokenOneOrTwoDigits = /\\d\\d?/, // 0 - 99\n\
+        parseTokenOneToThreeDigits = /\\d{1,3}/, // 0 - 999\n\
+        parseTokenThreeDigits = /\\d{3}/, // 000 - 999\n\
+        parseTokenFourDigits = /\\d{1,4}/, // 0 - 9999\n\
+        parseTokenSixDigits = /[+\\-]?\\d{1,6}/, // -999,999 - 999,999\n\
+        parseTokenWord = /[0-9]*[a-z\\u00A0-\\u05FF\\u0700-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]+|[\\u0600-\\u06FF]+\\s*?[\\u0600-\\u06FF]+/i, // any word (or two) characters or numbers including two word month in arabic.\n\
+        parseTokenTimezone = /Z|[\\+\\-]\\d\\d:?\\d\\d/i, // +00:00 -00:00 +0000 -0000 or Z\n\
+        parseTokenT = /T/i, // T (ISO seperator)\n\
+        parseTokenTimestampMs = /[\\+\\-]?\\d+(\\.\\d{1,3})?/, // 123456789 123456789.123\n\
+\n\
+        // preliminary iso regex\n\
+        // 0000-00-00 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000\n\
+        isoRegex = /^\\s*\\d{4}-\\d\\d-\\d\\d((T| )(\\d\\d(:\\d\\d(:\\d\\d(\\.\\d\\d?\\d?)?)?)?)?([\\+\\-]\\d\\d:?\\d\\d)?)?/,\n\
+        isoFormat = 'YYYY-MM-DDTHH:mm:ssZ',\n\
+\n\
+        // iso time formats and regexes\n\
+        isoTimes = [\n\
+            ['HH:mm:ss.S', /(T| )\\d\\d:\\d\\d:\\d\\d\\.\\d{1,3}/],\n\
+            ['HH:mm:ss', /(T| )\\d\\d:\\d\\d:\\d\\d/],\n\
+            ['HH:mm', /(T| )\\d\\d:\\d\\d/],\n\
+            ['HH', /(T| )\\d\\d/]\n\
+        ],\n\
+\n\
+        // timezone chunker \"+10:00\" > [\"10\", \"00\"] or \"-1530\" > [\"-15\", \"30\"]\n\
+        parseTimezoneChunker = /([\\+\\-]|\\d\\d)/gi,\n\
+\n\
+        // getter and setter names\n\
+        proxyGettersAndSetters = 'Month|Date|Hours|Minutes|Seconds|Milliseconds'.split('|'),\n\
+        unitMillisecondFactors = {\n\
+            'Milliseconds' : 1,\n\
+            'Seconds' : 1e3,\n\
+            'Minutes' : 6e4,\n\
+            'Hours' : 36e5,\n\
+            'Days' : 864e5,\n\
+            'Months' : 2592e6,\n\
+            'Years' : 31536e6\n\
+        },\n\
+\n\
+        // format function strings\n\
+        formatFunctions = {},\n\
+\n\
+        // tokens to ordinalize and pad\n\
+        ordinalizeTokens = 'DDD w W M D d'.split(' '),\n\
+        paddedTokens = 'M D H h m s w W'.split(' '),\n\
+\n\
+        formatTokenFunctions = {\n\
+            M    : function () {\n\
+                return this.month() + 1;\n\
+            },\n\
+            MMM  : function (format) {\n\
+                return this.lang().monthsShort(this, format);\n\
+            },\n\
+            MMMM : function (format) {\n\
+                return this.lang().months(this, format);\n\
+            },\n\
+            D    : function () {\n\
+                return this.date();\n\
+            },\n\
+            DDD  : function () {\n\
+                return this.dayOfYear();\n\
+            },\n\
+            d    : function () {\n\
+                return this.day();\n\
+            },\n\
+            dd   : function (format) {\n\
+                return this.lang().weekdaysMin(this, format);\n\
+            },\n\
+            ddd  : function (format) {\n\
+                return this.lang().weekdaysShort(this, format);\n\
+            },\n\
+            dddd : function (format) {\n\
+                return this.lang().weekdays(this, format);\n\
+            },\n\
+            w    : function () {\n\
+                return this.week();\n\
+            },\n\
+            W    : function () {\n\
+                return this.isoWeek();\n\
+            },\n\
+            YY   : function () {\n\
+                return leftZeroFill(this.year() % 100, 2);\n\
+            },\n\
+            YYYY : function () {\n\
+                return leftZeroFill(this.year(), 4);\n\
+            },\n\
+            YYYYY : function () {\n\
+                return leftZeroFill(this.year(), 5);\n\
+            },\n\
+            a    : function () {\n\
+                return this.lang().meridiem(this.hours(), this.minutes(), true);\n\
+            },\n\
+            A    : function () {\n\
+                return this.lang().meridiem(this.hours(), this.minutes(), false);\n\
+            },\n\
+            H    : function () {\n\
+                return this.hours();\n\
+            },\n\
+            h    : function () {\n\
+                return this.hours() % 12 || 12;\n\
+            },\n\
+            m    : function () {\n\
+                return this.minutes();\n\
+            },\n\
+            s    : function () {\n\
+                return this.seconds();\n\
+            },\n\
+            S    : function () {\n\
+                return ~~(this.milliseconds() / 100);\n\
+            },\n\
+            SS   : function () {\n\
+                return leftZeroFill(~~(this.milliseconds() / 10), 2);\n\
+            },\n\
+            SSS  : function () {\n\
+                return leftZeroFill(this.milliseconds(), 3);\n\
+            },\n\
+            Z    : function () {\n\
+                var a = -this.zone(),\n\
+                    b = \"+\";\n\
+                if (a < 0) {\n\
+                    a = -a;\n\
+                    b = \"-\";\n\
+                }\n\
+                return b + leftZeroFill(~~(a / 60), 2) + \":\" + leftZeroFill(~~a % 60, 2);\n\
+            },\n\
+            ZZ   : function () {\n\
+                var a = -this.zone(),\n\
+                    b = \"+\";\n\
+                if (a < 0) {\n\
+                    a = -a;\n\
+                    b = \"-\";\n\
+                }\n\
+                return b + leftZeroFill(~~(10 * a / 6), 4);\n\
+            },\n\
+            X    : function () {\n\
+                return this.unix();\n\
+            }\n\
+        };\n\
+\n\
+    function padToken(func, count) {\n\
+        return function (a) {\n\
+            return leftZeroFill(func.call(this, a), count);\n\
+        };\n\
+    }\n\
+    function ordinalizeToken(func) {\n\
+        return function (a) {\n\
+            return this.lang().ordinal(func.call(this, a));\n\
+        };\n\
+    }\n\
+\n\
+    while (ordinalizeTokens.length) {\n\
+        i = ordinalizeTokens.pop();\n\
+        formatTokenFunctions[i + 'o'] = ordinalizeToken(formatTokenFunctions[i]);\n\
+    }\n\
+    while (paddedTokens.length) {\n\
+        i = paddedTokens.pop();\n\
+        formatTokenFunctions[i + i] = padToken(formatTokenFunctions[i], 2);\n\
+    }\n\
+    formatTokenFunctions.DDDD = padToken(formatTokenFunctions.DDD, 3);\n\
+\n\
+\n\
+    /************************************\n\
+        Constructors\n\
+    ************************************/\n\
+\n\
+    function Language() {\n\
+\n\
+    }\n\
+\n\
+    // Moment prototype object\n\
+    function Moment(config) {\n\
+        extend(this, config);\n\
+    }\n\
+\n\
+    // Duration Constructor\n\
+    function Duration(duration) {\n\
+        var data = this._data = {},\n\
+            years = duration.years || duration.year || duration.y || 0,\n\
+            months = duration.months || duration.month || duration.M || 0,\n\
+            weeks = duration.weeks || duration.week || duration.w || 0,\n\
+            days = duration.days || duration.day || duration.d || 0,\n\
+            hours = duration.hours || duration.hour || duration.h || 0,\n\
+            minutes = duration.minutes || duration.minute || duration.m || 0,\n\
+            seconds = duration.seconds || duration.second || duration.s || 0,\n\
+            milliseconds = duration.milliseconds || duration.millisecond || duration.ms || 0;\n\
+\n\
+        // representation for dateAddRemove\n\
+        this._milliseconds = milliseconds +\n\
+            seconds * 1e3 + // 1000\n\
+            minutes * 6e4 + // 1000 * 60\n\
+            hours * 36e5; // 1000 * 60 * 60\n\
+        // Because of dateAddRemove treats 24 hours as different from a\n\
+        // day when working around DST, we need to store them separately\n\
+        this._days = days +\n\
+            weeks * 7;\n\
+        // It is impossible translate months into days without knowing\n\
+        // which months you are are talking about, so we have to store\n\
+        // it separately.\n\
+        this._months = months +\n\
+            years * 12;\n\
+\n\
+        // The following code bubbles up values, see the tests for\n\
+        // examples of what that means.\n\
+        data.milliseconds = milliseconds % 1000;\n\
+        seconds += absRound(milliseconds / 1000);\n\
+\n\
+        data.seconds = seconds % 60;\n\
+        minutes += absRound(seconds / 60);\n\
+\n\
+        data.minutes = minutes % 60;\n\
+        hours += absRound(minutes / 60);\n\
+\n\
+        data.hours = hours % 24;\n\
+        days += absRound(hours / 24);\n\
+\n\
+        days += weeks * 7;\n\
+        data.days = days % 30;\n\
+\n\
+        months += absRound(days / 30);\n\
+\n\
+        data.months = months % 12;\n\
+        years += absRound(months / 12);\n\
+\n\
+        data.years = years;\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Helpers\n\
+    ************************************/\n\
+\n\
+\n\
+    function extend(a, b) {\n\
+        for (var i in b) {\n\
+            if (b.hasOwnProperty(i)) {\n\
+                a[i] = b[i];\n\
+            }\n\
+        }\n\
+        return a;\n\
+    }\n\
+\n\
+    function absRound(number) {\n\
+        if (number < 0) {\n\
+            return Math.ceil(number);\n\
+        } else {\n\
+            return Math.floor(number);\n\
+        }\n\
+    }\n\
+\n\
+    // left zero fill a number\n\
+    // see http://jsperf.com/left-zero-filling for performance comparison\n\
+    function leftZeroFill(number, targetLength) {\n\
+        var output = number + '';\n\
+        while (output.length < targetLength) {\n\
+            output = '0' + output;\n\
+        }\n\
+        return output;\n\
+    }\n\
+\n\
+    // helper function for _.addTime and _.subtractTime\n\
+    function addOrSubtractDurationFromMoment(mom, duration, isAdding) {\n\
+        var ms = duration._milliseconds,\n\
+            d = duration._days,\n\
+            M = duration._months,\n\
+            currentDate;\n\
+\n\
+        if (ms) {\n\
+            mom._d.setTime(+mom + ms * isAdding);\n\
+        }\n\
+        if (d) {\n\
+            mom.date(mom.date() + d * isAdding);\n\
+        }\n\
+        if (M) {\n\
+            currentDate = mom.date();\n\
+            mom.date(1)\n\
+                .month(mom.month() + M * isAdding)\n\
+                .date(Math.min(currentDate, mom.daysInMonth()));\n\
+        }\n\
+    }\n\
+\n\
+    // check if is an array\n\
+    function isArray(input) {\n\
+        return Object.prototype.toString.call(input) === '[object Array]';\n\
+    }\n\
+\n\
+    // compare two arrays, return the number of differences\n\
+    function compareArrays(array1, array2) {\n\
+        var len = Math.min(array1.length, array2.length),\n\
+            lengthDiff = Math.abs(array1.length - array2.length),\n\
+            diffs = 0,\n\
+            i;\n\
+        for (i = 0; i < len; i++) {\n\
+            if (~~array1[i] !== ~~array2[i]) {\n\
+                diffs++;\n\
+            }\n\
+        }\n\
+        return diffs + lengthDiff;\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Languages\n\
+    ************************************/\n\
+\n\
+\n\
+    Language.prototype = {\n\
+        set : function (config) {\n\
+            var prop, i;\n\
+            for (i in config) {\n\
+                prop = config[i];\n\
+                if (typeof prop === 'function') {\n\
+                    this[i] = prop;\n\
+                } else {\n\
+                    this['_' + i] = prop;\n\
+                }\n\
+            }\n\
+        },\n\
+\n\
+        _months : \"January_February_March_April_May_June_July_August_September_October_November_December\".split(\"_\"),\n\
+        months : function (m) {\n\
+            return this._months[m.month()];\n\
+        },\n\
+\n\
+        _monthsShort : \"Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec\".split(\"_\"),\n\
+        monthsShort : function (m) {\n\
+            return this._monthsShort[m.month()];\n\
+        },\n\
+\n\
+        monthsParse : function (monthName) {\n\
+            var i, mom, regex, output;\n\
+\n\
+            if (!this._monthsParse) {\n\
+                this._monthsParse = [];\n\
+            }\n\
+\n\
+            for (i = 0; i < 12; i++) {\n\
+                // make the regex if we don't have it already\n\
+                if (!this._monthsParse[i]) {\n\
+                    mom = moment([2000, i]);\n\
+                    regex = '^' + this.months(mom, '') + '|^' + this.monthsShort(mom, '');\n\
+                    this._monthsParse[i] = new RegExp(regex.replace('.', ''), 'i');\n\
+                }\n\
+                // test the regex\n\
+                if (this._monthsParse[i].test(monthName)) {\n\
+                    return i;\n\
+                }\n\
+            }\n\
+        },\n\
+\n\
+        _weekdays : \"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday\".split(\"_\"),\n\
+        weekdays : function (m) {\n\
+            return this._weekdays[m.day()];\n\
+        },\n\
+\n\
+        _weekdaysShort : \"Sun_Mon_Tue_Wed_Thu_Fri_Sat\".split(\"_\"),\n\
+        weekdaysShort : function (m) {\n\
+            return this._weekdaysShort[m.day()];\n\
+        },\n\
+\n\
+        _weekdaysMin : \"Su_Mo_Tu_We_Th_Fr_Sa\".split(\"_\"),\n\
+        weekdaysMin : function (m) {\n\
+            return this._weekdaysMin[m.day()];\n\
+        },\n\
+\n\
+        _longDateFormat : {\n\
+            LT : \"h:mm A\",\n\
+            L : \"MM/DD/YYYY\",\n\
+            LL : \"MMMM D YYYY\",\n\
+            LLL : \"MMMM D YYYY LT\",\n\
+            LLLL : \"dddd, MMMM D YYYY LT\"\n\
+        },\n\
+        longDateFormat : function (key) {\n\
+            var output = this._longDateFormat[key];\n\
+            if (!output && this._longDateFormat[key.toUpperCase()]) {\n\
+                output = this._longDateFormat[key.toUpperCase()].replace(/MMMM|MM|DD|dddd/g, function (val) {\n\
+                    return val.slice(1);\n\
+                });\n\
+                this._longDateFormat[key] = output;\n\
+            }\n\
+            return output;\n\
+        },\n\
+\n\
+        meridiem : function (hours, minutes, isLower) {\n\
+            if (hours > 11) {\n\
+                return isLower ? 'pm' : 'PM';\n\
+            } else {\n\
+                return isLower ? 'am' : 'AM';\n\
+            }\n\
+        },\n\
+\n\
+        _calendar : {\n\
+            sameDay : '[Today at] LT',\n\
+            nextDay : '[Tomorrow at] LT',\n\
+            nextWeek : 'dddd [at] LT',\n\
+            lastDay : '[Yesterday at] LT',\n\
+            lastWeek : '[last] dddd [at] LT',\n\
+            sameElse : 'L'\n\
+        },\n\
+        calendar : function (key, mom) {\n\
+            var output = this._calendar[key];\n\
+            return typeof output === 'function' ? output.apply(mom) : output;\n\
+        },\n\
+\n\
+        _relativeTime : {\n\
+            future : \"in %s\",\n\
+            past : \"%s ago\",\n\
+            s : \"a few seconds\",\n\
+            m : \"a minute\",\n\
+            mm : \"%d minutes\",\n\
+            h : \"an hour\",\n\
+            hh : \"%d hours\",\n\
+            d : \"a day\",\n\
+            dd : \"%d days\",\n\
+            M : \"a month\",\n\
+            MM : \"%d months\",\n\
+            y : \"a year\",\n\
+            yy : \"%d years\"\n\
+        },\n\
+        relativeTime : function (number, withoutSuffix, string, isFuture) {\n\
+            var output = this._relativeTime[string];\n\
+            return (typeof output === 'function') ?\n\
+                output(number, withoutSuffix, string, isFuture) :\n\
+                output.replace(/%d/i, number);\n\
+        },\n\
+        pastFuture : function (diff, output) {\n\
+            var format = this._relativeTime[diff > 0 ? 'future' : 'past'];\n\
+            return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);\n\
+        },\n\
+\n\
+        ordinal : function (number) {\n\
+            return this._ordinal.replace(\"%d\", number);\n\
+        },\n\
+        _ordinal : \"%d\",\n\
+\n\
+        preparse : function (string) {\n\
+            return string;\n\
+        },\n\
+\n\
+        postformat : function (string) {\n\
+            return string;\n\
+        },\n\
+\n\
+        week : function (mom) {\n\
+            return weekOfYear(mom, this._week.dow, this._week.doy);\n\
+        },\n\
+        _week : {\n\
+            dow : 0, // Sunday is the first day of the week.\n\
+            doy : 6  // The week that contains Jan 1st is the first week of the year.\n\
+        }\n\
+    };\n\
+\n\
+    // Loads a language definition into the `languages` cache.  The function\n\
+    // takes a key and optionally values.  If not in the browser and no values\n\
+    // are provided, it will load the language file module.  As a convenience,\n\
+    // this function also returns the language values.\n\
+    function loadLang(key, values) {\n\
+        values.abbr = key;\n\
+        if (!languages[key]) {\n\
+            languages[key] = new Language();\n\
+        }\n\
+        languages[key].set(values);\n\
+        return languages[key];\n\
+    }\n\
+\n\
+    // Determines which language definition to use and returns it.\n\
+    //\n\
+    // With no parameters, it will return the global language.  If you\n\
+    // pass in a language key, such as 'en', it will return the\n\
+    // definition for 'en', so long as 'en' has already been loaded using\n\
+    // moment.lang.\n\
+    function getLangDefinition(key) {\n\
+        if (!key) {\n\
+            return moment.fn._lang;\n\
+        }\n\
+        if (!languages[key] && hasModule) {\n\
+            require('./lang/' + key);\n\
+        }\n\
+        return languages[key];\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Formatting\n\
+    ************************************/\n\
+\n\
+\n\
+    function removeFormattingTokens(input) {\n\
+        if (input.match(/\\[.*\\]/)) {\n\
+            return input.replace(/^\\[|\\]$/g, \"\");\n\
+        }\n\
+        return input.replace(/\\\\/g, \"\");\n\
+    }\n\
+\n\
+    function makeFormatFunction(format) {\n\
+        var array = format.match(formattingTokens), i, length;\n\
+\n\
+        for (i = 0, length = array.length; i < length; i++) {\n\
+            if (formatTokenFunctions[array[i]]) {\n\
+                array[i] = formatTokenFunctions[array[i]];\n\
+            } else {\n\
+                array[i] = removeFormattingTokens(array[i]);\n\
+            }\n\
+        }\n\
+\n\
+        return function (mom) {\n\
+            var output = \"\";\n\
+            for (i = 0; i < length; i++) {\n\
+                output += typeof array[i].call === 'function' ? array[i].call(mom, format) : array[i];\n\
+            }\n\
+            return output;\n\
+        };\n\
+    }\n\
+\n\
+    // format date using native date object\n\
+    function formatMoment(m, format) {\n\
+        var i = 5;\n\
+\n\
+        function replaceLongDateFormatTokens(input) {\n\
+            return m.lang().longDateFormat(input) || input;\n\
+        }\n\
+\n\
+        while (i-- && localFormattingTokens.test(format)) {\n\
+            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);\n\
+        }\n\
+\n\
+        if (!formatFunctions[format]) {\n\
+            formatFunctions[format] = makeFormatFunction(format);\n\
+        }\n\
+\n\
+        return formatFunctions[format](m);\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Parsing\n\
+    ************************************/\n\
+\n\
+\n\
+    // get the regex to find the next token\n\
+    function getParseRegexForToken(token) {\n\
+        switch (token) {\n\
+        case 'DDDD':\n\
+            return parseTokenThreeDigits;\n\
+        case 'YYYY':\n\
+            return parseTokenFourDigits;\n\
+        case 'YYYYY':\n\
+            return parseTokenSixDigits;\n\
+        case 'S':\n\
+        case 'SS':\n\
+        case 'SSS':\n\
+        case 'DDD':\n\
+            return parseTokenOneToThreeDigits;\n\
+        case 'MMM':\n\
+        case 'MMMM':\n\
+        case 'dd':\n\
+        case 'ddd':\n\
+        case 'dddd':\n\
+        case 'a':\n\
+        case 'A':\n\
+            return parseTokenWord;\n\
+        case 'X':\n\
+            return parseTokenTimestampMs;\n\
+        case 'Z':\n\
+        case 'ZZ':\n\
+            return parseTokenTimezone;\n\
+        case 'T':\n\
+            return parseTokenT;\n\
+        case 'MM':\n\
+        case 'DD':\n\
+        case 'YY':\n\
+        case 'HH':\n\
+        case 'hh':\n\
+        case 'mm':\n\
+        case 'ss':\n\
+        case 'M':\n\
+        case 'D':\n\
+        case 'd':\n\
+        case 'H':\n\
+        case 'h':\n\
+        case 'm':\n\
+        case 's':\n\
+            return parseTokenOneOrTwoDigits;\n\
+        default :\n\
+            return new RegExp(token.replace('\\\\', ''));\n\
+        }\n\
+    }\n\
+\n\
+    // function to convert string input to date\n\
+    function addTimeToArrayFromToken(token, input, config) {\n\
+        var a, b,\n\
+            datePartArray = config._a;\n\
+\n\
+        switch (token) {\n\
+        // MONTH\n\
+        case 'M' : // fall through to MM\n\
+        case 'MM' :\n\
+            datePartArray[1] = (input == null) ? 0 : ~~input - 1;\n\
+            break;\n\
+        case 'MMM' : // fall through to MMMM\n\
+        case 'MMMM' :\n\
+            a = getLangDefinition(config._l).monthsParse(input);\n\
+            // if we didn't find a month name, mark the date as invalid.\n\
+            if (a != null) {\n\
+                datePartArray[1] = a;\n\
+            } else {\n\
+                config._isValid = false;\n\
+            }\n\
+            break;\n\
+        // DAY OF MONTH\n\
+        case 'D' : // fall through to DDDD\n\
+        case 'DD' : // fall through to DDDD\n\
+        case 'DDD' : // fall through to DDDD\n\
+        case 'DDDD' :\n\
+            if (input != null) {\n\
+                datePartArray[2] = ~~input;\n\
+            }\n\
+            break;\n\
+        // YEAR\n\
+        case 'YY' :\n\
+            datePartArray[0] = ~~input + (~~input > 68 ? 1900 : 2000);\n\
+            break;\n\
+        case 'YYYY' :\n\
+        case 'YYYYY' :\n\
+            datePartArray[0] = ~~input;\n\
+            break;\n\
+        // AM / PM\n\
+        case 'a' : // fall through to A\n\
+        case 'A' :\n\
+            config._isPm = ((input + '').toLowerCase() === 'pm');\n\
+            break;\n\
+        // 24 HOUR\n\
+        case 'H' : // fall through to hh\n\
+        case 'HH' : // fall through to hh\n\
+        case 'h' : // fall through to hh\n\
+        case 'hh' :\n\
+            datePartArray[3] = ~~input;\n\
+            break;\n\
+        // MINUTE\n\
+        case 'm' : // fall through to mm\n\
+        case 'mm' :\n\
+            datePartArray[4] = ~~input;\n\
+            break;\n\
+        // SECOND\n\
+        case 's' : // fall through to ss\n\
+        case 'ss' :\n\
+            datePartArray[5] = ~~input;\n\
+            break;\n\
+        // MILLISECOND\n\
+        case 'S' :\n\
+        case 'SS' :\n\
+        case 'SSS' :\n\
+            datePartArray[6] = ~~ (('0.' + input) * 1000);\n\
+            break;\n\
+        // UNIX TIMESTAMP WITH MS\n\
+        case 'X':\n\
+            config._d = new Date(parseFloat(input) * 1000);\n\
+            break;\n\
+        // TIMEZONE\n\
+        case 'Z' : // fall through to ZZ\n\
+        case 'ZZ' :\n\
+            config._useUTC = true;\n\
+            a = (input + '').match(parseTimezoneChunker);\n\
+            if (a && a[1]) {\n\
+                config._tzh = ~~a[1];\n\
+            }\n\
+            if (a && a[2]) {\n\
+                config._tzm = ~~a[2];\n\
+            }\n\
+            // reverse offsets\n\
+            if (a && a[0] === '+') {\n\
+                config._tzh = -config._tzh;\n\
+                config._tzm = -config._tzm;\n\
+            }\n\
+            break;\n\
+        }\n\
+\n\
+        // if the input is null, the date is not valid\n\
+        if (input == null) {\n\
+            config._isValid = false;\n\
+        }\n\
+    }\n\
+\n\
+    // convert an array to a date.\n\
+    // the array should mirror the parameters below\n\
+    // note: all values past the year are optional and will default to the lowest possible value.\n\
+    // [year, month, day , hour, minute, second, millisecond]\n\
+    function dateFromArray(config) {\n\
+        var i, date, input = [];\n\
+\n\
+        if (config._d) {\n\
+            return;\n\
+        }\n\
+\n\
+        for (i = 0; i < 7; i++) {\n\
+            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];\n\
+        }\n\
+\n\
+        // add the offsets to the time to be parsed so that we can have a clean array for checking isValid\n\
+        input[3] += config._tzh || 0;\n\
+        input[4] += config._tzm || 0;\n\
+\n\
+        date = new Date(0);\n\
+\n\
+        if (config._useUTC) {\n\
+            date.setUTCFullYear(input[0], input[1], input[2]);\n\
+            date.setUTCHours(input[3], input[4], input[5], input[6]);\n\
+        } else {\n\
+            date.setFullYear(input[0], input[1], input[2]);\n\
+            date.setHours(input[3], input[4], input[5], input[6]);\n\
+        }\n\
+\n\
+        config._d = date;\n\
+    }\n\
+\n\
+    // date from string and format string\n\
+    function makeDateFromStringAndFormat(config) {\n\
+        // This array is used to make a Date, either with `new Date` or `Date.UTC`\n\
+        var tokens = config._f.match(formattingTokens),\n\
+            string = config._i,\n\
+            i, parsedInput;\n\
+\n\
+        config._a = [];\n\
+\n\
+        for (i = 0; i < tokens.length; i++) {\n\
+            parsedInput = (getParseRegexForToken(tokens[i]).exec(string) || [])[0];\n\
+            if (parsedInput) {\n\
+                string = string.slice(string.indexOf(parsedInput) + parsedInput.length);\n\
+            }\n\
+            // don't parse if its not a known token\n\
+            if (formatTokenFunctions[tokens[i]]) {\n\
+                addTimeToArrayFromToken(tokens[i], parsedInput, config);\n\
+            }\n\
+        }\n\
+        // handle am pm\n\
+        if (config._isPm && config._a[3] < 12) {\n\
+            config._a[3] += 12;\n\
+        }\n\
+        // if is 12 am, change hours to 0\n\
+        if (config._isPm === false && config._a[3] === 12) {\n\
+            config._a[3] = 0;\n\
+        }\n\
+        // return\n\
+        dateFromArray(config);\n\
+    }\n\
+\n\
+    // date from string and array of format strings\n\
+    function makeDateFromStringAndArray(config) {\n\
+        var tempConfig,\n\
+            tempMoment,\n\
+            bestMoment,\n\
+\n\
+            scoreToBeat = 99,\n\
+            i,\n\
+            currentScore;\n\
+\n\
+        for (i = config._f.length; i > 0; i--) {\n\
+            tempConfig = extend({}, config);\n\
+            tempConfig._f = config._f[i - 1];\n\
+            makeDateFromStringAndFormat(tempConfig);\n\
+            tempMoment = new Moment(tempConfig);\n\
+\n\
+            if (tempMoment.isValid()) {\n\
+                bestMoment = tempMoment;\n\
+                break;\n\
+            }\n\
+\n\
+            currentScore = compareArrays(tempConfig._a, tempMoment.toArray());\n\
+\n\
+            if (currentScore < scoreToBeat) {\n\
+                scoreToBeat = currentScore;\n\
+                bestMoment = tempMoment;\n\
+            }\n\
+        }\n\
+\n\
+        extend(config, bestMoment);\n\
+    }\n\
+\n\
+    // date from iso format\n\
+    function makeDateFromString(config) {\n\
+        var i,\n\
+            string = config._i;\n\
+        if (isoRegex.exec(string)) {\n\
+            config._f = 'YYYY-MM-DDT';\n\
+            for (i = 0; i < 4; i++) {\n\
+                if (isoTimes[i][1].exec(string)) {\n\
+                    config._f += isoTimes[i][0];\n\
+                    break;\n\
+                }\n\
+            }\n\
+            if (parseTokenTimezone.exec(string)) {\n\
+                config._f += \" Z\";\n\
+            }\n\
+            makeDateFromStringAndFormat(config);\n\
+        } else {\n\
+            config._d = new Date(string);\n\
+        }\n\
+    }\n\
+\n\
+    function makeDateFromInput(config) {\n\
+        var input = config._i,\n\
+            matched = aspNetJsonRegex.exec(input);\n\
+\n\
+        if (input === undefined) {\n\
+            config._d = new Date();\n\
+        } else if (matched) {\n\
+            config._d = new Date(+matched[1]);\n\
+        } else if (typeof input === 'string') {\n\
+            makeDateFromString(config);\n\
+        } else if (isArray(input)) {\n\
+            config._a = input.slice(0);\n\
+            dateFromArray(config);\n\
+        } else {\n\
+            config._d = input instanceof Date ? new Date(+input) : new Date(input);\n\
+        }\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Relative Time\n\
+    ************************************/\n\
+\n\
+\n\
+    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize\n\
+    function substituteTimeAgo(string, number, withoutSuffix, isFuture, lang) {\n\
+        return lang.relativeTime(number || 1, !!withoutSuffix, string, isFuture);\n\
+    }\n\
+\n\
+    function relativeTime(milliseconds, withoutSuffix, lang) {\n\
+        var seconds = round(Math.abs(milliseconds) / 1000),\n\
+            minutes = round(seconds / 60),\n\
+            hours = round(minutes / 60),\n\
+            days = round(hours / 24),\n\
+            years = round(days / 365),\n\
+            args = seconds < 45 && ['s', seconds] ||\n\
+                minutes === 1 && ['m'] ||\n\
+                minutes < 45 && ['mm', minutes] ||\n\
+                hours === 1 && ['h'] ||\n\
+                hours < 22 && ['hh', hours] ||\n\
+                days === 1 && ['d'] ||\n\
+                days <= 25 && ['dd', days] ||\n\
+                days <= 45 && ['M'] ||\n\
+                days < 345 && ['MM', round(days / 30)] ||\n\
+                years === 1 && ['y'] || ['yy', years];\n\
+        args[2] = withoutSuffix;\n\
+        args[3] = milliseconds > 0;\n\
+        args[4] = lang;\n\
+        return substituteTimeAgo.apply({}, args);\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Week of Year\n\
+    ************************************/\n\
+\n\
+\n\
+    // firstDayOfWeek       0 = sun, 6 = sat\n\
+    //                      the day of the week that starts the week\n\
+    //                      (usually sunday or monday)\n\
+    // firstDayOfWeekOfYear 0 = sun, 6 = sat\n\
+    //                      the first week is the week that contains the first\n\
+    //                      of this day of the week\n\
+    //                      (eg. ISO weeks use thursday (4))\n\
+    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {\n\
+        var end = firstDayOfWeekOfYear - firstDayOfWeek,\n\
+            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day();\n\
+\n\
+\n\
+        if (daysToDayOfWeek > end) {\n\
+            daysToDayOfWeek -= 7;\n\
+        }\n\
+\n\
+        if (daysToDayOfWeek < end - 7) {\n\
+            daysToDayOfWeek += 7;\n\
+        }\n\
+\n\
+        return Math.ceil(moment(mom).add('d', daysToDayOfWeek).dayOfYear() / 7);\n\
+    }\n\
+\n\
+\n\
+    /************************************\n\
+        Top Level Functions\n\
+    ************************************/\n\
+\n\
+    function makeMoment(config) {\n\
+        var input = config._i,\n\
+            format = config._f;\n\
+\n\
+        if (input === null || input === '') {\n\
+            return null;\n\
+        }\n\
+\n\
+        if (typeof input === 'string') {\n\
+            config._i = input = getLangDefinition().preparse(input);\n\
+        }\n\
+\n\
+        if (moment.isMoment(input)) {\n\
+            config = extend({}, input);\n\
+            config._d = new Date(+input._d);\n\
+        } else if (format) {\n\
+            if (isArray(format)) {\n\
+                makeDateFromStringAndArray(config);\n\
+            } else {\n\
+                makeDateFromStringAndFormat(config);\n\
+            }\n\
+        } else {\n\
+            makeDateFromInput(config);\n\
+        }\n\
+\n\
+        return new Moment(config);\n\
+    }\n\
+\n\
+    moment = function (input, format, lang) {\n\
+        return makeMoment({\n\
+            _i : input,\n\
+            _f : format,\n\
+            _l : lang,\n\
+            _isUTC : false\n\
+        });\n\
+    };\n\
+\n\
+    // creating with utc\n\
+    moment.utc = function (input, format, lang) {\n\
+        return makeMoment({\n\
+            _useUTC : true,\n\
+            _isUTC : true,\n\
+            _l : lang,\n\
+            _i : input,\n\
+            _f : format\n\
+        });\n\
+    };\n\
+\n\
+    // creating with unix timestamp (in seconds)\n\
+    moment.unix = function (input) {\n\
+        return moment(input * 1000);\n\
+    };\n\
+\n\
+    // duration\n\
+    moment.duration = function (input, key) {\n\
+        var isDuration = moment.isDuration(input),\n\
+            isNumber = (typeof input === 'number'),\n\
+            duration = (isDuration ? input._data : (isNumber ? {} : input)),\n\
+            ret;\n\
+\n\
+        if (isNumber) {\n\
+            if (key) {\n\
+                duration[key] = input;\n\
+            } else {\n\
+                duration.milliseconds = input;\n\
+            }\n\
+        }\n\
+\n\
+        ret = new Duration(duration);\n\
+\n\
+        if (isDuration && input.hasOwnProperty('_lang')) {\n\
+            ret._lang = input._lang;\n\
+        }\n\
+\n\
+        return ret;\n\
+    };\n\
+\n\
+    // version number\n\
+    moment.version = VERSION;\n\
+\n\
+    // default format\n\
+    moment.defaultFormat = isoFormat;\n\
+\n\
+    // This function will load languages and then set the global language.  If\n\
+    // no arguments are passed in, it will simply return the current global\n\
+    // language key.\n\
+    moment.lang = function (key, values) {\n\
+        var i;\n\
+\n\
+        if (!key) {\n\
+            return moment.fn._lang._abbr;\n\
+        }\n\
+        if (values) {\n\
+            loadLang(key, values);\n\
+        } else if (!languages[key]) {\n\
+            getLangDefinition(key);\n\
+        }\n\
+        moment.duration.fn._lang = moment.fn._lang = getLangDefinition(key);\n\
+    };\n\
+\n\
+    // returns language data\n\
+    moment.langData = function (key) {\n\
+        if (key && key._lang && key._lang._abbr) {\n\
+            key = key._lang._abbr;\n\
+        }\n\
+        return getLangDefinition(key);\n\
+    };\n\
+\n\
+    // compare moment object\n\
+    moment.isMoment = function (obj) {\n\
+        return obj instanceof Moment;\n\
+    };\n\
+\n\
+    // for typechecking Duration objects\n\
+    moment.isDuration = function (obj) {\n\
+        return obj instanceof Duration;\n\
+    };\n\
+\n\
+\n\
+    /************************************\n\
+        Moment Prototype\n\
+    ************************************/\n\
+\n\
+\n\
+    moment.fn = Moment.prototype = {\n\
+\n\
+        clone : function () {\n\
+            return moment(this);\n\
+        },\n\
+\n\
+        valueOf : function () {\n\
+            return +this._d;\n\
+        },\n\
+\n\
+        unix : function () {\n\
+            return Math.floor(+this._d / 1000);\n\
+        },\n\
+\n\
+        toString : function () {\n\
+            return this.format(\"ddd MMM DD YYYY HH:mm:ss [GMT]ZZ\");\n\
+        },\n\
+\n\
+        toDate : function () {\n\
+            return this._d;\n\
+        },\n\
+\n\
+        toJSON : function () {\n\
+            return moment.utc(this).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');\n\
+        },\n\
+\n\
+        toArray : function () {\n\
+            var m = this;\n\
+            return [\n\
+                m.year(),\n\
+                m.month(),\n\
+                m.date(),\n\
+                m.hours(),\n\
+                m.minutes(),\n\
+                m.seconds(),\n\
+                m.milliseconds()\n\
+            ];\n\
+        },\n\
+\n\
+        isValid : function () {\n\
+            if (this._isValid == null) {\n\
+                if (this._a) {\n\
+                    this._isValid = !compareArrays(this._a, (this._isUTC ? moment.utc(this._a) : moment(this._a)).toArray());\n\
+                } else {\n\
+                    this._isValid = !isNaN(this._d.getTime());\n\
+                }\n\
+            }\n\
+            return !!this._isValid;\n\
+        },\n\
+\n\
+        utc : function () {\n\
+            this._isUTC = true;\n\
+            return this;\n\
+        },\n\
+\n\
+        local : function () {\n\
+            this._isUTC = false;\n\
+            return this;\n\
+        },\n\
+\n\
+        format : function (inputString) {\n\
+            var output = formatMoment(this, inputString || moment.defaultFormat);\n\
+            return this.lang().postformat(output);\n\
+        },\n\
+\n\
+        add : function (input, val) {\n\
+            var dur;\n\
+            // switch args to support add('s', 1) and add(1, 's')\n\
+            if (typeof input === 'string') {\n\
+                dur = moment.duration(+val, input);\n\
+            } else {\n\
+                dur = moment.duration(input, val);\n\
+            }\n\
+            addOrSubtractDurationFromMoment(this, dur, 1);\n\
+            return this;\n\
+        },\n\
+\n\
+        subtract : function (input, val) {\n\
+            var dur;\n\
+            // switch args to support subtract('s', 1) and subtract(1, 's')\n\
+            if (typeof input === 'string') {\n\
+                dur = moment.duration(+val, input);\n\
+            } else {\n\
+                dur = moment.duration(input, val);\n\
+            }\n\
+            addOrSubtractDurationFromMoment(this, dur, -1);\n\
+            return this;\n\
+        },\n\
+\n\
+        diff : function (input, units, asFloat) {\n\
+            var that = this._isUTC ? moment(input).utc() : moment(input).local(),\n\
+                zoneDiff = (this.zone() - that.zone()) * 6e4,\n\
+                diff, output;\n\
+\n\
+            if (units) {\n\
+                // standardize on singular form\n\
+                units = units.replace(/s$/, '');\n\
+            }\n\
+\n\
+            if (units === 'year' || units === 'month') {\n\
+                diff = (this.daysInMonth() + that.daysInMonth()) * 432e5; // 24 * 60 * 60 * 1000 / 2\n\
+                output = ((this.year() - that.year()) * 12) + (this.month() - that.month());\n\
+                output += ((this - moment(this).startOf('month')) - (that - moment(that).startOf('month'))) / diff;\n\
+                if (units === 'year') {\n\
+                    output = output / 12;\n\
+                }\n\
+            } else {\n\
+                diff = (this - that) - zoneDiff;\n\
+                output = units === 'second' ? diff / 1e3 : // 1000\n\
+                    units === 'minute' ? diff / 6e4 : // 1000 * 60\n\
+                    units === 'hour' ? diff / 36e5 : // 1000 * 60 * 60\n\
+                    units === 'day' ? diff / 864e5 : // 1000 * 60 * 60 * 24\n\
+                    units === 'week' ? diff / 6048e5 : // 1000 * 60 * 60 * 24 * 7\n\
+                    diff;\n\
+            }\n\
+            return asFloat ? output : absRound(output);\n\
+        },\n\
+\n\
+        from : function (time, withoutSuffix) {\n\
+            return moment.duration(this.diff(time)).lang(this.lang()._abbr).humanize(!withoutSuffix);\n\
+        },\n\
+\n\
+        fromNow : function (withoutSuffix) {\n\
+            return this.from(moment(), withoutSuffix);\n\
+        },\n\
+\n\
+        calendar : function () {\n\
+            var diff = this.diff(moment().startOf('day'), 'days', true),\n\
+                format = diff < -6 ? 'sameElse' :\n\
+                diff < -1 ? 'lastWeek' :\n\
+                diff < 0 ? 'lastDay' :\n\
+                diff < 1 ? 'sameDay' :\n\
+                diff < 2 ? 'nextDay' :\n\
+                diff < 7 ? 'nextWeek' : 'sameElse';\n\
+            return this.format(this.lang().calendar(format, this));\n\
+        },\n\
+\n\
+        isLeapYear : function () {\n\
+            var year = this.year();\n\
+            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;\n\
+        },\n\
+\n\
+        isDST : function () {\n\
+            return (this.zone() < moment([this.year()]).zone() ||\n\
+                this.zone() < moment([this.year(), 5]).zone());\n\
+        },\n\
+\n\
+        day : function (input) {\n\
+            var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();\n\
+            return input == null ? day :\n\
+                this.add({ d : input - day });\n\
+        },\n\
+\n\
+        startOf: function (units) {\n\
+            units = units.replace(/s$/, '');\n\
+            // the following switch intentionally omits break keywords\n\
+            // to utilize falling through the cases.\n\
+            switch (units) {\n\
+            case 'year':\n\
+                this.month(0);\n\
+                /* falls through */\n\
+            case 'month':\n\
+                this.date(1);\n\
+                /* falls through */\n\
+            case 'week':\n\
+            case 'day':\n\
+                this.hours(0);\n\
+                /* falls through */\n\
+            case 'hour':\n\
+                this.minutes(0);\n\
+                /* falls through */\n\
+            case 'minute':\n\
+                this.seconds(0);\n\
+                /* falls through */\n\
+            case 'second':\n\
+                this.milliseconds(0);\n\
+                /* falls through */\n\
+            }\n\
+\n\
+            // weeks are a special case\n\
+            if (units === 'week') {\n\
+                this.day(0);\n\
+            }\n\
+\n\
+            return this;\n\
+        },\n\
+\n\
+        endOf: function (units) {\n\
+            return this.startOf(units).add(units.replace(/s?$/, 's'), 1).subtract('ms', 1);\n\
+        },\n\
+\n\
+        isAfter: function (input, units) {\n\
+            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
+            return +this.clone().startOf(units) > +moment(input).startOf(units);\n\
+        },\n\
+\n\
+        isBefore: function (input, units) {\n\
+            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
+            return +this.clone().startOf(units) < +moment(input).startOf(units);\n\
+        },\n\
+\n\
+        isSame: function (input, units) {\n\
+            units = typeof units !== 'undefined' ? units : 'millisecond';\n\
+            return +this.clone().startOf(units) === +moment(input).startOf(units);\n\
+        },\n\
+\n\
+        zone : function () {\n\
+            return this._isUTC ? 0 : this._d.getTimezoneOffset();\n\
+        },\n\
+\n\
+        daysInMonth : function () {\n\
+            return moment.utc([this.year(), this.month() + 1, 0]).date();\n\
+        },\n\
+\n\
+        dayOfYear : function (input) {\n\
+            var dayOfYear = round((moment(this).startOf('day') - moment(this).startOf('year')) / 864e5) + 1;\n\
+            return input == null ? dayOfYear : this.add(\"d\", (input - dayOfYear));\n\
+        },\n\
+\n\
+        isoWeek : function (input) {\n\
+            var week = weekOfYear(this, 1, 4);\n\
+            return input == null ? week : this.add(\"d\", (input - week) * 7);\n\
+        },\n\
+\n\
+        week : function (input) {\n\
+            var week = this.lang().week(this);\n\
+            return input == null ? week : this.add(\"d\", (input - week) * 7);\n\
+        },\n\
+\n\
+        // If passed a language key, it will set the language for this\n\
+        // instance.  Otherwise, it will return the language configuration\n\
+        // variables for this instance.\n\
+        lang : function (key) {\n\
+            if (key === undefined) {\n\
+                return this._lang;\n\
+            } else {\n\
+                this._lang = getLangDefinition(key);\n\
+                return this;\n\
+            }\n\
+        }\n\
+    };\n\
+\n\
+    // helper for adding shortcuts\n\
+    function makeGetterAndSetter(name, key) {\n\
+        moment.fn[name] = moment.fn[name + 's'] = function (input) {\n\
+            var utc = this._isUTC ? 'UTC' : '';\n\
+            if (input != null) {\n\
+                this._d['set' + utc + key](input);\n\
+                return this;\n\
+            } else {\n\
+                return this._d['get' + utc + key]();\n\
+            }\n\
+        };\n\
+    }\n\
+\n\
+    // loop through and add shortcuts (Month, Date, Hours, Minutes, Seconds, Milliseconds)\n\
+    for (i = 0; i < proxyGettersAndSetters.length; i ++) {\n\
+        makeGetterAndSetter(proxyGettersAndSetters[i].toLowerCase().replace(/s$/, ''), proxyGettersAndSetters[i]);\n\
+    }\n\
+\n\
+    // add shortcut for year (uses different syntax than the getter/setter 'year' == 'FullYear')\n\
+    makeGetterAndSetter('year', 'FullYear');\n\
+\n\
+    // add plural methods\n\
+    moment.fn.days = moment.fn.day;\n\
+    moment.fn.weeks = moment.fn.week;\n\
+    moment.fn.isoWeeks = moment.fn.isoWeek;\n\
+\n\
+    /************************************\n\
+        Duration Prototype\n\
+    ************************************/\n\
+\n\
+\n\
+    moment.duration.fn = Duration.prototype = {\n\
+        weeks : function () {\n\
+            return absRound(this.days() / 7);\n\
+        },\n\
+\n\
+        valueOf : function () {\n\
+            return this._milliseconds +\n\
+              this._days * 864e5 +\n\
+              this._months * 2592e6;\n\
+        },\n\
+\n\
+        humanize : function (withSuffix) {\n\
+            var difference = +this,\n\
+                output = relativeTime(difference, !withSuffix, this.lang());\n\
+\n\
+            if (withSuffix) {\n\
+                output = this.lang().pastFuture(difference, output);\n\
+            }\n\
+\n\
+            return this.lang().postformat(output);\n\
+        },\n\
+\n\
+        lang : moment.fn.lang\n\
+    };\n\
+\n\
+    function makeDurationGetter(name) {\n\
+        moment.duration.fn[name] = function () {\n\
+            return this._data[name];\n\
+        };\n\
+    }\n\
+\n\
+    function makeDurationAsGetter(name, factor) {\n\
+        moment.duration.fn['as' + name] = function () {\n\
+            return +this / factor;\n\
+        };\n\
+    }\n\
+\n\
+    for (i in unitMillisecondFactors) {\n\
+        if (unitMillisecondFactors.hasOwnProperty(i)) {\n\
+            makeDurationAsGetter(i, unitMillisecondFactors[i]);\n\
+            makeDurationGetter(i.toLowerCase());\n\
+        }\n\
+    }\n\
+\n\
+    makeDurationAsGetter('Weeks', 6048e5);\n\
+\n\
+\n\
+    /************************************\n\
+        Default Lang\n\
+    ************************************/\n\
+\n\
+\n\
+    // Set default language, other languages will inherit from English.\n\
+    moment.lang('en', {\n\
+        ordinal : function (number) {\n\
+            var b = number % 10,\n\
+                output = (~~ (number % 100 / 10) === 1) ? 'th' :\n\
+                (b === 1) ? 'st' :\n\
+                (b === 2) ? 'nd' :\n\
+                (b === 3) ? 'rd' : 'th';\n\
+            return number + output;\n\
+        }\n\
+    });\n\
+\n\
+\n\
+    /************************************\n\
+        Exposing Moment\n\
+    ************************************/\n\
+\n\
+\n\
+    // CommonJS module is defined\n\
+    if (hasModule) {\n\
+        module.exports = moment;\n\
+    }\n\
+    /*global ender:false */\n\
+    if (typeof ender === 'undefined') {\n\
+        // here, `this` means `window` in the browser, or `global` on the server\n\
+        // add `moment` as a global object via a string identifier,\n\
+        // for Closure Compiler \"advanced\" mode\n\
+        this['moment'] = moment;\n\
+    }\n\
+    /*global define:false */\n\
+    if (typeof define === \"function\" && define.amd) {\n\
+        define(\"moment\", [], function () {\n\
+            return moment;\n\
+        });\n\
+    }\n\
+}).call(this);\n\
+//@ sourceURL=component-moment/index.js"
 ));
 require.register("component-events/index.js", Function("exports, require, module",
 "\n\
@@ -12660,7 +12645,9 @@ function coerce(val) {\n\
 \n\
 // persist\n\
 \n\
-if (window.localStorage) debug.enable(localStorage.debug);\n\
+try {\n\
+  if (window.localStorage) debug.enable(localStorage.debug);\n\
+} catch(e){}\n\
 //@ sourceURL=visionmedia-debug/debug.js"
 ));
 require.register("component-reactive/lib/index.js", Function("exports, require, module",
@@ -12895,8 +12882,11 @@ Reactive.prototype.bind = function(name, fn) {\n\
     return;\n\
   }\n\
 \n\
-  var obj = this.obj;\n\
   var els = query.all('[' + name + ']', this.el);\n\
+  if (this.el.hasAttribute && this.el.hasAttribute(name)) {\n\
+    els = [].slice.call(els);\n\
+    els.unshift(this.el);\n\
+  }\n\
   if (!els.length) return;\n\
 \n\
   debug('bind [%s] (%d elements)', name, els.length);\n\
@@ -13847,6 +13837,27 @@ Emitter.prototype.hasListeners = function(event){\n\
 };\n\
 //@ sourceURL=segmentio-emitter/index.js"
 ));
+require.register("ianstormtaylor-map/index.js", Function("exports, require, module",
+"\n\
+var each = require('each');\n\
+\n\
+\n\
+/**\n\
+ * Map an array or object.\n\
+ *\n\
+ * @param {Array|Object} obj\n\
+ * @param {Function} iterator\n\
+ * @return {Mixed}\n\
+ */\n\
+\n\
+module.exports = function map (obj, iterator) {\n\
+  var arr = [];\n\
+  each(obj, function (o) {\n\
+    arr.push(iterator.apply(null, arguments));\n\
+  });\n\
+  return arr;\n\
+};//@ sourceURL=ianstormtaylor-map/index.js"
+));
 require.register("segmentio-list/lib/index.js", Function("exports, require, module",
 "\n\
 var dom = require('dom')\n\
@@ -13897,7 +13908,7 @@ var bind = require('bind')\n\
   , each = require('each')\n\
   , Emitter = require('emitter')\n\
   , get = require('get')\n\
-  , sort = require('sort');\n\
+  , map = require('map');\n\
 \n\
 \n\
 /**\n\
@@ -13970,20 +13981,43 @@ exports.remove = function (id) {\n\
 \n\
 exports.filter = function (fn) {\n\
   this.list.removeClass('hidden');\n\
-  this.list.reject(fn).addClass('hidden');\n\
+  for (var id in this.items) {\n\
+    var item = this.items[id];\n\
+    if (!fn(item.el, item.model, item.view)) dom(item.el).addClass('hidden');\n\
+  }\n\
   return this;\n\
 };\n\
 \n\
 \n\
 /**\n\
- * Sort the list's elements by an iterator `fn`.\n\
+ * Sort the list's elements by an iterator `fn(el, model, view)`.\n\
  *\n\
  * @param {Function} fn\n\
  * @return {List}\n\
  */\n\
 \n\
 exports.sort = function (fn) {\n\
-  sort(this.el, fn);\n\
+  var i = 0;\n\
+  var items = map(this.items, function (id, item) {\n\
+    return {\n\
+      index : i++,\n\
+      value : item,\n\
+      criterion : fn.call(null, item.el, item.model, item.view)\n\
+    };\n\
+  }).sort(function (a, b) {\n\
+    a = a.criterion;\n\
+    b = b.criterion;\n\
+    if (a > b) return 1;\n\
+    if (a < b) return -1;\n\
+    return 0;\n\
+  });\n\
+\n\
+  var fragment = document.createDocumentFragment();\n\
+  each(items, function (item) {\n\
+    fragment.appendChild(item.value.el);\n\
+  });\n\
+\n\
+  this.el.appendChild(fragment);\n\
   return this;\n\
 };\n\
 \n\
@@ -14128,6 +14162,7 @@ function createMenu (MenuItem) {\n\
   inherit(Menu, List);\n\
 \n\
   // statics + protos\n\
+  Menu.prototype.List = List;\n\
   Menu.prototype.Menu = Menu;\n\
   for (var key in statics) Menu[key] = statics[key];\n\
   for (var key in protos) Menu.prototype[key] = protos[key];\n\
@@ -14290,8 +14325,8 @@ exports.deselect = function () {\n\
 exports.next = function () {\n\
   var list = this.list;\n\
   var previous = this.focused();\n\
-  var next = list.first();\n\
-  if (previous && previous.next().els[0]) next = previous.next();\n\
+  var next = this.visible().first();\n\
+  if (previous && previous.next(':not(.hidden)').els[0]) next = previous.next(':not(.hidden)');\n\
 \n\
   if (previous) previous.removeClass('focus');\n\
   next.addClass('focus');\n\
@@ -14308,11 +14343,26 @@ exports.next = function () {\n\
 exports.previous = function () {\n\
   var list = this.list;\n\
   var previous = this.focused();\n\
-  var next = list.last();\n\
-  if (previous && previous.previous().els[0]) next = previous.previous();\n\
+  var next = this.visible().last();\n\
+  if (previous && previous.previous(':not(.hidden)').els[0]) next = previous.previous(':not(.hidden)');\n\
 \n\
   if (previous) previous.removeClass('focus');\n\
   next.addClass('focus');\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Filter the menu.\n\
+ *\n\
+ * @param {Function} fn(el, model, view)\n\
+ * @return {Menu}\n\
+ */\n\
+\n\
+exports.filter = function (fn) {\n\
+  this.List.prototype.filter.apply(this, arguments);\n\
+  var focused = this.focused();\n\
+  if (focused && focused.hasClass('hidden')) this.next();\n\
   return this;\n\
 };\n\
 \n\
@@ -14394,6 +14444,21 @@ exports.onblur = function (e) {\n\
 \n\
 \n\
 /**\n\
+ * Get the visible menu items.\n\
+ *\n\
+ * @return {List|Null}\n\
+ * @api private\n\
+ */\n\
+\n\
+exports.visible = function () {\n\
+  var visible = this.list.filter(function (list) {\n\
+    return ! list.hasClass('hidden');\n\
+  });\n\
+  return visible.length() ? visible : null;\n\
+};\n\
+\n\
+\n\
+/**\n\
  * Get the focused menu item.\n\
  *\n\
  * @return {List|Null}\n\
@@ -14401,7 +14466,7 @@ exports.onblur = function (e) {\n\
  */\n\
 \n\
 exports.focused = function () {\n\
-  var focused = this.list.select(function (list) {\n\
+  var focused = this.list.filter(function (list) {\n\
     return list.hasClass('focus');\n\
   });\n\
   return focused.length() ? focused : null;\n\
@@ -15453,11 +15518,87 @@ exports.get = function(obj, prop) {\n\
 };\n\
 //@ sourceURL=ianstormtaylor-reactive/lib/adapter.js"
 ));
-require.register("segmentio-view/lib/index.js", Function("exports, require, module",
+require.register("ianstormtaylor-classes/index.js", Function("exports, require, module",
 "\n\
-var domify = require('domify')\n\
+var classes = require('classes');\n\
+\n\
+\n\
+/**\n\
+ * Expose `mixin`.\n\
+ */\n\
+\n\
+module.exports = exports = mixin;\n\
+\n\
+\n\
+/**\n\
+ * Mixin the classes methods.\n\
+ *\n\
+ * @param {Object} object\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+function mixin (obj) {\n\
+  for (var method in exports) obj[method] = exports[method];\n\
+  return obj;\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Add a class.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.addClass = function (name) {\n\
+  classes(this.el).add(name);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Remove a class.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.removeClass = function (name) {\n\
+  classes(this.el).remove(name);\n\
+  return this;\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Has a class?\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Boolean}\n\
+ */\n\
+\n\
+exports.hasClass = function (name) {\n\
+  return classes(this.el).has(name);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Toggle a class.\n\
+ *\n\
+ * @param {String} name\n\
+ * @return {Object}\n\
+ */\n\
+\n\
+exports.toggleClass = function (name) {\n\
+  classes(this.el).toggle(name);\n\
+  return this;\n\
+};\n\
+//@ sourceURL=ianstormtaylor-classes/index.js"
+));
+require.register("segmentio-view/index.js", Function("exports, require, module",
+"\n\
+var Classes = require('classes')\n\
+  , domify = require('domify')\n\
   , Emitter = require('emitter')\n\
-  , protos = require('./protos')\n\
   , reactive = require('reactive')\n\
   , type = require('type');\n\
 \n\
@@ -15471,12 +15612,14 @@ module.exports = createView;\n\
 \n\
 /**\n\
  * Create a new view constructor with the given `template`.\n\
+ * Optional `fn` will be assigned to `construct` events.\n\
  *\n\
  * @param {String} template\n\
+ * @param {Function} fn (optional)\n\
  * @return {Function}\n\
  */\n\
 \n\
-function createView (template) {\n\
+function createView (template, fn) {\n\
   if (!template) throw new Error('template required');\n\
 \n\
   /**\n\
@@ -15501,69 +15644,35 @@ function createView (template) {\n\
       el = null;\n\
     }\n\
 \n\
-    this.model = model;\n\
+    this.model = model || {};\n\
     this.el = el || domify(template);\n\
     this.options = options;\n\
-    this.reactive = reactive(this.el, this.model || {}, this);\n\
-    this.view.emit('construct', this, model, el, options);\n\
+    this.reactive = reactive(this.el, this.model, this);\n\
+    this.View.emit('construct', this, this.model, this.el, this.options);\n\
   }\n\
 \n\
-  // mixin emitter\n\
+  // statics\n\
   Emitter(View);\n\
 \n\
-  // statics\n\
-  View.template = template;\n\
-\n\
   // prototypes\n\
-  View.prototype.view = View;\n\
-  for (var key in protos) View.prototype[key] = protos[key];\n\
+  View.prototype.template = template;\n\
+  View.prototype.View = View;\n\
+  Emitter(View.prototype);\n\
+  Classes(View.prototype);\n\
+\n\
+  // assign optional `construct` listener\n\
+  if (fn) View.on('construct', fn);\n\
 \n\
   return View;\n\
-}//@ sourceURL=segmentio-view/lib/index.js"
-));
-require.register("segmentio-view/lib/protos.js", Function("exports, require, module",
-"\n\
-var classes = require('classes')\n\
-  , Emitter = require('emitter');\n\
-\n\
-\n\
-/**\n\
- * Mixin emitter.\n\
- */\n\
-\n\
-Emitter(exports);\n\
-\n\
-\n\
-/**\n\
- * Add a class to the view's el.\n\
- *\n\
- * @param {String} name\n\
- * @return {View}\n\
- */\n\
-\n\
-exports.addClass = function (name) {\n\
-  classes(this.el).add(name);\n\
-  return this;\n\
-};\n\
-\n\
-\n\
-/**\n\
- * Remove a class from the view's el.\n\
- *\n\
- * @param {String} name\n\
- * @return {View}\n\
- */\n\
-\n\
-exports.removeClass = function (name) {\n\
-  classes(this.el).remove(name);\n\
-  return this;\n\
-};//@ sourceURL=segmentio-view/lib/protos.js"
+}//@ sourceURL=segmentio-view/index.js"
 ));
 require.register("nav/index.js", Function("exports, require, module",
 "\n\
-var keyname = require('keyname')\n\
+var bind = require('event').bind\n\
+  , keyname = require('keyname')\n\
   , menu = require('menu')\n\
   , MenuItem = require('./item')\n\
+  , prevent = require('prevent')\n\
   , template = require('./index.html')\n\
   , value = require('value')\n\
   , view = require('view');\n\
@@ -15573,7 +15682,14 @@ var keyname = require('keyname')\n\
  * Expose the `Nav` constructor.\n\
  */\n\
 \n\
-var Nav = module.exports = view(template);\n\
+var Nav = module.exports = view(template, function (self) {\n\
+  self.search = self.el.querySelector('.nav-search');\n\
+  self.form = self.el.querySelector('.nav-form');\n\
+  bind(self.form, 'submit', prevent);\n\
+  bind(self.search, 'focus', function () {\n\
+    self.menu.next();\n\
+  });\n\
+});\n\
 \n\
 \n\
 /**\n\
@@ -15616,8 +15732,7 @@ Nav.prototype.remove = function (id) {\n\
  */\n\
 \n\
 Nav.prototype.focus = function () {\n\
-  this.el.querySelector('.nav-search').focus();\n\
-  this.menu.next();\n\
+  this.search.focus();\n\
   return this;\n\
 };\n\
 \n\
@@ -15652,14 +15767,15 @@ Nav.prototype.onSearch = function (e) {\n\
       return this.menu.next();\n\
   }\n\
   var string = value(e.target);\n\
-  this.menu.filter(function (el) {\n\
-    return el.text().toLowerCase().indexOf(string) !== -1;\n\
+  this.menu.filter(function (el, model, view) {\n\
+    return model.title().toLowerCase().indexOf(string) !== -1;\n\
   });\n\
 };//@ sourceURL=nav/index.js"
 ));
 require.register("nav/item.js", Function("exports, require, module",
 "\n\
 var documents = require('documents')\n\
+  , moment = require('moment')\n\
   , template = require('./item.html')\n\
   , view = require('view');\n\
 \n\
@@ -15692,6 +15808,20 @@ MenuItemView.prototype.onClickDelete = function (e) {\n\
 \n\
 MenuItemView.prototype.href = function () {\n\
   return '/' + this.model.primary();\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Return a title for the document.\n\
+ *\n\
+ * @return {String}\n\
+ */\n\
+\n\
+MenuItemView.prototype.title = function () {\n\
+  var title = this.model.title();\n\
+  if (title) return title;\n\
+  var created = moment(this.model.created());\n\
+  return created.format('[Untitled] - MMM Do, YYYY');\n\
 };//@ sourceURL=nav/item.js"
 ));
 require.register("boot/browser.js", Function("exports, require, module",
@@ -15711,29 +15841,6 @@ var bind = require('event').bind\n\
  */\n\
 \n\
 var editor;\n\
-\n\
-\n\
-/**\n\
- * Nav.\n\
- */\n\
-\n\
-var nav = new Nav();\n\
-\n\
-body.appendChild(nav.el);\n\
-\n\
-documents\n\
-  .on('add', nav.add.bind(nav))\n\
-  .on('remove', nav.remove.bind(nav));\n\
-\n\
-bind(document.querySelector('.main-menu-nav-button'), 'click', function (e) {\n\
-  var el = classes(body);\n\
-  if (el.has('navigating')) {\n\
-    el.remove('navigating');\n\
-  } else {\n\
-    el.add('navigating');\n\
-    nav.focus();\n\
-  }\n\
-});\n\
 \n\
 \n\
 /**\n\
@@ -15770,6 +15877,33 @@ router.on('/:id/:state?', function (context, next) {\n\
 \n\
 \n\
 /**\n\
+ * Nav.\n\
+ */\n\
+\n\
+var nav = new Nav();\n\
+\n\
+nav.on('select', function (doc) {\n\
+  router.go('/' + doc.primary());\n\
+});\n\
+\n\
+body.appendChild(nav.el);\n\
+\n\
+documents\n\
+  .on('add', nav.add.bind(nav))\n\
+  .on('remove', nav.remove.bind(nav));\n\
+\n\
+bind(document.querySelector('.main-menu-nav-button'), 'click', function (e) {\n\
+  var el = classes(body);\n\
+  if (el.has('navigating')) {\n\
+    el.remove('navigating');\n\
+  } else {\n\
+    el.add('navigating');\n\
+    nav.focus();\n\
+  }\n\
+});\n\
+\n\
+\n\
+/**\n\
  * Listen.\n\
  */\n\
 \n\
@@ -15782,7 +15916,6 @@ router.listen();\n\
 \n\
 documents.load();//@ sourceURL=boot/browser.js"
 ));
-
 
 
 
@@ -15844,6 +15977,9 @@ require.register("editor/index.html", Function("exports, require, module",
   </menu>\\n\
 </div>';//@ sourceURL=editor/index.html"
 ));
+
+
+
 
 
 
@@ -16007,6 +16143,9 @@ require.alias("editor/filters/rainbow.js", "boot/deps/editor/filters/rainbow.js"
 require.alias("component-classes/index.js", "editor/deps/classes/index.js");
 require.alias("component-indexof/index.js", "component-classes/deps/indexof/index.js");
 
+require.alias("component-debounce/index.js", "editor/deps/debounce/index.js");
+require.alias("component-debounce/index.js", "editor/deps/debounce/index.js");
+require.alias("component-debounce/index.js", "component-debounce/index.js");
 require.alias("component-dom/index.js", "editor/deps/dom/index.js");
 require.alias("component-type/index.js", "component-dom/deps/type/index.js");
 
@@ -16049,15 +16188,11 @@ require.alias("component-domify/index.js", "editor/deps/domify/index.js");
 
 require.alias("component-event/index.js", "editor/deps/event/index.js");
 
-require.alias("component-moment/index.js", "editor/deps/moment/index.js");
-
 require.alias("component-value/index.js", "editor/deps/value/index.js");
 require.alias("component-value/index.js", "editor/deps/value/index.js");
 require.alias("component-type/index.js", "component-value/deps/type/index.js");
 
 require.alias("component-value/index.js", "component-value/index.js");
-require.alias("matthewmueller-debounce/index.js", "editor/deps/debounce/index.js");
-
 require.alias("segmentio-marked/lib/marked.js", "editor/deps/marked/lib/marked.js");
 require.alias("segmentio-marked/lib/marked.js", "editor/deps/marked/index.js");
 require.alias("segmentio-marked/lib/marked.js", "segmentio-marked/index.js");
@@ -16093,7 +16228,11 @@ require.alias("timoxley-next-tick/index.js", "timoxley-async-compose/deps/next-t
 
 require.alias("nav/index.js", "boot/deps/nav/index.js");
 require.alias("nav/item.js", "boot/deps/nav/item.js");
+require.alias("component-event/index.js", "nav/deps/event/index.js");
+
 require.alias("component-keyname/index.js", "nav/deps/keyname/index.js");
+
+require.alias("component-moment/index.js", "nav/deps/moment/index.js");
 
 require.alias("component-value/index.js", "nav/deps/value/index.js");
 require.alias("component-value/index.js", "nav/deps/value/index.js");
@@ -16240,9 +16379,13 @@ require.alias("component-type/index.js", "component-each/deps/type/index.js");
 require.alias("segmentio-emitter/index.js", "segmentio-list/deps/emitter/index.js");
 require.alias("component-indexof/index.js", "segmentio-emitter/deps/indexof/index.js");
 
-require.alias("component-sort/index.js", "segmentio-list/deps/sort/index.js");
-
 require.alias("ianstormtaylor-get/index.js", "segmentio-list/deps/get/index.js");
+
+require.alias("ianstormtaylor-map/index.js", "segmentio-list/deps/map/index.js");
+require.alias("component-each/index.js", "ianstormtaylor-map/deps/each/index.js");
+require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");
+
+require.alias("component-type/index.js", "component-each/deps/type/index.js");
 
 require.alias("segmentio-list/lib/index.js", "segmentio-list/index.js");
 require.alias("yields-prevent/index.js", "segmentio-menu/deps/prevent/index.js");
@@ -16250,12 +16393,7 @@ require.alias("yields-prevent/index.js", "segmentio-menu/deps/prevent/index.js")
 require.alias("yields-slug/index.js", "segmentio-menu/deps/slug/index.js");
 
 require.alias("segmentio-menu/lib/index.js", "segmentio-menu/index.js");
-require.alias("segmentio-view/lib/index.js", "nav/deps/view/lib/index.js");
-require.alias("segmentio-view/lib/protos.js", "nav/deps/view/lib/protos.js");
-require.alias("segmentio-view/lib/index.js", "nav/deps/view/index.js");
-require.alias("component-classes/index.js", "segmentio-view/deps/classes/index.js");
-require.alias("component-indexof/index.js", "component-classes/deps/indexof/index.js");
-
+require.alias("segmentio-view/index.js", "nav/deps/view/index.js");
 require.alias("component-domify/index.js", "segmentio-view/deps/domify/index.js");
 
 require.alias("component-emitter/index.js", "segmentio-view/deps/emitter/index.js");
@@ -16287,7 +16425,12 @@ require.alias("component-query/index.js", "ianstormtaylor-reactive/deps/query/in
 require.alias("ianstormtaylor-reactive/lib/index.js", "ianstormtaylor-reactive/index.js");
 require.alias("component-type/index.js", "segmentio-view/deps/type/index.js");
 
-require.alias("segmentio-view/lib/index.js", "segmentio-view/index.js");
+require.alias("ianstormtaylor-classes/index.js", "segmentio-view/deps/classes/index.js");
+require.alias("component-classes/index.js", "ianstormtaylor-classes/deps/classes/index.js");
+require.alias("component-indexof/index.js", "component-classes/deps/indexof/index.js");
+
+require.alias("yields-prevent/index.js", "nav/deps/prevent/index.js");
+
 require.alias("documents/index.js", "nav/deps/documents/index.js");
 require.alias("component-each/index.js", "documents/deps/each/index.js");
 require.alias("component-to-function/index.js", "component-each/deps/to-function/index.js");

@@ -76,6 +76,11 @@
 .nav-menu .menu-item.focus,
 .nav-menu .menu-item.selected {
   background-color: #3c3a35;
+}
+
+.nav-menu .menu-item:hover .menu-item-link,
+.nav-menu .menu-item.focus .menu-item-link,
+.nav-menu .menu-item.selected .menu-item-link {
   color: #ede5d5;
 }
 

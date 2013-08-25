@@ -1,10 +1,13 @@
 {
   "name": "nav",
   "dependencies": {
+    "component/event": "*",
     "component/keyname": "*",
+    "component/moment": "*",
     "component/value": "*",
     "segmentio/menu": "*",
-    "segmentio/view": "*"
+    "segmentio/view": "*",
+    "yields/prevent": "*"
   },
   "local": [
     "documents"

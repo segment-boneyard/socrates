@@ -2,12 +2,11 @@
   "name": "editor",
   "dependencies": {
     "component/classes": "*",
+    "component/debounce": "*",
     "component/dom": "*",
     "component/domify": "*",
     "component/event": "*",
-    "component/moment": "*",
     "component/value": "*",
-    "matthewmueller/debounce": "*",
     "segmentio/marked": "*",
     "segmentio/mathjax": "*",
     "segmentio/rainbow": "*",
